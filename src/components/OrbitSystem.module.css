@@ -1,0 +1,344 @@
+/*
+ * Orbit Field — CSS 3D.
+ *
+ * Every animated property is transform or opacity, so the whole scene stays on
+ * the compositor. No width/height/top/left is ever animated.
+ */
+
+.stage {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --size: clamp(17rem, 34vw, 30rem);
+
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  perspective: 1100px;
+  perspective-origin: 50% 50%;
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  margin-inline: auto;
+}
+
+.system {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* Parallax tilt, plus a slow drift so it is never quite still. */
+  transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: gm-drift 44s ease-in-out infinite;
+}
+
+/* ---------- the warm wash ---------- */
+
+.glow {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 38% 32%,
+    color-mix(in srgb, var(--ignition) 30%, transparent) 0%,
+    color-mix(in srgb, var(--mahogany) 12%, transparent) 34%,
+    transparent 64%
+  );
+  filter: blur(6px);
+  animation: gm-breathe 9s ease-in-out infinite;
+}
+
+/* ---------- planet ---------- */
+
+.planet {
+  position: absolute;
+  inset: 27%;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  /*
+   * Lit from upper-left. The body reads as a sphere because the highlight is
+   * off-centre and the falloff is non-linear — a centred gradient reads flat.
+   */
+  background:
+    radial-gradient(
+      circle at 32% 28%,
+      #f0b493 0%,
+      var(--ignition) 22%,
+      var(--imperial-topaz) 52%,
+      var(--mahogany) 74%,
+      #4a3138 92%
+    );
+  box-shadow:
+    inset -14px -14px 34px rgba(24, 20, 28, 0.62),
+    inset 6px 6px 22px rgba(255, 214, 186, 0.16),
+    0 0 44px color-mix(in srgb, var(--ignition) 26%, transparent);
+  animation: gm-bob 13s ease-in-out infinite;
+}
+
+/* Day/night terminator — a soft crescent of shadow on the trailing edge. */
+.planetTerminator {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 76% 74%,
+    rgba(26, 22, 30, 0.66) 0%,
+    rgba(26, 22, 30, 0.28) 36%,
+    transparent 62%
+  );
+  mix-blend-mode: multiply;
+}
+
+/*
+ * Specular sweep. A soft diagonal highlight crosses the body every ~11s — the
+ * glance of light you get off a turning object. Long pause between passes so it
+ * stays an event rather than a loop you start watching.
+ */
+.planetGlint {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.planetGlint::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -40%;
+  width: 42%;
+  height: 220%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 226, 202, 0.24),
+    transparent
+  );
+  transform: rotate(22deg) translateX(-120%);
+  animation: gm-glint 11s ease-in-out infinite;
+}
+
+@keyframes gm-glint {
+  0%,
+  62% {
+    transform: rotate(22deg) translateX(-120%);
+  }
+  82%,
+  100% {
+    transform: rotate(22deg) translateX(420%);
+  }
+}
+
+/* Rim light — the thin bright edge that sells the curvature. */
+.planetAtmosphere {
+  position: absolute;
+  inset: -3%;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ignition) 46%, transparent);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--ignition) 34%, transparent);
+  opacity: 0.75;
+}
+
+/* ---------- orbits ---------- */
+
+.orbit {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ignition) 34%, transparent);
+}
+
+/*
+ * Orbital planes.
+ * rotateX tips the plane away from the viewer; rotateZ sets its inclination.
+ * Plane 2 is the brand's own trajectory angle, -30deg.
+ */
+.orbit1 {
+  transform: rotateX(74deg) rotateZ(12deg);
+}
+
+.orbit1 .ring {
+  inset: 4%;
+}
+
+.orbit2 {
+  transform: rotateX(68deg) rotateZ(-30deg); /* brand trajectory */
+}
+
+.orbit2 .ring {
+  inset: -7%;
+  border-color: color-mix(in srgb, var(--imperial-topaz) 42%, transparent);
+  border-style: solid;
+}
+
+.orbit3 {
+  transform: rotateX(80deg) rotateZ(58deg);
+}
+
+.orbit3 .ring {
+  inset: -18%;
+  border-color: color-mix(in srgb, var(--wild-ginger) 34%, transparent);
+}
+
+/* ---------- satellites ---------- */
+
+/*
+ * The rotator spins inside the orbital plane; the satellite rides its edge.
+ * A sphere looks identical from every angle, so no counter-rotation is needed
+ * to keep it facing the viewer.
+ */
+.rotator {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: gm-orbit 20s linear infinite;
+}
+
+.orbit1 .rotator {
+  inset: 4%;
+  animation-duration: 16s;
+}
+
+.orbit2 .rotator {
+  inset: -7%;
+  animation-duration: 27s;
+  animation-direction: reverse;
+}
+
+.orbit3 .rotator {
+  inset: -18%;
+  animation-duration: 38s;
+}
+
+.satellite {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--ignition);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--ignition) 85%, transparent),
+    0 0 22px color-mix(in srgb, var(--ignition) 45%, transparent);
+}
+
+.sat2 {
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  background: var(--sat-bright);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--sat-bright) 75%, transparent),
+    0 0 18px color-mix(in srgb, var(--imperial-topaz) 55%, transparent);
+}
+
+.sat3 {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--wild-ginger);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--wild-ginger) 70%, transparent);
+}
+
+/* ---------- keyframes ---------- */
+
+/*
+ * Names carried over from the brand design canvas (06-brand/source/) so the
+ * site and the source file speak the same vocabulary.
+ */
+
+@keyframes gm-orbit {
+  from {
+    transform: rotateZ(0deg);
+  }
+  to {
+    transform: rotateZ(360deg);
+  }
+}
+
+@keyframes gm-drift {
+  0%,
+  100% {
+    rotate: y 0deg;
+  }
+  50% {
+    rotate: y 16deg;
+  }
+}
+
+@keyframes gm-breathe {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.045);
+  }
+}
+
+@keyframes gm-bob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -2.5%, 0);
+  }
+}
+
+/* ---------- entrance ---------- */
+
+.stage {
+  animation: gm-arrive 1.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes gm-arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ---------- reduced motion ---------- */
+
+/*
+ * Everything stops. The scene keeps its depth — the orbital planes are static
+ * transforms, not animations — so it still reads as a 3D object, it simply
+ * holds still.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .stage,
+  .system,
+  .glow,
+  .planet,
+  .rotator,
+  .orbit1 .rotator,
+  .orbit2 .rotator,
+  .orbit3 .rotator,
+  .planetGlint::after {
+    animation: none;
+  }
+
+  /* Park the glint off the body rather than freezing it mid-sweep. */
+  .planetGlint::after {
+    opacity: 0;
+  }
+
+  .system {
+    transition: none;
+  }
+}

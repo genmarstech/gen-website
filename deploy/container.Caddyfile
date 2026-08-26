@@ -1,0 +1,100 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Caddy — inside the container.
+#
+# Serves the static export on :3000 over plain HTTP. It does NOT terminate TLS:
+# that happens at the host Caddy (see host.Caddyfile), and the container port is
+# published only to 127.0.0.1, so this listener is never reachable off-box.
+# ─────────────────────────────────────────────────────────────────────────────
+
+{
+	# No certificates are issued here — the edge does that.
+	auto_https off
+
+	# The admin API is not used: this container is redeployed, never reloaded in
+	# place. Turning it off removes a listener and a write path.
+	admin off
+	persist_config off
+
+	log {
+		output stdout
+		format console
+		level INFO
+	}
+}
+
+:3000 {
+	root * /srv
+
+	# zstd first, gzip for anything that cannot take it.
+	encode zstd gzip
+
+	# ---- headers ------------------------------------------------------------
+	# These run before routing, so they apply to every response including 404s.
+
+	header {
+		# Do not advertise the server.
+		-Server
+
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Resource-Policy "same-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+		# The page loads nothing from anywhere else: fonts are self-hosted by
+		# next/font, and there are no third-party scripts, analytics or CDNs.
+		#
+		# 'unsafe-inline' on script-src is required and unavoidable here. A static
+		# export cannot mint per-request nonces, and the page carries two inline
+		# scripts by design — the no-flash theme script (which must run before
+		# first paint) and the JSON-LD block — plus Next's hydration payload.
+		# With no user-generated content and no external input reaching the DOM,
+		# the residual XSS surface is the build pipeline rather than the page.
+		#
+		# Making this strict requires server rendering so nonces can be issued.
+		# That is an architecture change, not a header tweak — docs/DEPLOYMENT.md.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+	}
+
+	# Fingerprinted assets: safe to cache forever.
+	@immutable path /_next/static/*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+	# Documents: always revalidate, so a deploy is visible immediately rather
+	# than whenever a stale copy happens to expire.
+	#
+	# One `path` line with several patterns — a named matcher block may not
+	# repeat the same matcher type, and multiple patterns on one line are OR'd.
+	@documents path *.html / */
+	header @documents Cache-Control "public, max-age=0, must-revalidate"
+
+	# ---- routing ------------------------------------------------------------
+	# `handle` blocks are mutually exclusive and evaluated in the order written,
+	# which is why they are used here rather than bare directives.
+	#
+	# This matters for /healthz specifically: Caddy sorts bare directives into
+	# its own fixed order, in which `try_files` runs BEFORE `respond`. A bare
+	# `respond /healthz` would therefore never fire — try_files would first
+	# rewrite the path to /healthz.html (its last argument, used when nothing
+	# matches), and the /healthz matcher would no longer match. The healthcheck
+	# would 404 and the container would be marked unhealthy forever.
+
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	handle {
+		# next.config.ts sets trailingSlash: true, so the export is a tree of
+		# directories containing index.html. This resolves /approach, /approach/
+		# and /approach/index.html to the same file.
+		try_files {path} {path}/index.html {path}.html
+		file_server
+	}
+
+	# The exported 404 page, served with a real 404 status.
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}

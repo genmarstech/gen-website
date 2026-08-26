@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+#
+# Smoke test the container.
+#
+# Builds the image, runs it on 127.0.0.1:3000, and asserts the things that are
+# easy to get subtly wrong in a static-file Caddy config — trailing slashes,
+# 404 status codes, cache headers, and the healthcheck endpoint.
+#
+# Run before the first deploy, and after any change to deploy/container.Caddyfile:
+#   ./scripts/smoke.sh
+#
+# Requires a running Docker daemon.
+
+set -euo pipefail
+
+IMAGE="gen-website:smoke"
+NAME="gen-website-smoke"
+BASE="http://127.0.0.1:3000"
+
+pass=0
+fail=0
+
+cleanup() {
+  docker rm -f "$NAME" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+check() {
+  local label="$1" expected="$2" actual="$3"
+  if [[ "$actual" == "$expected" ]]; then
+    printf '  PASS  %-46s %s\n' "$label" "$actual"
+    pass=$((pass + 1))
+  else
+    printf '  FAIL  %-46s got %s, want %s\n' "$label" "$actual" "$expected"
+    fail=$((fail + 1))
+  fi
+}
+
+contains() {
+  local label="$1" needle="$2" haystack="$3"
+  if grep -qi -- "$needle" <<<"$haystack"; then
+    printf '  PASS  %s\n' "$label"
+    pass=$((pass + 1))
+  else
+    printf '  FAIL  %s (missing: %s)\n' "$label" "$needle"
+    fail=$((fail + 1))
+  fi
+}
+
+status() { curl -s -o /dev/null -w '%{http_code}' "$1"; }
+
+echo "==> validating Caddyfiles"
+docker run --rm -v "$PWD/deploy:/deploy:ro" caddy:2-alpine \
+  caddy validate --adapter caddyfile --config /deploy/container.Caddyfile
+echo "  container.Caddyfile OK"
+
+# The host config references genmars.co.ke, so validation attempts no issuance —
+# validate only checks syntax and provisioning, not DNS.
+docker run --rm -v "$PWD/deploy:/deploy:ro" caddy:2-alpine \
+  caddy validate --adapter caddyfile --config /deploy/host.Caddyfile
+echo "  host.Caddyfile OK"
+
+echo
+echo "==> building image"
+docker build -t "$IMAGE" .
+
+echo
+echo "==> starting container"
+cleanup
+docker run -d --name "$NAME" -p 127.0.0.1:3000:3000 "$IMAGE" >/dev/null
+
+printf '  waiting for health'
+for _ in $(seq 1 30); do
+  if curl -fsS "$BASE/healthz" >/dev/null 2>&1; then break; fi
+  printf '.'
+  sleep 1
+done
+echo
+
+echo
+echo "==> routing"
+check "healthz"                      "200" "$(status "$BASE/healthz")"
+check "homepage"                     "200" "$(status "$BASE/")"
+check "trailing-slash route"         "200" "$(status "$BASE/approach/")"
+check "bare route redirects"         "200" "$(curl -s -L -o /dev/null -w '%{http_code}' "$BASE/approach")"
+check "nested asset"                 "200" "$(status "$BASE/genmars-mark.svg")"
+check "robots.txt"                   "200" "$(status "$BASE/robots.txt")"
+# A static host that answers 200 for everything is the classic SPA misconfig —
+# it makes every typo look like a real page and poisons search indexing.
+check "unknown path is a real 404"   "404" "$(status "$BASE/definitely-not-a-page")"
+
+echo
+echo "==> headers"
+HEAD="$(curl -fsSI "$BASE/")"
+contains "Content-Security-Policy set"        "content-security-policy" "$HEAD"
+contains "X-Content-Type-Options: nosniff"    "nosniff"                 "$HEAD"
+contains "X-Frame-Options: DENY"              "x-frame-options"         "$HEAD"
+contains "Referrer-Policy set"                "referrer-policy"         "$HEAD"
+contains "document revalidates"               "must-revalidate"         "$HEAD"
+
+ASSET="$(curl -fsS "$BASE/" | grep -o '/_next/static/css/[^"]*\.css' | head -1)"
+if [[ -n "$ASSET" ]]; then
+  AHEAD="$(curl -fsSI "$BASE$ASSET")"
+  contains "hashed asset is immutable"        "immutable"               "$AHEAD"
+else
+  echo "  SKIP  hashed asset check (no css link found)"
+fi
+
+echo
+echo "==> container posture"
+check "runs as uid 10001"            "10001" "$(docker exec "$NAME" id -u)"
+check "root filesystem is read-only" "true"  "$(docker inspect -f '{{.HostConfig.ReadonlyRootfs}}' "$NAME")"
+
+echo
+if [[ "$fail" -gt 0 ]]; then
+  echo "FAILED: $fail check(s), $pass passed"
+  exit 1
+fi
+echo "All $pass checks passed."

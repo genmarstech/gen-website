@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Caddy — on the Hetzner host.
+#
+# This is the only process listening on a public interface. It terminates TLS
+# and proxies to the container on 127.0.0.1:3000.
+#
+# Install to /etc/caddy/Caddyfile, then:
+#   caddy validate --config /etc/caddy/Caddyfile
+#   systemctl reload caddy
+#
+# ⚠ THE SITE IS NOT CLEARED TO PUBLISH. It ships with robots.txt disallowing
+#   everything and `noindex` on every page, because Charter 03 §IV Tier 1 needs
+#   a live privacy policy and terms of service and both are still drafts.
+#   Deploying this now is fine — it puts a correctly-hidden site on the domain.
+#   Work docs/PRE-LAUNCH.md before removing those.
+# ─────────────────────────────────────────────────────────────────────────────
+
+{
+	# Certificates are issued by Let's Encrypt. This address receives expiry and
+	# problem notices — set it before the first issuance.
+	email admin@genmars.co.ke
+
+	# Uncomment while testing to avoid burning Let's Encrypt rate limits on a
+	# misconfiguration. Browsers will warn; that is expected on staging.
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+genmars.co.ke {
+	# TLS is automatic: Caddy obtains and renews the certificate, and redirects
+	# http:// to https:// without further configuration. Charter 03 §IV Tier 1 —
+	# "TLS everywhere; no plaintext transport, internal or external."
+	encode zstd gzip
+
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Real-IP {remote_host}
+
+		# Take the container out of rotation if it stops answering /healthz.
+		health_uri /healthz
+		health_interval 10s
+		health_timeout 3s
+	}
+
+	header {
+		# HSTS belongs at the TLS edge, not in the container — it is meaningless
+		# over the plain-HTTP hop behind it.
+		#
+		# Start WITHOUT includeSubDomains and WITHOUT preload. Both are difficult
+		# to reverse: preload in particular is a long, manual removal process, and
+		# includeSubDomains will break any subdomain not yet on HTTPS. Add them
+		# once the certificate has renewed cleanly at least once and every
+		# subdomain is known to be served over TLS.
+		Strict-Transport-Security "max-age=31536000"
+	}
+
+	log {
+		output file /var/log/caddy/genmars.log {
+			roll_size 20mb
+			roll_keep 10
+			roll_keep_for 720h
+		}
+		format json
+	}
+}
+
+# One canonical host. www redirects to the apex so a single hostname is indexed
+# and links do not split between two spellings of the same site.
+#
+# This needs its own DNS record and its own certificate — Caddy handles the
+# certificate automatically, but the A/AAAA record for www must exist first or
+# issuance will fail.
+www.genmars.co.ke {
+	redir https://genmars.co.ke{uri} permanent
+
+	header Strict-Transport-Security "max-age=31536000"
+}

@@ -1,0 +1,111 @@
+/*
+ * The wireframe running inside the planet.
+ *
+ * Sits under .planetTerminator in the stacking order, so the night side dims the
+ * grid the same way it dims the surface. That single detail is most of why it
+ * reads as being *on* a sphere rather than pasted over one.
+ */
+
+.core {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  /* Warm, low-contrast: structure you notice second, after the body itself. */
+  color: #ffd9c2;
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* ---------- latitude ---------- */
+
+.parallel {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.35;
+  opacity: 0.5;
+}
+
+/* ---------- longitude + payload ---------- */
+
+/*
+ * Two tiles, 100 units apart. Translating exactly -100 puts tile 2 where tile 1
+ * was, so the loop is seamless. Any other value visibly jumps.
+ */
+.surface {
+  animation: surface-turn 26s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes surface-turn {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100px);
+  }
+}
+
+.meridian {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.3;
+  opacity: 0.42;
+}
+
+.trace {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.4;
+  opacity: 0.3;
+  stroke-dasharray: 3 4;
+  animation: trace-flow 3.4s linear infinite;
+}
+
+@keyframes trace-flow {
+  from {
+    stroke-dashoffset: 14;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.node {
+  fill: currentColor;
+  animation: node-pulse 3.5s ease-in-out infinite;
+}
+
+@keyframes node-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  15% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.55;
+  }
+}
+
+/* ---------- reduced motion ---------- */
+
+/*
+ * The grid stops turning and the nodes stop pulsing. The structure stays — it
+ * is the part that carries the meaning; the movement was only ever flavour.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .surface,
+  .trace,
+  .node {
+    animation: none;
+  }
+
+  .node {
+    opacity: 0.7;
+  }
+}

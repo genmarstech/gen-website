@@ -1,0 +1,33 @@
+# Everything the build does not need. Keeps the context small and stops local
+# state (and secrets) from ever entering an image layer.
+
+node_modules
+.next
+out
+.git
+.gitignore
+
+# Charter 03 §III: secrets never enter the repository — and never a build context.
+.env
+.env.*
+*.pem
+*.key
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Docs and CI are not build inputs.
+docs
+.github
+README.md
+LICENSE
+
+# The deploy directory IS needed — container.Caddyfile is copied in.
+!deploy

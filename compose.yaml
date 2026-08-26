@@ -1,0 +1,82 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Genmars Tech — marketing site
+#
+#   docker compose up -d --build     build and run
+#   docker compose logs -f web       follow logs
+#   docker compose down              stop
+#
+# The container publishes to 127.0.0.1:3000 ONLY. It is not reachable from the
+# network — the host Caddy proxies to it and terminates TLS (deploy/host.Caddyfile).
+#
+# That binding matters: `3000:3000` would bind 0.0.0.0 and expose plain HTTP to
+# the internet, bypassing TLS entirely, because Docker writes its own iptables
+# rules and a UFW "deny" will not stop it. The 127.0.0.1 prefix is the fix.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: genmars-web
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/genmarstech/gen-website:latest
+    container_name: genmars-web
+
+    restart: unless-stopped
+
+    # Loopback only. Do not change to "3000:3000".
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    # ---- hardening -----------------------------------------------------------
+    # The image holds a web server and a directory of static files. Nothing in
+    # it needs to write to disk, gain privileges, or hold a capability.
+
+    read_only: true
+
+    tmpfs:
+      # Caddy's XDG_DATA_HOME / XDG_CONFIG_HOME point here (see Dockerfile).
+      - /tmp:size=16m,mode=1777,noexec,nosuid,nodev
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    # Runs as the unprivileged user created in the Dockerfile. Stated here too so
+    # it is visible at the deployment layer, not only in the image.
+    user: "10001:10001"
+
+    # ---- limits --------------------------------------------------------------
+    # A static file server needs very little. These are ceilings that stop a
+    # runaway process taking the host with it, not performance targets.
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M
+        reservations:
+          memory: 32M
+
+    # ---- health --------------------------------------------------------------
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+    # ---- logs ----------------------------------------------------------------
+    # Without a cap, container logs grow until the disk fills. That is a boring
+    # and entirely avoidable way to take a site down.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    labels:
+      org.opencontainers.image.title: "gen-website"
+      org.opencontainers.image.vendor: "Genmars Tech Limited"

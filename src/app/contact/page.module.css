@@ -1,0 +1,121 @@
+.head {
+  padding-top: clamp(var(--sp-12), 7vw, var(--sp-24));
+}
+
+.title {
+  margin-block: var(--sp-6) var(--sp-8);
+}
+
+.grid {
+  display: grid;
+  gap: var(--sp-16);
+}
+
+@media (min-width: 56rem) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: var(--sp-16);
+  }
+}
+
+.detailsTitle {
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  margin-bottom: var(--sp-4);
+}
+
+.dl {
+  display: grid;
+  gap: var(--sp-6);
+  margin: 0 0 var(--sp-8);
+}
+
+.dl dt {
+  font-size: 0.6875rem;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--sp-2);
+}
+
+.dl dd {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.sub {
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: 0.875rem;
+  color: var(--ink-faint);
+}
+
+.note {
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--rule);
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+}
+
+.includeLede {
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+  margin-bottom: var(--sp-8);
+}
+
+.questions {
+  counter-reset: q;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--sp-12);
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.questions li {
+  counter-increment: q;
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+.questions li::before {
+  content: counter(q, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.2rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  /* Imperial Topaz on light = 5.04:1, passes AA. Ignition would not. */
+  color: var(--imperial-topaz);
+}
+
+.q {
+  font-weight: 400;
+  margin-bottom: var(--sp-1);
+}
+
+.why {
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+}
+
+.mailBtn {
+  word-break: break-word;
+}
+
+.expect {
+  background: var(--bg-band);
+}
+
+.expectTitle {
+  margin-block: var(--sp-6);
+}
+
+.expectBody {
+  color: var(--ink-muted);
+}
+
+.expectBody + .expectBody {
+  margin-top: var(--sp-4);
+}

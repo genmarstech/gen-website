@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" width="1280" height="320">
+  
+  <g transform="translate(8,26)">
+    <path d="M90.8 45.6 A34 34 0 1 0 90.8 74.4" fill="none" stroke="#8B5A48" stroke-width="9" stroke-linecap="round" transform="scale(0.9)"></path>
+    <path d="M74 60 H92.5" fill="none" stroke="#8B5A48" stroke-width="9" stroke-linecap="round" transform="scale(0.9)"></path>
+    <ellipse cx="60" cy="60" rx="55" ry="17" fill="none" stroke="#DB7B51" stroke-width="4" transform="scale(0.9) rotate(-30 60 60)"></ellipse>
+  </g>
+  <text x="222" y="88" font-family="Jost, sans-serif" font-size="44" font-weight="400" letter-spacing="13.2" fill="#2E2B34">GENM</text>
+  <g transform="translate(400,56) scale(0.32)">
+    <path d="M8 95 L46 8 L84 95" fill="none" stroke="#2E2B34" stroke-width="13" stroke-linejoin="miter"></path>
+  </g>
+  <text x="446" y="88" font-family="Jost, sans-serif" font-size="44" font-weight="400" letter-spacing="13.2" fill="#2E2B34">RS</text>
+  <text x="223" y="114" font-family="Jost, sans-serif" font-size="11" font-weight="300" letter-spacing="4.8" fill="#7A7480">BUILDING THE FUTURE</text>
+</svg>

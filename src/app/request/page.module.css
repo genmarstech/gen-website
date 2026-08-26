@@ -1,0 +1,25 @@
+.head {
+  padding-top: clamp(var(--sp-12), 7vw, var(--sp-24));
+  padding-bottom: 0;
+}
+
+.title {
+  margin-block: var(--sp-6) var(--sp-8);
+  font-size: clamp(1.9rem, 1.4rem + 2.4vw, 3.2rem);
+}
+
+.privacy {
+  background: var(--bg-band);
+}
+
+.privacyTitle {
+  margin-block: var(--sp-6);
+}
+
+.privacyBody {
+  color: var(--ink-muted);
+}
+
+.privacyBody + .privacyBody {
+  margin-top: var(--sp-4);
+}

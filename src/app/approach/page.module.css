@@ -1,0 +1,251 @@
+.head {
+  padding-top: clamp(var(--sp-12), 7vw, var(--sp-24));
+}
+
+.title {
+  margin-block: var(--sp-6) var(--sp-8);
+  font-size: clamp(1.9rem, 1.4rem + 2.4vw, 3.2rem);
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-16);
+}
+
+/* ---------- stack ---------- */
+
+.stack {
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.stackRow {
+  display: grid;
+  gap: var(--sp-1);
+  padding-block: var(--sp-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+@media (min-width: 40rem) {
+  .stackRow {
+    grid-template-columns: minmax(0, 18rem) 1fr;
+    gap: var(--sp-8);
+    align-items: baseline;
+  }
+}
+
+.stackRow dt {
+  font-size: 0.9375rem;
+  color: var(--ink-faint);
+}
+
+.stackRow dd {
+  margin: 0;
+  font-weight: 400;
+}
+
+.stackNote {
+  margin-top: var(--sp-8);
+  max-width: var(--measure);
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+}
+
+/* ---------- definition of done ---------- */
+
+.done {
+  border-top: 0;
+}
+
+.doneList {
+  counter-reset: d;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--sp-6);
+}
+
+@media (min-width: 52rem) {
+  .doneList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-8) var(--sp-12);
+  }
+}
+
+.doneList li {
+  counter-increment: d;
+  position: relative;
+  padding-left: 2.5rem;
+  color: var(--ink-muted);
+}
+
+.doneList li::before {
+  content: counter(d, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.2rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-text);
+}
+
+/* ---------- tiers ---------- */
+
+.tiers {
+  display: grid;
+  gap: var(--sp-12);
+}
+
+@media (min-width: 60rem) {
+  .tiers {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-8);
+  }
+}
+
+.tier {
+  border-top: 2px solid var(--ignition);
+  padding-top: var(--sp-6);
+}
+
+.tierHead {
+  margin-bottom: var(--sp-6);
+}
+
+.tierName {
+  font-size: 1.15rem;
+}
+
+.tierWhen {
+  margin-top: var(--sp-1);
+  font-size: 0.8125rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.01em;
+}
+
+.tierList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.tierList li {
+  position: relative;
+  padding-left: var(--sp-6);
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.tierList li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 0.6rem;
+  height: 1px;
+  background: var(--rule-strong);
+}
+
+/* ---------- incidents ---------- */
+
+.sev {
+  margin: 0;
+  border-top: 1px solid var(--rule);
+  max-width: 46rem;
+}
+
+.sevRow {
+  display: grid;
+  gap: var(--sp-1);
+  padding-block: var(--sp-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+@media (min-width: 40rem) {
+  .sevRow {
+    grid-template-columns: 8rem 1fr;
+    gap: var(--sp-6);
+    align-items: baseline;
+  }
+}
+
+.sevRow dt {
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-text);
+}
+
+.sevRow dd {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+.sevNote {
+  margin-top: var(--sp-8);
+  max-width: var(--measure);
+  color: var(--ink-muted);
+}
+
+.sevCaveat {
+  margin-top: var(--sp-6);
+  max-width: var(--measure);
+  padding: var(--sp-6);
+  background: var(--bg-raised);
+  border-left: 2px solid var(--rule-strong);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+}
+
+/* ---------- principles ---------- */
+
+.principles {
+  background: var(--bg-band);
+}
+
+.principleGrid {
+  display: grid;
+  gap: var(--sp-8);
+}
+
+@media (min-width: 44rem) {
+  .principleGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-12) var(--sp-8);
+  }
+}
+
+@media (min-width: 64rem) {
+  .principleGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.principle p {
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+}
+
+.principleTitle {
+  margin-bottom: var(--sp-2);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.cta {
+  border-top: 1px solid var(--rule);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+}
