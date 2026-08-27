@@ -126,7 +126,15 @@ echo
 echo "==> container posture"
 check "runs as uid 10001"            "10001" "$(docker exec "$NAME" id -u)"
 check "root filesystem is read-only" "true"  "$(docker inspect -f '{{.HostConfig.ReadonlyRootfs}}' "$NAME")"
-check "no capabilities held"         ""      "$(docker inspect -f '{{join .HostConfig.CapAdd \",\"}}' "$NAME")"
+# Assert CapDrop rather than CapAdd. An empty CapAdd is the default and proves
+# nothing; "ALL" in CapDrop is the thing that actually empties the bounding set
+# and is what the caddy binary must be able to exec under.
+#
+# Note the quoting: inside single quotes the Go template needs bare " marks.
+# Escaping them as \" makes the template parser fail, the command return empty,
+# and an equality check against "" pass for the wrong reason — which is exactly
+# what this line used to do.
+check "all capabilities dropped"     "ALL"   "$(docker inspect -f '{{join .HostConfig.CapDrop ","}}' "$NAME")"
 check "serves under the hardened posture" "200" "$(status "$BASE/")"
 
 # The official caddy image sets cap_net_bind_service on the binary. Under
