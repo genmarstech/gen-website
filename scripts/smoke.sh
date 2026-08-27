@@ -111,6 +111,14 @@ echo "==> container posture"
 check "runs as uid 10001"            "10001" "$(docker exec "$NAME" id -u)"
 check "root filesystem is read-only" "true"  "$(docker inspect -f '{{.HostConfig.ReadonlyRootfs}}' "$NAME")"
 
+# The official caddy image sets cap_net_bind_service on the binary. Under
+# `cap_drop: ALL` the kernel then refuses to exec it at all — the container dies
+# with "exec /usr/bin/caddy: operation not permitted" before Caddy starts.
+# The Dockerfile strips it; this asserts the strip actually happened.
+CAPS="$(docker run --rm --entrypoint sh "$IMAGE" -c \
+  'command -v getcap >/dev/null 2>&1 && getcap /usr/bin/caddy || echo ""' 2>/dev/null || echo "")"
+check "no file caps on the caddy binary" "" "$(printf '%s' "$CAPS" | tr -d '[:space:]')"
+
 echo
 if [[ "$fail" -gt 0 ]]; then
   echo "FAILED: $fail check(s), $pass passed"

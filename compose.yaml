@@ -42,6 +42,11 @@ services:
     security_opt:
       - no-new-privileges:true
 
+    # Works only because the Dockerfile strips cap_net_bind_service from the
+    # caddy binary. Without that, the kernel refuses to exec it under an empty
+    # bounding set and the container dies with:
+    #   exec /usr/bin/caddy: operation not permitted
+    # If you ever swap the base image, check `getcap` on the new binary.
     cap_drop:
       - ALL
 

@@ -54,6 +54,38 @@ LABEL org.opencontainers.image.title="gen-website" \
 # needs no capabilities at all — see cap_drop in compose.yaml.
 RUN addgroup -g 10001 -S web && adduser -u 10001 -S web -G web
 
+# Strip the binary's file capability.
+#
+# The official Caddy image runs `setcap cap_net_bind_service=+ep /usr/bin/caddy`
+# so it can bind :80 and :443 as a non-root user. We bind :3000, so that
+# capability is dead weight — and worse, it makes the container refuse to start
+# under `cap_drop: ALL`:
+#
+#     exec /usr/bin/caddy: operation not permitted
+#
+# The kernel rejects execve of any binary whose *permitted* file capabilities
+# are not a subset of the process capability bounding set. cap_drop: ALL empties
+# that set, so the exec fails before Caddy runs a single line. The error names
+# the binary, not the capability, which makes it look like a corrupt image.
+#
+# Stripping the capability is the correct fix. The alternative — adding
+# `cap_add: NET_BIND_SERVICE` back in compose — would grant a privilege this
+# container has no use for, purely to satisfy a check it should simply pass.
+RUN set -eux; \
+    apk add --no-cache --virtual .setcap libcap; \
+    # `-r` exits non-zero when there is nothing to remove, which is a fine
+    # outcome — a future base image may ship without the capability.
+    setcap -r /usr/bin/caddy 2>/dev/null || true; \
+    # Verify rather than assume. If the strip silently failed, the container
+    # would die at runtime with an error that names the binary and not the
+    # cause; far better to fail here, in the build, where it is obvious.
+    if [ -n "$(getcap /usr/bin/caddy)" ]; then \
+        echo "FATAL: file capability still set on /usr/bin/caddy"; \
+        getcap /usr/bin/caddy; \
+        exit 1; \
+    fi; \
+    apk del .setcap
+
 # Caddy writes its data and config caches under XDG paths. Pointing them at /tmp
 # lets the whole root filesystem be mounted read-only, with /tmp as a small
 # tmpfs. Nothing here needs to survive a restart: TLS is terminated upstream, so

@@ -180,6 +180,42 @@ rather than to "whatever `latest` was yesterday".
 
 ---
 
+## Troubleshooting
+
+### `exec /usr/bin/caddy: operation not permitted`
+
+The container restarts in a loop and the log shows only that line.
+
+**Cause.** The official Caddy image runs
+`setcap cap_net_bind_service=+ep /usr/bin/caddy` so it can bind :80 and :443 as
+a non-root user. `cap_drop: ALL` empties the capability bounding set, and the
+kernel refuses to `execve` any binary whose *permitted* file capabilities are
+not a subset of that set. The exec fails before Caddy runs a single line — which
+is why the log has no Caddy output at all, and why the message names the binary
+rather than the capability.
+
+**Fix.** The Dockerfile strips the capability (`setcap -r`), because this
+container binds :3000 and has no use for it. Rebuild:
+
+```bash
+docker compose up -d --build --force-recreate
+```
+
+Confirm it is gone:
+
+```bash
+docker run --rm --entrypoint sh ghcr.io/genmarstech/gen-website:latest -c 'getcap /usr/bin/caddy'
+```
+
+Empty output is correct.
+
+**Do not** "fix" this by adding `cap_add: NET_BIND_SERVICE` or by removing
+`cap_drop: ALL`. Both work, and both grant the container a privilege it has no
+use for in order to pass a check it should simply pass. If you swap the base
+image, run `getcap` on the new binary before assuming anything.
+
+---
+
 ## Content Security Policy — a known compromise
 
 `container.Caddyfile` sets a CSP that locks down every source to `'self'`, with
