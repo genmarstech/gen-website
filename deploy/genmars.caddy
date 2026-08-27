@@ -1,0 +1,88 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Genmars Tech — genmars.co.ke
+#
+# A DROP-IN for the shared host Caddy, not a standalone config.
+#
+#   sudo cp deploy/genmars.caddy /etc/caddy/conf.d/genmars.caddy
+#   sudo caddy validate --config /etc/caddy/Caddyfile
+#   sudo systemctl reload caddy
+#
+# ⚠ DO NOT copy this over /etc/caddy/Caddyfile. This host also serves
+#   clipsserenityspa.co.ke, whose config lives in /etc/caddy/conf.d/. The main
+#   Caddyfile does nothing but `import /etc/caddy/conf.d/*.caddy` — overwriting
+#   it would take a client site down.
+#
+# This file is the only public-facing surface for the site. The site itself runs
+# in a container published to 127.0.0.1:3000 only (compose.yaml).
+#
+# Verified in production 2026-08-27: apex 200, www 301, HTTP 308, Let's Encrypt
+# certificate issued.
+# ─────────────────────────────────────────────────────────────────────────────
+
+genmars.co.ke {
+	encode zstd gzip
+
+	# NOTE: no `header_up X-Forwarded-Proto`. Caddy passes it by default and
+	# setting it explicitly makes the adapter emit an "unnecessary directive"
+	# warning on every validate.
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Real-IP {remote_host}
+
+		# Takes the container out of rotation if it stops answering.
+		health_uri /healthz
+		health_interval 10s
+		health_timeout 3s
+	}
+
+	# HSTS belongs at the TLS edge, not in the container — it is meaningless on
+	# the plain-HTTP hop behind it.
+	#
+	# Deliberately WITHOUT includeSubDomains and WITHOUT preload. Both are hard
+	# to reverse: preload is a long manual removal baked into browsers, and
+	# includeSubDomains breaks any subdomain not yet on HTTPS. Add them once a
+	# renewal has succeeded and every subdomain is known to be TLS-served.
+	header Strict-Transport-Security "max-age=31536000"
+
+	# ── LOGGING ──────────────────────────────────────────────────────────────
+	# Intentionally absent. Access logs go to the journal, like every other site
+	# on this host.
+	#
+	# A `log { output file /var/log/caddy/genmars.log }` block FAILS at reload
+	# with "permission denied" even after `chown caddy:caddy /var/log/caddy` —
+	# and because it fails at load rather than at adapt time, `caddy validate`
+	# passes and only the reload breaks. Journald also keeps retention in one
+	# place, which matters: access logs contain visitor IPs, and the privacy
+	# policy has to state a retention period that is actually true.
+}
+
+www.genmars.co.ke {
+	redir https://genmars.co.ke{uri} permanent
+	header Strict-Transport-Security "max-age=31536000"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGING — for a first issuance on a NEW domain
+#
+# Let's Encrypt rate-limits failed issuance hard enough to cost a week, so test
+# against staging when DNS or the proxy path is unproven. Browsers will warn;
+# that is expected. Remove the block and reload once a staging cert appears.
+#
+# Add INSIDE each site block:
+#
+#     tls edwin@genmars.co.ke {
+#         ca https://acme-staging-v02.api.letsencrypt.org/directory
+#     }
+#
+# Two things to get right:
+#
+#   1. The ACME email is an ARGUMENT to `tls`, not a subdirective.
+#      `tls { email ... }` is rejected: "unknown subdirective: email".
+#
+#   2. Scope it PER SITE. Putting `acme_ca` in the global options block of
+#      /etc/caddy/Caddyfile would switch clipsserenityspa.co.ke to staging as
+#      well, and put a browser warning on a live client site.
+#
+# Confirm which CA issued:
+#   echo | openssl s_client -connect genmars.co.ke:443 -servername genmars.co.ke \
+#     2>/dev/null | openssl x509 -noout -issuer -dates
+# ─────────────────────────────────────────────────────────────────────────────

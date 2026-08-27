@@ -54,11 +54,12 @@ docker run --rm -v "$PWD/deploy:/deploy:ro" caddy:2-alpine \
   caddy validate --adapter caddyfile --config /deploy/container.Caddyfile
 echo "  container.Caddyfile OK"
 
-# The host config references genmars.co.ke, so validation attempts no issuance —
-# validate only checks syntax and provisioning, not DNS.
+# genmars.caddy is a conf.d DROP-IN, imported by the host Caddyfile. Validating
+# it standalone works because it holds only site blocks; the authoritative check
+# is on the host: sudo caddy validate --config /etc/caddy/Caddyfile
 docker run --rm -v "$PWD/deploy:/deploy:ro" caddy:2-alpine \
-  caddy validate --adapter caddyfile --config /deploy/host.Caddyfile
-echo "  host.Caddyfile OK"
+  caddy validate --adapter caddyfile --config /deploy/genmars.caddy
+echo "  genmars.caddy OK"
 
 echo
 echo "==> building image"

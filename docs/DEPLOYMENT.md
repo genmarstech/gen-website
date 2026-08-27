@@ -18,7 +18,7 @@ GitHub Actions, GHCR.
 
 ```
 internet ──TLS──▶ Caddy (host, :443) ──plain HTTP──▶ container (127.0.0.1:3000)
-                  deploy/host.Caddyfile              deploy/container.Caddyfile
+                  conf.d/genmars.caddy               deploy/container.Caddyfile
 ```
 
 Two decisions worth stating plainly, because both look odd until they are
@@ -110,30 +110,84 @@ font files if that ever becomes a requirement.
 
 ## Host setup
 
-### 1. Caddy
+### 1. Caddy — a SHARED host
+
+**This box also serves `clipsserenityspa.co.ke`.** Its config lives in
+`/etc/caddy/conf.d/`, and `/etc/caddy/Caddyfile` does nothing but:
+
+```
+import /etc/caddy/conf.d/*.caddy
+```
+
+**Never `cp` anything over `/etc/caddy/Caddyfile`.** That would delete the
+import line and take a client site down. Install as a drop-in instead:
 
 ```bash
-sudo cp deploy/host.Caddyfile /etc/caddy/Caddyfile
+sudo cp deploy/genmars.caddy /etc/caddy/conf.d/genmars.caddy
 sudo caddy validate --config /etc/caddy/Caddyfile
 sudo systemctl reload caddy
 ```
 
-`caddy validate` before `reload`, always. A reload with a broken config takes the
-site down; a failed validate costs nothing.
+`caddy validate` before `reload`, always — a reload with a broken config takes
+down every site on the host, not just this one. Back up first:
 
-Set the `email` in the global block before first issuance — that address receives
-expiry and problem notices from Let's Encrypt.
+```bash
+sudo tar czf /root/caddy-backup-$(date +%F-%H%M).tar.gz -C /etc caddy
+```
 
-**Test with the ACME staging endpoint first.** The `acme_ca` line is in the file,
-commented. Let's Encrypt rate-limits failed issuance hard, and a DNS typo on a
-production endpoint can lock you out for a week.
+#### Validate passes, reload fails
 
-### 2. DNS
+`validate` checks that the config *adapts*. Some failures only appear when the
+config is *loaded*. The one that bit us:
 
-`genmars.co.ke` and `www.genmars.co.ke` both need A (and AAAA if the host has
-IPv6) records pointing at the server **before** Caddy starts, or certificate
-issuance fails. www gets its own certificate; it exists only to redirect to the
-apex so a single canonical hostname is indexed.
+```
+open /var/log/caddy/genmars.log: permission denied
+```
+
+A `log { output file ... }` block fails at load even after
+`chown caddy:caddy /var/log/caddy`. `genmars.caddy` therefore has no log block —
+access logs go to the journal, like every other site here. Journald also keeps
+retention in one place, which the privacy policy depends on being true.
+
+After any reload failure, confirm the client site first:
+
+```bash
+systemctl is-active caddy && curl -sI --max-time 5 https://clipsserenityspa.co.ke | head -2
+```
+
+A failed `reload` leaves the previous config running, so Clips stays up — but
+verify rather than assume.
+
+#### Staging, for a new domain
+
+Let's Encrypt rate-limits failed issuance hard. Test against staging when DNS or
+the proxy path is unproven — the block and the two things to get right are
+documented at the bottom of `deploy/genmars.caddy`.
+
+The short version: the ACME email is an **argument** to `tls`, not a
+subdirective (`tls { email ... }` is rejected), and it must be scoped **per
+site** — putting `acme_ca` in the global block would switch Clips to staging too
+and warn every visitor to a live client site.
+
+### 2. DNS — and a Cloudflare caveat
+
+`genmars.co.ke` and `www.genmars.co.ke` both need A records pointing at the
+server **before** Caddy starts, or issuance fails.
+
+Cloudflare is the nameserver for these domains, and the records must stay
+**DNS-only (grey cloud)**. Both currently resolve to the server's own IPv4, which
+is what makes Let's Encrypt HTTP-01 work and Caddy's certificate the one visitors
+actually see.
+
+If a record is switched to **proxied (orange cloud)** — as
+`clipsserenityspa.co.ke` is — Cloudflare terminates TLS at its edge instead, and
+this setup breaks: visitors see Cloudflare's certificate, Caddy's only covers the
+edge→origin hop, and the SSL mode must be Full (strict) or you get a redirect
+loop or a 526. Confirm before assuming:
+
+```bash
+dig +short genmars.co.ke    # server IP = grey cloud; 104./172.67./188.114. = proxied
+```
 
 ### 3. Firewall
 
@@ -148,7 +202,7 @@ challenge uses it, and closing it breaks renewal 60 days later, quietly.
 
 ### 4. HSTS
 
-`host.Caddyfile` sets `max-age=31536000` and deliberately **omits**
+`genmars.caddy` sets `max-age=31536000` and deliberately **omits**
 `includeSubDomains` and `preload`.
 
 Both are hard to reverse. `includeSubDomains` breaks any subdomain not yet on
@@ -253,9 +307,12 @@ Tier 1 (Charter 03 §IV) is not satisfied by deployment alone:
 - [ ] **Automated backup with a tested restore.** The site rebuilds from git, so
       the repository *is* the backup — which makes an untested restore of the
       repository the actual risk. Test it.
-- [ ] **Log retention position.** `host.Caddyfile` keeps 30 days of access logs
-      containing IP addresses. That is personal data under the Kenyan DPA, and
-      the privacy policy has to say so accurately (Charter 03 §V).
+- [ ] **Log retention position.** Access logs go to the journal and contain
+      visitor IPs — personal data under the Kenyan DPA. Check the effective
+      retention (`journalctl --disk-usage`, `MaxRetentionSec` in
+      `/etc/systemd/journald.conf`) and make the privacy policy state a period
+      that is actually true (Charter 03 §V). This is host-wide, so it covers
+      Clips as well — settle it once.
 
 That last one is easy to miss and directly contradicts a privacy policy that has
 not been written yet. Settle the retention period before publishing Document A.
