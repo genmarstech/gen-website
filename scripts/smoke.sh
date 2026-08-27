@@ -67,7 +67,23 @@ docker build -t "$IMAGE" .
 echo
 echo "==> starting container"
 cleanup
-docker run -d --name "$NAME" -p 127.0.0.1:3000:3000 "$IMAGE" >/dev/null
+
+# Run under the SAME security posture as compose.yaml, not a bare `docker run`.
+#
+# This matters more than it looks. The capability bug — the container refusing to
+# exec caddy under an empty bounding set — only reproduces with `--cap-drop ALL`.
+# A smoke test that starts the image with default privileges proves the image
+# works in conditions production never uses, and passes right up until deploy.
+#
+# Keep these flags in step with compose.yaml.
+docker run -d --name "$NAME" \
+  -p 127.0.0.1:3000:3000 \
+  --read-only \
+  --tmpfs /tmp:size=16m,mode=1777,noexec,nosuid,nodev \
+  --security-opt no-new-privileges:true \
+  --cap-drop ALL \
+  --user 10001:10001 \
+  "$IMAGE" >/dev/null
 
 printf '  waiting for health'
 for _ in $(seq 1 30); do
@@ -110,6 +126,8 @@ echo
 echo "==> container posture"
 check "runs as uid 10001"            "10001" "$(docker exec "$NAME" id -u)"
 check "root filesystem is read-only" "true"  "$(docker inspect -f '{{.HostConfig.ReadonlyRootfs}}' "$NAME")"
+check "no capabilities held"         ""      "$(docker inspect -f '{{join .HostConfig.CapAdd \",\"}}' "$NAME")"
+check "serves under the hardened posture" "200" "$(status "$BASE/")"
 
 # The official caddy image sets cap_net_bind_service on the binary. Under
 # `cap_drop: ALL` the kernel then refuses to exec it at all — the container dies
