@@ -66,3 +66,18 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(docker)"
+    ignore:
+      # Node majors are a deliberate decision, not a weekly one.
+      #
+      # Dependabot offered node:22-alpine → node:25-alpine. Odd-numbered Node
+      # releases never become LTS: 25 goes end-of-life in months, while 22 is
+      # supported into 2027. Taking that bump would trade a supported builder
+      # for an unsupported one, on a schedule nobody chose, to build a static
+      # site whose output does not contain Node at all.
+      #
+      # `engines` in package.json says >=20.9.0; moving to the next LTS (24) is
+      # a change to make on purpose, with the engines field updated in the same
+      # commit. Patch and minor bumps of 22.x still come through — those are
+      # the ones that carry the CVE fixes.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
