@@ -212,25 +212,158 @@ subdomain is known to be TLS-served.
 
 ---
 
+## The pipeline
+
+Deploys are automated. Nothing is built on the server, and nothing reaches the
+server that has not passed CI.
+
+```
+push to main
+     │
+     ▼
+build.yml ── verify ── check:theme, typecheck, lint, build, export not empty
+     │
+     └───── image  ── docker build ──▶ smoke test ──▶ trivy scan ──▶ push to GHCR
+                       (loaded locally, never pushed until it passes)
+     │
+     ▼   workflow_run: only on success
+deploy.yml ─▶ ⏸ production environment — waits for a human to approve
+     │
+     ▼   ssh
+host: deploy/deploy.sh <sha>
+     ├─ checkout <sha>          compose.yaml must match the image
+     ├─ docker compose pull     SHA-pinned tag from GHCR
+     ├─ up -d --no-build        never rebuilds; runs the artefact CI tested
+     ├─ wait for healthy ───────┐
+     └─ rollback to previous ◀──┘ if health never arrives
+     │
+     ▼
+verify the public site — TLS, routing, 404, security headers
+```
+
+Two properties are worth stating, because both are easy to lose in a later
+"tidy-up":
+
+**The image that is tested is the image that ships.** CI builds once with
+`load: true`, runs `scripts/smoke.sh` and the vulnerability scan against that
+local image, and only then `docker tag`s and pushes it. A second build — even a
+fully cached one — would publish bytes no test ever saw.
+
+**The server never builds.** `deploy.sh` pulls a SHA-pinned tag and refuses to
+rebuild. A `--build` on the host would deploy whatever the host's checkout and
+network happened to produce, which is not the artefact any pipeline approved.
+
+### The smoke test is one file
+
+`scripts/smoke.sh` is what `npm run docker:smoke` runs on a laptop and what CI
+runs in the `image` job. CI sets `IMAGE` and `SMOKE_SKIP_BUILD=1` so it tests an
+image it already has. One definition of "does this container work" means local
+and CI cannot drift apart — and the check that caught the `cap_drop: ALL` exec
+failure is in it.
+
+### One-time setup
+
+The `deploy` workflow needs an environment called **production** (Settings →
+Environments), with **at least one required reviewer** — that approval is the
+gate that stands between a merge and genmars.co.ke.
+
+Secrets on that environment:
+
+| Secret | Value |
+|---|---|
+| `DEPLOY_HOST` | server hostname or IP |
+| `DEPLOY_USER` | SSH user owning the checkout, able to run docker |
+| `DEPLOY_SSH_KEY` | private half of a deploy-only keypair, unencrypted PEM |
+| `DEPLOY_KNOWN_HOSTS` | output of `ssh-keyscan -H <host>` |
+
+Repository variables, all optional: `DEPLOY_PATH` (default `/srv/gen-website`),
+`DEPLOY_PORT` (default `22`), `SITE_URL` (default `https://genmars.co.ke`).
+
+`DEPLOY_KNOWN_HOSTS` is not optional in spirit. Without it the only way to make
+SSH connect is `StrictHostKeyChecking=no`, which accepts any host key and turns
+a DNS or routing compromise into a shell on the deploy path.
+
+Generate the keypair on the host, and give it nothing but a login:
+
+```bash
+ssh-keygen -t ed25519 -C 'github-actions deploy' -f ~/.ssh/gh-deploy -N ''
+cat ~/.ssh/gh-deploy.pub >> ~/.ssh/authorized_keys
+cat ~/.ssh/gh-deploy          # paste into DEPLOY_SSH_KEY, then delete it
+ssh-keyscan -H <host>         # paste into DEPLOY_KNOWN_HOSTS
+```
+
+The host does **not** need a registry credential of its own. The deploy job
+pipes its own short-lived `GITHUB_TOKEN` over SSH to `docker login`, and logs
+out again afterwards — so there is no long-lived PAT sitting in the host's
+`~/.docker/config.json` waiting to be read.
+
+The host needs `git`, `docker`, `docker compose` v2, and a clean checkout of
+this repo at `DEPLOY_PATH` whose `origin` it can fetch unattended.
+
+---
+
 ## Deploying a new version
 
+Merge to `main`, then approve the run in the Actions tab. That is the whole
+procedure.
+
+### By hand, when it has to be
+
+Deploy or roll back to **any commit whose image is still in GHCR** by running
+`deploy` from the Actions tab with a full 40-character SHA — or on the host:
+
 ```bash
-git pull
-docker compose up -d --build
-docker compose ps          # confirm healthy before walking away
+cd /srv/gen-website
+./deploy/deploy.sh <commit-sha>
 ```
 
-Rollback — Charter 03 §II item 5 requires this to be written down:
+Rollback — Charter 03 §II item 5 requires this to be written down — is the same
+command with an older SHA:
 
 ```bash
-docker compose down
-docker run -d --name genmars-web -p 127.0.0.1:3000:3000 \
-  ghcr.io/genmarstech/gen-website:<previous-sha>
+./deploy/deploy.sh 0871208a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e
 ```
 
-Or pin `image:` in `compose.yaml` to the previous tag and `docker compose up -d`.
 Tags are immutable per commit SHA, so a rollback is always to a known artefact
-rather than to "whatever `latest` was yesterday".
+rather than to "whatever `latest` was yesterday". `deploy.sh` also rolls back on
+its own if the new container never reports healthy, so the usual reason to run
+this manually is reverting a *working* deploy that turned out to be wrong.
+
+Find a SHA to go back to:
+
+```bash
+git log --oneline -10
+docker image ls ghcr.io/genmarstech/gen-website
+```
+
+### What deploy.sh refuses to do
+
+- **Run against a dirty working tree.** A host with local edits diverges from
+  what CI tested, and the first symptom is a `compose.yaml` that does not match
+  the image. Commit, stash or discard first.
+- **Build.** See above.
+- **Prune aggressively.** It prunes dangling images only. `docker image prune -a`
+  would delete the previous SHA tag, which is the rollback target.
+
+It also asserts on every deploy that port 3000 is still bound to `127.0.0.1`
+only, and rolls back if it is not — see the section above on why a UFW rule will
+not save you there.
+
+### The container is healthy but the site is down
+
+`deploy.sh` checks the container on loopback; the workflow then checks
+`SITE_URL` from outside. If the first passes and the second fails, the container
+is serving and the problem is in front of it:
+
+```bash
+systemctl is-active caddy
+sudo caddy validate --config /etc/caddy/Caddyfile
+dig +short genmars.co.ke
+```
+
+That split is deliberate. A certificate or DNS fault is not fixed by rolling the
+application back — doing so would just cost you the new version as well — so
+`deploy.sh` warns on a public-health failure rather than reverting.
 
 ---
 

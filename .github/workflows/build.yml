@@ -1,13 +1,17 @@
 name: build
 
+# Charter 03 §III: "CI runs on every push. A red pipeline blocks deploy —
+# there is no manual override."
+#
+# This workflow is the gate. It never touches the server; a green run on `main`
+# is what allows deploy.yml to start, and nothing else does.
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
-# Charter 03 §III: "CI runs on every push. A red pipeline blocks deploy —
-# there is no manual override."
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,10 +20,21 @@ concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # The image the smoke test runs against, and — after `docker tag` — the exact
+  # bytes that get pushed. Never rebuilt between the two.
+  LOCAL_IMAGE: gen-website:ci
+
 jobs:
+  # ---------------------------------------------------------------------------
+  # Source-level checks. Fast, and the ones most likely to fail, so they run
+  # first and short-circuit the expensive image job.
+  # ---------------------------------------------------------------------------
   verify:
     name: verify
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
 
@@ -38,20 +53,96 @@ jobs:
       - run: npm run lint
       - run: npm run build
 
+      # A static export is the deployable artefact. If `out/` is empty the build
+      # "succeeded" and shipped nothing — worth one assertion.
+      - name: Export is not empty
+        run: |
+          test -f out/index.html || { echo "out/index.html missing"; exit 1; }
+          echo "exported $(find out -type f | wc -l) files"
+
+  # ---------------------------------------------------------------------------
+  # Build the image, prove it works, then publish it.
+  #
+  # A pull request runs everything except the push: the Dockerfile is built and
+  # smoke-tested, but nothing from an unreviewed branch reaches the registry.
+  # ---------------------------------------------------------------------------
   image:
     name: image
     needs: verify
     runs-on: ubuntu-latest
-    # Only publish from main. A pull request builds the image to prove it builds,
-    # but nothing from an unreviewed branch reaches the registry.
+    timeout-minutes: 20
+
     permissions:
       contents: read
       packages: write
+
+    outputs:
+      image: ${{ steps.push.outputs.image }}
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: docker/setup-buildx-action@v3
+
+      - name: Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          # The SHA tag is what deploy/deploy.sh pins to, and what a rollback
+          # names. `latest` is a convenience for local work only — never deploy
+          # from it, because it is not a fixed artefact.
+          tags: |
+            type=sha,format=long,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      # `load: true` puts the image in the local docker daemon so the smoke test
+      # and the vulnerability scan can both run against it BEFORE it is pushed.
+      # Building straight to the registry would publish an untested artefact and
+      # then test it, which is the wrong order.
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          push: false
+          tags: ${{ env.LOCAL_IMAGE }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # The same script developers run locally (`npm run docker:smoke`), against
+      # the image just built. One definition of "does this container work",
+      # shared by the laptop and the pipeline, so the two cannot drift.
+      #
+      # It asserts trailing-slash routing, a real 404 rather than a 200, the
+      # security headers, cache directives, and — the one that actually caught a
+      # production failure — that the container still execs under `cap_drop: ALL`.
+      - name: Smoke test
+        env:
+          IMAGE: ${{ env.LOCAL_IMAGE }}
+          SMOKE_SKIP_BUILD: "1"
+        run: bash scripts/smoke.sh
+
+      # ignore-unfixed is deliberate. A CVE with no available fix cannot be
+      # actioned by this repository, and a permanently red pipeline is a pipeline
+      # people learn to ignore — which costs more than the finding is worth.
+      # Anything with a fix available blocks the push.
+      - name: Scan image
+        uses: aquasecurity/trivy-action@0.28.0
+        env:
+          # Trivy pulls its vulnerability database from ghcr.io, which rate-limits
+          # anonymous pulls from shared runner IPs. Authenticating with the job's
+          # own token turns an intermittent TOOMANYREQUESTS failure — the kind
+          # that teaches people to re-run rather than read — into a non-event.
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          image-ref: ${{ env.LOCAL_IMAGE }}
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
 
       - name: Log in to GHCR
         if: github.event_name == 'push'
@@ -61,44 +152,35 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=sha,format=long
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          # Push only on main. PRs build to verify the Dockerfile still works.
-          push: ${{ github.event_name == 'push' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Smoke test the image
+      # `docker tag` + `docker push` rather than a second build-push-action run.
+      # A rebuild — even a fully cached one — is a new invocation that could in
+      # principle produce different bytes. Tagging guarantees the artefact that
+      # passed the smoke test is the artefact in the registry.
+      - name: Push
+        id: push
+        if: github.event_name == 'push'
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
         run: |
-          docker build -t gen-website:test .
-          docker run -d --name smoke -p 127.0.0.1:3000:3000 gen-website:test
-          for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000/healthz > /dev/null; then break; fi
-            sleep 1
+          set -euo pipefail
+          for tag in $TAGS; do
+            docker tag "$LOCAL_IMAGE" "$tag"
+            docker push "$tag"
+            echo "pushed $tag"
           done
-          echo "--- healthz ---"
-          curl -fsS http://127.0.0.1:3000/healthz && echo
-          echo "--- homepage status ---"
-          curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/
-          echo "--- trailing-slash route ---"
-          curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/approach/
-          echo "--- bare route (no slash) ---"
-          curl -fsS -o /dev/null -w '%{http_code}\n' -L http://127.0.0.1:3000/approach
-          echo "--- 404 must be 404, not 200 ---"
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/nope)" = "404"
-          echo "--- security headers ---"
-          curl -fsSI http://127.0.0.1:3000/ | grep -iE 'content-security-policy|x-content-type-options|x-frame-options' 
-          docker rm -f smoke
+          sha_tag="ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}"
+          echo "image=$sha_tag" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### image"
+            echo
+            echo "- commit: \`${GITHUB_SHA}\`"
+            if [ "${{ github.event_name }}" = "push" ]; then
+              echo "- pushed: \`${{ steps.push.outputs.image }}\`"
+            else
+              echo "- pushed: no (pull request — built and smoke-tested only)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

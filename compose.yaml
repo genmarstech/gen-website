@@ -20,7 +20,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/genmarstech/gen-website:latest
+    # Pinned by deploy/deploy.sh, which writes IMAGE_TAG=<commit-sha> into .env.
+    # Tags are immutable per commit, so what runs here is always a known
+    # artefact — and a rollback is a one-line change to that file.
+    #
+    # Falls back to :latest for local work, where `docker compose up --build`
+    # builds the image and tags it itself.
+    image: ghcr.io/genmarstech/gen-website:${IMAGE_TAG:-latest}
     container_name: genmars-web
 
     restart: unless-stopped

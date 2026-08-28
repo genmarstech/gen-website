@@ -268,8 +268,29 @@ The runtime image contains **no Node and no application code** — only a web
 server and a directory of files. A static site cannot have a runtime dependency
 CVE, because it has no runtime dependencies.
 
-Full notes, host setup, TLS, rollback and the CSP compromise:
-[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+### CI/CD
+
+Merge to `main`, then approve the run. That is the whole procedure.
+
+| Workflow | Does |
+|---|---|
+| [`build.yml`](.github/workflows/build.yml) | Every push and PR: `check:theme`, typecheck, lint, build, then build the image, smoke-test it, scan it, and push it to GHCR tagged with the commit SHA |
+| [`deploy.yml`](.github/workflows/deploy.yml) | Only after `build` goes green on `main`. Waits on the `production` environment for a human, then SSHes to the host and runs [`deploy/deploy.sh`](deploy/deploy.sh) |
+
+The image CI smoke-tests is the image CI pushes — it is `docker tag`ged, never
+rebuilt. The host never builds either: it pulls the SHA-pinned tag, restarts,
+waits for health, and **rolls itself back** to the previous commit if health
+never arrives.
+
+Rollback is the same script with an older SHA, either from the Actions tab or on
+the host:
+
+```bash
+./deploy/deploy.sh <previous-sha>
+```
+
+Full notes, host setup, TLS, the one-time secrets, rollback and the CSP
+compromise: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ---
 
