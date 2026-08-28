@@ -9,11 +9,17 @@
 # Run before the first deploy, and after any change to deploy/container.Caddyfile:
 #   ./scripts/smoke.sh
 #
+# CI runs this same script against the image it has already built, so local and
+# pipeline checks can never drift apart:
+#   IMAGE=gen-website:ci SMOKE_SKIP_BUILD=1 ./scripts/smoke.sh
+#
 # Requires a running Docker daemon.
 
 set -euo pipefail
 
-IMAGE="gen-website:smoke"
+# CI sets both of these so the image that gets smoke-tested is byte-for-byte the
+# one that gets pushed. A second `docker build` would test a different artefact.
+IMAGE="${IMAGE:-gen-website:smoke}"
 NAME="gen-website-smoke"
 BASE="http://127.0.0.1:3000"
 
@@ -62,8 +68,12 @@ docker run --rm -v "$PWD/deploy:/deploy:ro" caddy:2-alpine \
 echo "  genmars.caddy OK"
 
 echo
-echo "==> building image"
-docker build -t "$IMAGE" .
+if [[ "${SMOKE_SKIP_BUILD:-0}" == "1" ]]; then
+  echo "==> using prebuilt image $IMAGE"
+else
+  echo "==> building image"
+  docker build -t "$IMAGE" .
+fi
 
 echo
 echo "==> starting container"

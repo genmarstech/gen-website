@@ -1,0 +1,273 @@
+name: deploy
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Production deploy to the Hetzner host.
+#
+# Fires only after `build` has gone green on main — Charter 03 §III: a red
+# pipeline blocks deploy, and there is no manual override. `workflow_run` is
+# what enforces that: this workflow cannot start from a failed build, and there
+# is no path from an unreviewed branch to the server.
+#
+# It then waits on the `production` environment for a human approval, so nothing
+# reaches genmars.co.ke unattended. That gate matters especially now: the site
+# is deliberately noindex/disallow-all until the Tier 1 documents are live
+# (docs/PRE-LAUNCH.md), and an unattended deploy is exactly how a half-finished
+# policy page goes public.
+#
+# The deploy itself is thin on purpose. All the logic lives in deploy/deploy.sh,
+# on the host, so a rollback at 2am is one SSH session and one command — not a
+# re-run of a pipeline you may not be able to reach.
+#
+# ---- one-time setup ---------------------------------------------------------
+#
+# Environment `production` (Settings → Environments → New environment):
+#   required reviewers: at least one
+#
+#   Secrets, on that environment:
+#     DEPLOY_HOST        the server's hostname or IP
+#     DEPLOY_USER        the SSH user that owns the checkout and can run docker
+#     DEPLOY_SSH_KEY     private half of a deploy-only keypair, PEM, unencrypted
+#     DEPLOY_KNOWN_HOSTS output of: ssh-keyscan -H <host>
+#
+#   Variables (Settings → Variables), all optional:
+#     DEPLOY_PATH        checkout on the host      (default /srv/gen-website)
+#     DEPLOY_PORT        SSH port                  (default 22)
+#     SITE_URL           public URL to verify      (default https://genmars.co.ke)
+#
+# DEPLOY_KNOWN_HOSTS is not optional-in-spirit. Without it the only way to make
+# SSH connect is StrictHostKeyChecking=no, which accepts any host key and turns
+# a DNS or routing compromise into a root shell on the deploy path.
+#
+# The host needs: git, docker, docker compose v2, and a checkout of this repo at
+# DEPLOY_PATH whose `origin` it can fetch from unattended.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_run:
+    workflows: [build]
+    types: [completed]
+    branches: [main]
+
+  # Rollback and re-deploy. Takes any commit whose image is still in GHCR.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Full 40-character commit SHA to deploy. Blank = tip of main."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+# Never cancel a deploy in flight. A half-applied deploy that gets killed
+# between `docker compose up` and the health check leaves the host in a state
+# nothing is watching — queue instead.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # A manual dispatch is trusted by definition. A workflow_run is not — it
+    # fires on failure too, and deploying a red build is the exact thing this
+    # pipeline exists to prevent.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    permissions:
+      contents: read
+      packages: read
+
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL || 'https://genmars.co.ke' }}
+
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/srv/gen-website' }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://genmars.co.ke' }}
+
+    steps:
+      # ---- what are we deploying -------------------------------------------
+      #
+      # The SHA ends up inside a command run over SSH, so it is validated as 40
+      # hex characters before it goes anywhere near a shell. Untrusted values
+      # are read through `env:` rather than interpolated into the script body,
+      # which is what stops a crafted input from becoming part of the command.
+      - name: Resolve target commit
+        id: target
+        env:
+          INPUT_REF: ${{ inputs.ref }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          FALLBACK_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            sha="${INPUT_REF:-$FALLBACK_SHA}"
+          else
+            sha="$RUN_SHA"
+          fi
+          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "Not a full 40-character lowercase commit SHA: '$sha'" >&2
+            echo "Find one with: git rev-parse HEAD" >&2
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Deploying $sha"
+
+      # Missing secrets otherwise surface as an ssh error about an empty
+      # hostname, several minutes and one approval later.
+      - name: Preflight
+        run: |
+          set -euo pipefail
+          missing=""
+          [ -n "$DEPLOY_HOST" ] || missing="$missing DEPLOY_HOST"
+          [ -n "$DEPLOY_USER" ] || missing="$missing DEPLOY_USER"
+          [ -n "${{ secrets.DEPLOY_SSH_KEY }}" ] || missing="$missing DEPLOY_SSH_KEY"
+          [ -n "${{ secrets.DEPLOY_KNOWN_HOSTS }}" ] || missing="$missing DEPLOY_KNOWN_HOSTS"
+          if [ -n "$missing" ]; then
+            echo "Missing environment secrets:$missing" >&2
+            echo "Set them on the 'production' environment — see the header of this workflow." >&2
+            exit 1
+          fi
+          echo "host: $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PORT$DEPLOY_PATH"
+
+      # ---- ssh --------------------------------------------------------------
+      #
+      # Written to the runner's workspace, not ~/.ssh, so the key disappears
+      # with the workspace. StrictHostKeyChecking stays on: the pinned host key
+      # is the only thing that makes this connection meaningfully authenticated.
+      - name: Install SSH key
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$RUNNER_TEMP/ssh"
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > "$RUNNER_TEMP/ssh/id"
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > "$RUNNER_TEMP/ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/ssh/id" "$RUNNER_TEMP/ssh/known_hosts"
+          cat > "$RUNNER_TEMP/ssh/config" <<CFG
+          Host target
+            HostName $DEPLOY_HOST
+            User $DEPLOY_USER
+            Port $DEPLOY_PORT
+            IdentityFile $RUNNER_TEMP/ssh/id
+            IdentitiesOnly yes
+            UserKnownHostsFile $RUNNER_TEMP/ssh/known_hosts
+            StrictHostKeyChecking yes
+            BatchMode yes
+            ConnectTimeout 15
+          CFG
+          chmod 600 "$RUNNER_TEMP/ssh/config"
+          echo "SSH_CONFIG=$RUNNER_TEMP/ssh/config" >> "$GITHUB_ENV"
+
+      - name: Check the host is reachable
+        run: |
+          set -euo pipefail
+          ssh -F "$SSH_CONFIG" target \
+            "cd '$DEPLOY_PATH' && git rev-parse HEAD && docker compose version"
+
+      # The registry credential is piped over stdin, never passed as an argument
+      # — an argument is visible in `ps` on the host for as long as the command
+      # runs. GITHUB_TOKEN is scoped to this job and expires with it, which is
+      # why there is no long-lived PAT sitting in the host's docker config.
+      - name: Log the host in to GHCR
+        run: |
+          set -euo pipefail
+          printf '%s' "${{ secrets.GITHUB_TOKEN }}" | ssh -F "$SSH_CONFIG" target \
+            "docker login ghcr.io -u '${{ github.repository_owner }}' --password-stdin"
+
+      # ---- the deploy -------------------------------------------------------
+      #
+      # deploy/deploy.sh does the work: checks out the commit so compose.yaml
+      # matches the image, pulls the SHA-pinned tag, restarts, waits for health,
+      # and rolls back to the previously deployed commit if health never comes.
+      - name: Deploy
+        env:
+          SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          set -euo pipefail
+          ssh -F "$SSH_CONFIG" target \
+            "cd '$DEPLOY_PATH' && ./deploy/deploy.sh '$SHA'"
+
+      # Runs even when the deploy fails, so a failed run never leaves a registry
+      # credential behind in the host's docker config.
+      - name: Log the host out of GHCR
+        if: always() && env.SSH_CONFIG != ''
+        run: ssh -F "$SSH_CONFIG" target "docker logout ghcr.io" || true
+
+      # ---- prove it from outside -------------------------------------------
+      #
+      # deploy.sh checks the container on loopback. This checks what a visitor
+      # gets: DNS, the certificate, the host Caddy, the proxy hop, the container.
+      # A pass here is the only evidence that covers the whole path.
+      #
+      # If this fails while the deploy step passed, the container is serving and
+      # the problem is in front of it — host Caddy, DNS or the certificate:
+      #   systemctl is-active caddy
+      #   sudo caddy validate --config /etc/caddy/Caddyfile
+      #   dig +short genmars.co.ke
+      - name: Verify the public site
+        run: |
+          set -euo pipefail
+          fail=0
+          check() {
+            local label="$1" want="$2" got="$3"
+            if [ "$got" = "$want" ]; then
+              printf '  PASS  %-28s %s\n' "$label" "$got"
+            else
+              printf '  FAIL  %-28s got %s, want %s\n' "$label" "$got" "$want"
+              fail=1
+            fi
+          }
+
+          # Caddy may still be settling the upstream health check immediately
+          # after a container restart; retry rather than fail on a 502 that
+          # resolves itself in three seconds.
+          for i in $(seq 1 15); do
+            if curl -fsS --max-time 10 "$SITE_URL/healthz" >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+
+          check "healthz" "ok" "$(curl -fsS --max-time 10 "$SITE_URL/healthz" || echo unreachable)"
+          check "homepage" "200" "$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$SITE_URL/")"
+          check "trailing-slash route" "200" "$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$SITE_URL/approach/")"
+          # A static host answering 200 for everything is the classic SPA
+          # misconfig: it makes every typo look like a real page.
+          check "unknown path 404s" "404" "$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$SITE_URL/definitely-not-a-page")"
+
+          head="$(curl -fsSI --max-time 10 "$SITE_URL/" || true)"
+          for h in strict-transport-security content-security-policy x-content-type-options x-frame-options; do
+            if printf '%s' "$head" | grep -qi "$h"; then
+              printf '  PASS  %s\n' "$h"
+            else
+              printf '  FAIL  %s missing\n' "$h"
+              fail=1
+            fi
+          done
+
+          exit $fail
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### deploy"
+            echo
+            echo "- commit: \`${{ steps.target.outputs.sha }}\`"
+            echo "- image: \`ghcr.io/${{ github.repository }}:${{ steps.target.outputs.sha }}\`"
+            echo "- host: \`${DEPLOY_HOST}\`"
+            echo "- site: ${SITE_URL}"
+            echo "- result: ${{ job.status }}"
+            echo
+            echo "Roll back by re-running this workflow with a previous SHA, or on the host:"
+            echo
+            echo '```'
+            echo "cd ${DEPLOY_PATH} && ./deploy/deploy.sh <previous-sha>"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

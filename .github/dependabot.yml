@@ -1,0 +1,68 @@
+# Dependency updates.
+#
+# The runtime image contains no Node and no application dependencies — a static
+# export has none. So these updates are almost entirely about the BUILD, which
+# is where the residual risk actually sits: with no user input reaching the
+# page, the build pipeline is the realistic attack surface, not the site
+# (docs/DEPLOYMENT.md, "Content Security Policy — a known compromise").
+#
+# Every PR runs the full `build` workflow — typecheck, lint, build, image,
+# smoke test, image scan — so a bad bump is caught before it can be merged, and
+# `deploy` never sees it: nothing from an unreviewed branch reaches the server.
+
+version: 2
+
+updates:
+  # ---- npm ------------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    groups:
+      # Next, React and their types move together. Separate PRs for each just
+      # produce a set that only passes CI once all of them are merged.
+      react-next:
+        patterns:
+          - next
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+          - eslint-config-next
+      # Everything else, batched by kind, so a quiet week is one PR rather than
+      # six that each need a review.
+      dev-tooling:
+        dependency-type: development
+        exclude-patterns:
+          - eslint-config-next
+
+  # ---- GitHub Actions -------------------------------------------------------
+  # The workflows hold the credentials for the deploy path, which makes a stale
+  # action a more interesting target than a stale dev dependency.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # ---- Docker base images ---------------------------------------------------
+  # node:22-alpine (builder) and caddy:2-alpine (runtime). The runtime one is
+  # the only image that faces the internet, and it is the whole of what gets
+  # patched — there is nothing else in it.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(docker)"
