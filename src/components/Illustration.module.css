@@ -1,0 +1,171 @@
+/*
+ * Illustration system.
+ *
+ * Everything is drawn with semantic tokens so a single illustration works on the
+ * light page ground, on a .band-invert section, and in dark theme, without three
+ * versions of the artwork.
+ *
+ * `currentColor` on the halftone lets the parent set the texture's colour from
+ * whatever ink the surrounding surface uses.
+ */
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 400px;
+  color: var(--ink);
+}
+
+.halftone {
+  opacity: 0.16;
+}
+
+/* ---------- reconciliation ---------- */
+
+.streamA {
+  fill: var(--ink);
+  opacity: 0.32;
+}
+
+.streamB {
+  fill: var(--imperial-topaz);
+  opacity: 0.42;
+}
+
+.trace {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  opacity: 0.5;
+  stroke-dasharray: 3 4;
+  animation: flow 4s linear infinite;
+}
+
+@keyframes flow {
+  from {
+    stroke-dashoffset: 14;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.resolved {
+  fill: var(--accent);
+}
+
+.ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1;
+  opacity: 0.4;
+}
+
+/* ---------- monitored ---------- */
+
+.mass {
+  fill: var(--ink);
+  opacity: 0.08;
+}
+
+.wire {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.7;
+  opacity: 0.3;
+}
+
+.rim {
+  fill: none;
+  stroke: var(--imperial-topaz);
+  stroke-width: 1.4;
+  opacity: 0.7;
+}
+
+.orbitTrack {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  opacity: 0.22;
+}
+
+/*
+ * The sweep. Same dash-offset idea as the loading mark, much slower — this is
+ * ambient, and anything faster reads as a progress bar that never finishes.
+ */
+.orbitSweep {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 48 560;
+  animation: sweep 14s linear infinite;
+}
+
+@keyframes sweep {
+  from {
+    stroke-dashoffset: 608;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------- gates ---------- */
+
+.core {
+  fill: var(--accent);
+  opacity: 0.85;
+}
+
+/* Solid: this gate is actually met. */
+.gateMet {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  opacity: 0.9;
+}
+
+/* Dashed: a gate ahead, not a claim. The difference is the point. */
+.gateAhead {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+  opacity: 0.3;
+}
+
+/* ---------- annotation ---------- */
+
+.anno {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.8;
+  opacity: 0.35;
+}
+
+.annoText {
+  fill: var(--ink-muted);
+  font-family: var(--font-mono);
+  /* 8px was unreadable once the SVG scaled down. These labels carry meaning —
+     TIER 1 being solid and the others dashed is the point of the drawing — so
+     they have to be legible, not merely present. */
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+}
+
+.annoFaint {
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trace,
+  .orbitSweep {
+    animation: none;
+  }
+
+  .orbitSweep {
+    stroke-dashoffset: 300;
+  }
+}

@@ -7,6 +7,7 @@ import {
   positioning,
 } from "@/lib/company";
 import { Wordmark } from "@/components/Brand";
+import { MonitoredMark } from "@/components/Illustration";
 import { OrbitSystem } from "@/components/OrbitSystem";
 import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
@@ -126,6 +127,14 @@ export default function HomePage() {
                 permission.
               </p>
             </div>
+          </Reveal>
+
+          <Reveal className={styles.proofArt}>
+            <MonitoredMark />
+            <p className={styles.proofArtCaption}>
+              Deployed, monitored, maintained. Handing over a repository is not
+              delivery.
+            </p>
           </Reveal>
 
           <Reveal className={styles.doneBlock}>

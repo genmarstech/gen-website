@@ -8,6 +8,7 @@ import {
   stack,
 } from "@/lib/company";
 import { Reveal } from "@/components/Reveal";
+import { GatesMark } from "@/components/Illustration";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -111,6 +112,10 @@ export default function ApproachPage() {
               without every item on it.
             </p>
           </div>
+          </Reveal>
+
+          <Reveal className={styles.gatesArt}>
+            <GatesMark />
           </Reveal>
 
           <div className={styles.tiers}>

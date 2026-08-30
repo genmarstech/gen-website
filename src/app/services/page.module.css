@@ -115,3 +115,12 @@
   gap: var(--sp-4);
   margin-top: var(--sp-8);
 }
+
+/* ---------- offer illustration ---------- */
+
+.offerArt {
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--rule);
+  max-width: 22rem;
+}

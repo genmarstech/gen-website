@@ -249,3 +249,23 @@
   gap: var(--sp-4);
   margin-top: var(--sp-8);
 }
+
+/* ---------- gates illustration ---------- */
+
+.gatesArt {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--sp-12);
+}
+
+/* The 400px default is right for an inline mark and far too small here, where
+   the drawing is the section's anchor. */
+.gatesArt svg {
+  max-width: 34rem;
+}
+
+@media (min-width: 60rem) {
+  .gatesArt {
+    margin-bottom: var(--sp-16);
+  }
+}

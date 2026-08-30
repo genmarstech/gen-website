@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { offers } from "@/lib/company";
 import { Reveal } from "@/components/Reveal";
+import { ReconciliationMark } from "@/components/Illustration";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -63,6 +64,12 @@ export default function ServicesPage() {
                   <hr className="rule--accent" />
                   <p className={styles.offerLead}>{offer.lead}</p>
                   <p className={styles.offerText}>{offer.body}</p>
+
+                  {offer.slug === "payments" ? (
+                    <div className={styles.offerArt}>
+                      <ReconciliationMark />
+                    </div>
+                  ) : null}
 
                   {"note" in offer && offer.note ? (
                     <p className={styles.offerNote}>{offer.note}</p>
