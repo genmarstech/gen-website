@@ -1,0 +1,173 @@
+/*
+ * Legal document layout.
+ *
+ * Narrower measure than the marketing pages and a tighter heading scale: this
+ * is a document to be read carefully, not scanned.
+ */
+
+.head {
+  padding-top: clamp(var(--sp-12), 7vw, var(--sp-24));
+  padding-bottom: 0;
+}
+
+.doc {
+  max-width: 44rem;
+}
+
+.title {
+  margin-block: var(--sp-6) var(--sp-6);
+  font-size: clamp(1.9rem, 1.5rem + 2vw, 2.8rem);
+}
+
+.lede {
+  margin-bottom: var(--sp-10);
+}
+
+/* ---------- document metadata ---------- */
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin: 0 0 var(--sp-8);
+  padding-block: var(--sp-4);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.meta dt {
+  font-size: 0.625rem;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--sp-1);
+}
+
+.meta dd {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+/* ---------- draft notice ---------- */
+
+.notice {
+  padding: var(--sp-6);
+  background: var(--bg-raised);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+}
+
+.noticeTitle {
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: var(--sp-2);
+  font-size: 1rem;
+}
+
+/* ---------- document body ---------- */
+
+.body {
+  border-top: 0;
+  padding-top: clamp(var(--sp-12), 6vw, var(--sp-16));
+}
+
+.body h2 {
+  font-size: clamp(1.2rem, 1.1rem + 0.6vw, 1.5rem);
+  margin-top: var(--sp-12);
+  margin-bottom: var(--sp-4);
+}
+
+.body h2:first-child {
+  margin-top: 0;
+}
+
+.body p {
+  color: var(--ink-muted);
+  margin-bottom: var(--sp-4);
+}
+
+.body ul {
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.body li {
+  position: relative;
+  padding-left: var(--sp-6);
+  color: var(--ink-muted);
+}
+
+.body li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 0.75rem;
+  height: 1px;
+  background: var(--accent);
+}
+
+.body code {
+  padding: 0.1em 0.35em;
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  color: var(--ink);
+}
+
+/* ---------- table ---------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--sp-4);
+  font-size: 0.9375rem;
+  /* Wide content must scroll inside itself, never the page body. */
+  display: block;
+  overflow-x: auto;
+  white-space: normal;
+}
+
+@media (min-width: 40rem) {
+  .table {
+    display: table;
+    overflow-x: visible;
+  }
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.table th {
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-bottom-color: var(--rule-strong);
+}
+
+.table td {
+  color: var(--ink-muted);
+}
+
+.table td:first-child {
+  color: var(--ink);
+  white-space: nowrap;
+  padding-right: var(--sp-6);
+}
+
+.footnote {
+  font-size: 0.9375rem;
+  color: var(--ink-faint);
+}

@@ -36,20 +36,53 @@ From the Policy Pack's own publishing checklist:
 - [ ] Terms acceptance recorded at signup for any product with accounts *(N/A —
       no product on this site)*
 
-Then transpose the approved text into the two placeholder routes:
+### Status
 
-| Route | Source | File to replace |
-|---|---|---|
-| `/privacy/` | Policy Pack Document A | `src/app/privacy/page.tsx` |
-| `/terms/` | Policy Pack Document B | `src/app/terms/page.tsx` |
+| Route | State |
+|---|---|
+| `/privacy/` | **Drafted** 2026-08-27 from `05-policies/data-processing-record.md`. Every claim verified against the running system. Carries a visible draft notice. Awaiting advocate review |
+| `/terms/` | **Placeholder.** Liability, warranties and jurisdiction are genuine legal drafting — not written. Source: Policy Pack Document B, `src/app/terms/page.tsx` |
 
-> **Do not paste generated boilerplate into these pages.** The Policy Pack's
+To finish `/privacy/`:
+
+- [ ] Advocate review, alongside Terms, the Client Agreement Pack and the
+      Ownership Term Sheet — one engagement
+- [ ] Remove `<ReviewNotice />` from `src/app/privacy/page.tsx`
+- [ ] `privacy@genmars.co.ke` live and monitored — the page names it
+- [ ] Settle the email retention period; the page currently says openly that we
+      have not fixed one, which is true but should not stay true
+- [ ] Controller/processor position with the ODPC confirmed (Charter 03 §V)
+
+**If the log retention period ever changes, this page changes.** It states 30
+days. A policy claiming 30 while the server keeps 90 is a misrepresentation, and
+it surfaces at the worst possible moment. Verify before publishing:
+
+```bash
+grep MaxRetentionSec /etc/systemd/journald.conf
+```
+
+> **Do not paste generated boilerplate into the Terms page.** The Policy Pack's
 > governing rule: *a published policy is a promise.* If the privacy policy says
 > data is encrypted at rest and it is not, that is a misrepresentation to every
 > person who read it — discoverable in exactly the moment you least want it.
 > The placeholder is the safer state until the real text exists.
 
-Delete `src/components/PolicyPlaceholder.tsx` once both routes carry real text.
+Delete `src/components/PolicyPlaceholder.tsx` once `/terms/` carries real text —
+`/privacy/` no longer uses it.
+
+---
+
+## Gate 1b — Log retention (done)
+
+Set 2026-08-27: `MaxRetentionSec=30day` in `/etc/systemd/journald.conf`,
+host-wide, so it covers `clipsserenityspa.co.ke` too. Access logs contain
+visitor IPs, which are personal data under the Kenyan DPA (Charter 03 §V).
+
+Recorded in `05-policies/data-processing-record.md` and stated on `/privacy/`.
+The three must stay in agreement.
+
+- [ ] Email retention period — still open, and the only unbounded personal data
+      we hold
 
 ---
 
