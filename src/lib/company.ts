@@ -29,7 +29,7 @@ export const company = {
   country: "Kenya",
 
   /** Brand tagline — 06-brand/README.md. */
-  tagline: "Building the future",
+  tagline: "Next-generation software",
 } as const;
 
 /**

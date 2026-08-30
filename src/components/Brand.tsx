@@ -67,7 +67,7 @@ export function Mark({ size = 40, className }: MarkProps) {
 type WordmarkProps = {
   /** Rendered width in px. Minimum 110 for the horizontal lockup. */
   width?: number;
-  /** Show the "BUILDING THE FUTURE" tagline beneath the wordmark. */
+  /** Show the "NEXT-GENERATION SOFTWARE" tagline beneath the wordmark. */
   withTagline?: boolean;
   className?: string;
 };
@@ -171,7 +171,7 @@ export function Wordmark({
           letterSpacing="4.8"
           fill="var(--tagline-ink, #7A7480)"
         >
-          BUILDING THE FUTURE
+          NEXT-GENERATION SOFTWARE
         </text>
       )}
     </svg>
