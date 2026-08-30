@@ -1,27 +1,23 @@
 // ESLint flat config.
 //
-// `npm run lint` used to call `next lint`, which — with no config file in the
-// repo — dropped into an interactive "how would you like to configure ESLint?"
-// prompt. On a laptop that is a mild annoyance. In CI it is a lint step that
-// answers a question nobody is there to answer, and `next lint` is removed
-// entirely in Next.js 16, so the script now calls the ESLint CLI directly.
+// eslint-config-next 16 ships NATIVE flat config — each entry point exports a
+// `Linter.Config[]` ready to spread. That removes the FlatCompat bridge this
+// file used to need, and with it the direct dependency on @eslint/eslintrc.
 //
-// eslint-config-next 15 still ships only eslintrc-style configs, and ESLint 9
-// defaults to flat config. FlatCompat is the bridge; it is what create-next-app
-// generates for this exact combination. It goes away when eslint-config-next
-// ships a native flat config.
+// The bridge was not optional before: eslint-config-next 15 shipped only
+// eslintrc-style configs while ESLint 9 defaults to flat, and loading v16's
+// configs THROUGH FlatCompat throws inside the eslintrc config validator. So
+// the compat layer and the v16 upgrade are strictly either/or — which is why
+// the Dependabot bump could never have been merged on its own.
+//
+// `npm run lint` calls the ESLint CLI directly. It is not wired into
+// `next build`: Next 16 removed `next lint` and the `eslint` key in
+// next.config.ts along with it. Lint is its own required step in
+// .github/workflows/build.yml.
 
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { FlatCompat } from "@eslint/eslintrc";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTypeScript from "eslint-config-next/typescript";
 
-const compat = new FlatCompat({
-  baseDirectory: dirname(fileURLToPath(import.meta.url)),
-});
-
-// Named rather than exported anonymously — next/core-web-vitals turns on
-// import/no-anonymous-default-export, and a config file that warns about itself
-// is a poor advertisement for the config.
 const config = [
   {
     // Build output and generated files. Linting `out/` would mean linting the
@@ -34,7 +30,38 @@ const config = [
     ],
   },
 
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextCoreWebVitals,
+  ...nextTypeScript,
+
+  {
+    // Two rules that eslint-config-next 16 newly turns ON as errors. They flag
+    // nine existing call sites across five components. Downgraded to warnings
+    // HERE AND ONLY HERE, so that a dependency upgrade does not smuggle in a
+    // behavioural refactor of the interactive components.
+    //
+    //   react-hooks/set-state-in-effect  (6)  CommandPalette ×2, RequestBuilder,
+    //                                         Reveal, SiteHeader, ThemeToggle
+    //   react-hooks/refs                 (3)  CommandPalette
+    //
+    // Not all nine are bugs. ThemeToggle's is the deliberate no-flash pattern —
+    // it reads stored theme after mount because localStorage cannot be read
+    // during render, and "fixing" it naively reintroduces the white flash for
+    // dark-mode visitors that the inline script exists to prevent. Reveal is
+    // the same shape for scroll reveal.
+    //
+    // The three react-hooks/refs findings in CommandPalette are the ones worth
+    // real attention: reading a ref during render is a genuine correctness
+    // smell, and that component is focus-trapped keyboard UI where a mistake is
+    // not visible without interactive testing.
+    //
+    // TODO: work through the nine, then delete this block. Each needs the
+    // component exercised by hand — palette open/close and focus restoration,
+    // theme toggle with no flash in dark mode — not just a green lint run.
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/refs": "warn",
+    },
+  },
 ];
 
 export default config;
