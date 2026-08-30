@@ -106,6 +106,13 @@ jobs:
           context: .
           load: true
           push: false
+          # Always re-resolve node:22-alpine and caddy:2-alpine from the
+          # registry. Both are floating tags, and with a warm layer cache the
+          # builder will happily reuse a base image from weeks ago — which is
+          # how an image picks up CVEs without a single line of this repo
+          # changing. Costs a manifest check; buys a base image that is actually
+          # current on every run.
+          pull: true
           tags: ${{ env.LOCAL_IMAGE }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

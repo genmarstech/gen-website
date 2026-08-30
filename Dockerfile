@@ -50,6 +50,25 @@ LABEL org.opencontainers.image.title="gen-website" \
       org.opencontainers.image.licenses="GPL-3.0-or-later" \
       org.opencontainers.image.source="https://github.com/genmarstech/gen-website"
 
+# Patch the base image's OS packages.
+#
+# The upstream caddy:2-alpine image is rebuilt on its own schedule, so between
+# rebuilds it ships Alpine packages with published, ALREADY-FIXED CVEs. The
+# first CI scan of this image found seven HIGH findings that way — c-ares, curl,
+# libcurl, libcrypto3, libssl3 — every one of them with a fixed version sitting
+# in the Alpine repository, waiting.
+#
+# This is the whole security story for this image: it holds a web server and a
+# directory of files, so patching the OS packages IS the patching. There is
+# nothing else in here to fix.
+#
+# The trade is reproducibility — this line takes whatever is current in the
+# Alpine 3.23 repo at build time, so two builds of the same commit can differ.
+# Shipping a known-fixed CVE to avoid that is the wrong way round: the image is
+# rebuilt from the same source on every deploy anyway, and the SHA-tagged
+# artefact in GHCR is what rollback pins to, not this layer.
+RUN apk upgrade --no-cache
+
 # Unprivileged runtime user. Caddy binds :3000 here, which is above 1024, so it
 # needs no capabilities at all — see cap_drop in compose.yaml.
 RUN addgroup -g 10001 -S web && adduser -u 10001 -S web -G web
