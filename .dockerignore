@@ -23,9 +23,11 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Docs and CI are not build inputs.
+# Docs and CI are not build inputs. .trivyignore.yaml is read by the scanner in
+# the workflow, never by the build.
 docs
 .github
+.trivyignore.yaml
 README.md
 LICENSE
 

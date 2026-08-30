@@ -150,6 +150,11 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"
+          # Accepted findings, each with a written justification and an EXPIRY
+          # DATE — see .trivyignore.yaml. They are fixed-available CVEs in the
+          # upstream Caddy binary that nothing in this repo can act on. The
+          # dates are the point: on expiry they re-surface and get re-judged.
+          trivyignores: .trivyignore.yaml
 
       - name: Log in to GHCR
         if: github.event_name == 'push'

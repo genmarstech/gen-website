@@ -1,0 +1,146 @@
+# Accepted vulnerabilities, with an expiry date.
+#
+# Every entry here is a HIGH finding in /usr/bin/caddy — the Go binary inside
+# the upstream caddy:2-alpine image. All are Status: fixed upstream, and NONE of
+# them are fixable from this repository: Caddy is not an apk package in that
+# image, so `apk upgrade` cannot touch it, and the Dockerfile already pulls the
+# newest caddy:2-alpine on every build (`pull: true` in .github/workflows/
+# build.yml). The binary is built with Go 1.26.3; the fixes are in 1.26.4+.
+# Until upstream rebuilds, there is no action available.
+#
+# WHY ACCEPT RATHER THAN BLOCK
+#
+# A pipeline that is permanently red on findings nobody can act on is a pipeline
+# people learn to click past — and the next finding, the one that IS actionable,
+# arrives into a job everyone already ignores. Charter 03 §III says a red
+# pipeline blocks deploy; that rule only means anything if red is rare and true.
+#
+# WHY THE EXPIRY DATE MATTERS
+#
+# `expired_at` is the point of this file. On 2026-10-29 every entry stops
+# applying and these findings re-surface in CI. That is deliberate: an
+# accepted risk with no review date is not an accepted risk, it is a forgotten
+# one. When they come back, check whether caddy:2-alpine has been rebuilt on a
+# current Go toolchain — if it has, delete the matching entries; if not, extend
+# the date and say so in the commit.
+#
+# WHAT THIS DOES NOT SILENCE
+#
+# Only these specific IDs, only in usr/bin/caddy. A new CVE in the Caddy binary,
+# anything in the Alpine packages, and any CRITICAL still fail the build.
+#
+# EXPOSURE ASSESSMENT
+#
+# This container serves a static export over plain HTTP on 127.0.0.1:3000. It is
+# reachable only from the host Caddy, which terminates TLS. It runs as uid 10001
+# with cap_drop: ALL, a read-only root filesystem and a 128M ceiling. Most of
+# the findings below touch code paths this deployment never executes; the three
+# that are theoretically reachable through the proxy are noted as such.
+
+vulnerabilities:
+  # ---- reachable in principle: every request parses a URL and headers --------
+
+  - id: CVE-2026-56860
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      net/url quadratic complexity DoS. Reachable: the file server parses the
+      request URL. Mitigated by a 128M memory ceiling and 0.5 CPU limit, which
+      bound the blast radius to this container restarting. Accepted until
+      upstream rebuilds.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-42504
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      mime DoS via crafted MIME header. Reachable through the host proxy. Same
+      container-level resource bounds apply. Accepted until upstream rebuilds.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-39822
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      os.Root symlink-following directory traversal. The most relevant of these
+      to a file server, and the one to re-check first. Not exploitable here as
+      deployed - /srv holds a Next.js static export containing no symlinks, the
+      root filesystem is read-only, and the process runs as uid 10001 with no
+      capabilities. Accepted until upstream rebuilds.
+    expired_at: 2026-10-29
+
+  # ---- not reachable in this deployment --------------------------------------
+
+  - id: CVE-2026-27145
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      crypto/x509 DoS via DNS name processing. This container terminates no TLS
+      and validates no certificates - the host Caddy does both. Not reachable.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-56862
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      crypto/tls DoS via indefinite KeyUpdate messages. No TLS in this
+      container; the hop from the host Caddy is plain HTTP. Not reachable.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-56853
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      net/http unencrypted HTTP/2 (h2c) DoS. Caddy does not enable h2c by
+      default and this config does not enable it; the host proxies over
+      HTTP/1.1. Not reachable.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-56858
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      html/template XSS via pathological input. Requires Caddy's `templates`
+      directive, which container.Caddyfile does not use - this is a file_server
+      serving pre-rendered HTML. Not reachable.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-46600
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      x/net/dns/dnsmessage DoS via invalid DNS record parsing. Appears twice,
+      via x/net and via stdlib. This container resolves no DNS names - it serves
+      files from disk. Not reachable.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-39821
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      x/net/idna privilege escalation via Punycode label processing. Requires
+      processing of internationalised domain names, which a loopback file server
+      does not do. Not reachable.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-33818
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      encoding/asn1 DoS via recursion in Unmarshal. ASN.1 decoding is reached
+      through certificate parsing, which this container does not perform. Not
+      reachable.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-56859
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      encoding/xml DoS via decoding recursion depth. Nothing in this deployment
+      decodes XML; the sitemap is served as a static file, not parsed. Not
+      reachable.
+    expired_at: 2026-10-29
+
+  - id: CVE-2026-56852
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      x/text DoS via invalid UTF-8 input. No text-transformation path is
+      exercised by a static file server. Not reachable.
+    expired_at: 2026-10-29
+
+  - id: GHSA-hrxh-6v49-42gf
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      gRPC-Go xDS RBAC and HTTP/2 vulnerabilities. Caddy's gRPC and xDS support
+      is not compiled into any code path this config invokes, and nothing here
+      speaks gRPC. Not reachable.
+    expired_at: 2026-10-29

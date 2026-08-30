@@ -261,6 +261,41 @@ image it already has. One definition of "does this container work" means local
 and CI cannot drift apart — and the check that caught the `cap_drop: ALL` exec
 failure is in it.
 
+### Accepted CVEs expire on 2026-10-29
+
+The `image` job runs Trivy and fails on any CRITICAL or HIGH **that has a fix
+available**. `ignore-unfixed: true` is deliberate — a finding nobody can act on
+should not hold a deploy.
+
+Two things came out of the first scan, and the difference between them is the
+useful part:
+
+- **Seven Alpine package CVEs** — fixable here. `apk upgrade --no-cache` in the
+  Dockerfile's runtime stage takes the published fixes, and `pull: true` on the
+  build step stops a warm layer cache serving a base image from weeks ago. Both
+  are now permanent, so this class self-heals on every build.
+- **Fourteen in the Caddy binary itself** — *not* fixable here. Caddy is not an
+  apk package in `caddy:2-alpine`; it is a Go binary compiled with Go 1.26.3,
+  and the fixes are in 1.26.4+. Nothing in this repository can change that until
+  upstream rebuilds.
+
+Those fourteen are accepted in [`.trivyignore.yaml`](../.trivyignore.yaml), each
+with a written exposure assessment and an expiry date.
+
+**On 2026-10-29 they re-surface and the build goes red.** That is the design, not
+a bug. An accepted risk with no review date is a forgotten one. When it happens:
+
+```bash
+docker run --rm aquasec/trivy image caddy:2-alpine --severity HIGH,CRITICAL --ignore-unfixed
+```
+
+If upstream has rebuilt on a current Go toolchain, delete the matching entries.
+If not, extend the dates — and say so in the commit message, so the decision has
+a trail rather than becoming a habit.
+
+Only those specific IDs, only in `usr/bin/caddy`, are silenced. A new CVE in the
+Caddy binary, anything in the Alpine packages, and any CRITICAL still block.
+
 ### One-time setup
 
 The `deploy` workflow needs an environment called **production** (Settings →
