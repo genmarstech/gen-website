@@ -23,7 +23,14 @@ const nextConfig: NextConfig = {
 
   // A red pipeline blocks deploy (Charter 03 §III). Never let a broken build
   // through by ignoring its own errors.
-  eslint: { ignoreDuringBuilds: false },
+  //
+  // There is deliberately no `eslint` key here. Next 16 removed it from
+  // NextConfig along with `next lint`, so leaving `eslint: { ignoreDuringBuilds:
+  // false }` in place is a hard type error (TS2353) that fails typecheck AND
+  // the build. Nothing is weakened by its absence: `npm run lint` runs ESLint
+  // directly and is its own required step in the build workflow — arguably a
+  // better place for it, since a lint failure now reads as a lint failure
+  // rather than as a mysterious build error.
   typescript: { ignoreBuildErrors: false },
 
   poweredByHeader: false,
