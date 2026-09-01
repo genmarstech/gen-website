@@ -4,9 +4,10 @@ How the marketing site and the client portal fit together, what each side owes
 the other, and the things that will quietly break if someone changes one without
 the other.
 
-Written from the state of both repositories on **2026-08-28**. Where this
-document says "verified", it means the value was read from DNS, from a live
-HTTP response, or from a passing test — not from memory.
+Written from the state of both repositories on **2026-08-28**, updated
+**2026-09-01** when the two were actually wired together. Where this document
+says "verified", it means the value was read from DNS, from a live HTTP
+response, or from a passing test — not from memory.
 
 | | gen-website | gen-portal |
 |---|---|---|
@@ -16,7 +17,7 @@ HTTP response, or from a passing test — not from memory.
 | Port (loopback) | `3000` | `3010` web, `8010` api |
 | Repo path on host | `/opt/gen-website` | `/opt/gen-portal` |
 | Caddy drop-in | `/etc/caddy/conf.d/genmars.caddy` | `/etc/caddy/conf.d/genmars-portal.caddy` |
-| Status | **Live** | Deployable, not launched |
+| Status | **Live** | **Running on the host**; public once Caddy is reloaded |
 
 ---
 
@@ -90,7 +91,44 @@ bare `href="/terms"` in the portal again, it is that bug returning.
 
 ### 2.4 Links from the site to the portal
 
-**There are none yet, and this is the gap.** See §5.
+Four, and one of them is a contract.
+
+| From | To | Why |
+|---|---|---|
+| Header, footer, command palette | `app.genmars.co.ke/sign-in` | A client with an account can reach it |
+| `/request/` gate | `app.genmars.co.ke/sign-up` | Account setup before requesting work |
+| `/request/` gate | `app.genmars.co.ke/sign-in` | Same, for someone who already has one |
+| Privacy policy | `app.genmars.co.ke` | It has to name where client data goes |
+
+**The contract is `?return=`.** The site appends an absolute URL back to the
+page the visitor was on; the portal validates it against a fixed allowlist of
+origins we own and, once the account is COMPLETE, sends the browser there.
+Renaming that parameter on one side turns the round trip into a one-way door
+onto the dashboard.
+
+Two rules on it, both load-bearing:
+
+- **The allowlist is parsed, not prefix-matched.** A redirect parameter on an
+  auth screen is the classic open-redirect phishing primitive — a link that
+  starts on our real domain, over our real TLS, with our real brand, and ends
+  on someone else's password form. `startsWith` lets
+  `genmars.co.ke.evil.example` straight through. Origins are compared after
+  `new URL()`. Never add a wildcard, and never add a value read from a query
+  string.
+- **It fires only at `/dashboard`.** Returning at `/verify` would drop an
+  unverified visitor back onto the site believing they were set up, with no
+  dashboard to return to.
+
+`gen-portal/frontend/src/lib/returnTo.ts` and `gen-website/src/lib/portal.ts`
+are the two halves. Each has a development origin (`localhost:3010` and
+`localhost:3000`); both are needed to exercise the loop locally, and either
+alone leaves it half-open.
+
+> The gate on `/request/` is **not authentication** and must never be treated
+> as one. A static export has no server to ask and cannot read a cookie scoped
+> to `app.genmars.co.ke`; the flag it checks is a boolean in the visitor's own
+> local storage. What is behind it composes an email in the visitor's mail
+> client. If something of value ever needs protecting, it belongs on the portal.
 
 ---
 
@@ -153,10 +191,26 @@ DNS on 2026-08-28:
 The selector is `zmail`, **not** `zoho` — that name returns NXDOMAIN and reads
 as "DKIM is not configured" when it plainly is.
 
-The marketing site sends nothing. The portal sends verification codes, password
-resets and error alerts through this mailbox, using an **application-specific
-password** (Zoho → Settings → Security → App Passwords), never the account
-password.
+The marketing site sends nothing. Since 2026-09-01 the portal's transactional
+mail — verification codes, password resets, error alerts — goes through
+**Resend** over its HTTP API, not through Zoho. Zoho remains the human mailbox
+that `info@genmars.co.ke` reads and replies from; a six-digit code with a
+fifteen-minute life is not what it should be delivering.
+
+Two consequences worth knowing before touching DNS:
+
+- **`genmars.co.ke` is verified in Resend** (`eu-west-1`), and its DKIM
+  selector is published alongside `zmail`. Selectors are independent; adding
+  one did not disturb the other.
+- **SPF still lists only Zoho.** Resend's include is not there. Mail delivers
+  because DMARC passes on DKIM alignment, but add the include — and merge it
+  into the single existing record. There must be exactly one SPF TXT record on
+  a domain; two is a permerror, and a permerror fails **both** senders.
+
+The SMTP path is retained as a fallback: pointing `EMAIL_BACKEND` at Django's
+smtp backend with an **application-specific password** (Zoho → Settings →
+Security → App Passwords), never the account password, restores mail without a
+code change.
 
 > The portal refuses to boot in production without a sendable mail
 > configuration. That guard exists because the failure is otherwise invisible:
@@ -172,20 +226,18 @@ to `p=reject`.
 
 ## 5. What is still missing — and it is on this repo
 
-### 5.1 The site does not link to the portal
+### 5.1 ~~The site does not link to the portal~~ — done
 
-Today a client with an account has **no way to reach `app.genmars.co.ke` from
-`genmars.co.ke`**. They have to know the subdomain and type it. That is the
-opposite of seamless, and it is the single highest-value change on this list.
+Done 2026-09-01. A quiet **Sign in** in the header (a link, not a button
+competing with the call to action — pushing an account at strangers implies a
+self-serve product that does not exist), plus the footer and the command
+palette. `Request work` now routes through account setup first. See §2.4 for
+the contract that makes the round trip work.
 
-The recommendation is a quiet **Sign in** in the site header, right-aligned,
-pointing at `https://app.genmars.co.ke/sign-in`. Not a call to action and not a
-button competing with "Get in touch" — signing in is for people who already have
-an account, and pushing it at strangers implies a self-serve product that does
-not exist.
-
-Deliberately **not done in this pass**: it is a visible change to a live public
-site and a content decision, not a bug fix.
+**Deploy order is not optional.** The portal must be serving
+`app.genmars.co.ke` before the site ships, or every `Request work` click lands
+on a dead host — which is the site's primary conversion path. Portal first,
+verify, then the site.
 
 ### 5.2 The privacy policy becomes false the day the portal launches
 
@@ -228,6 +280,9 @@ migrations.
 | The `contact/` URL | The portal's empty state links to it |
 | A new port or container | Shared host, and a live client site on it |
 | Caddy `conf.d` | One bad reload affects every site on the box |
+| The `?return=` parameter name | Both halves must agree, or the loop is a one-way door |
+| The portal's allowlisted origins | Drop one and returning visitors land on the dashboard instead |
+| `/request/` or its gate | The site's primary conversion path goes through the portal now |
 
 **Rollback is per-site.** Removing the portal's drop-in and reloading Caddy
 takes the portal dark and leaves `genmars.co.ke` and the client site untouched.
@@ -250,6 +305,20 @@ curl -s -o /dev/null -w "terms   %{http_code}\n" https://genmars.co.ke/terms/
 curl -s -o /dev/null -w "privacy %{http_code}\n" https://genmars.co.ke/privacy/
 curl -s -o /dev/null -w "contact %{http_code}\n" https://genmars.co.ke/contact/
 ```
+
+Then the seam itself, which no status code covers:
+
+1. `genmars.co.ke/request/` in a browser with clean storage → the account gate,
+   not the form.
+2. Type something into the form after passing the gate, then go round again →
+   the draft is still there.
+3. Follow **Create an account** → lands on `app.genmars.co.ke/sign-up`, and the
+   page says where it will send you back to.
+4. Finish setting up → back on `/request/`, form open, `?from=portal` gone from
+   the address bar.
+5. Tamper with it: `app.genmars.co.ke/sign-in?return=https://example.com/` →
+   must land on the dashboard, **never** on example.com. If it ever does, stop
+   and read §2.4.
 
 Then look at both in a browser, in **dark mode**, one after the other. Token
 drift does not show up in a status code.
