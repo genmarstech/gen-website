@@ -26,8 +26,16 @@
 #
 # WHAT THIS DOES NOT SILENCE
 #
-# Only these specific IDs, only in usr/bin/caddy. A new CVE in the Caddy binary,
-# anything in the Alpine packages, and any CRITICAL still fail the build.
+# Only these specific IDs, only in usr/bin/caddy. A new CVE in the Caddy binary
+# and anything in the Alpine packages still fail the build.
+#
+# This file used to say "and any CRITICAL still fail the build". That stopped
+# being true on 2026-09-01 and is corrected here rather than left standing: a
+# policy sentence nobody has re-checked against the entries below is worse than
+# no sentence. There is now exactly ONE critical entry, at the end of the file,
+# held to a stricter test and a shorter expiry than the rest. A second one gets
+# argued on its own merits — this is not a precedent to wave the next one
+# through on.
 #
 # EXPOSURE ASSESSMENT
 #
@@ -144,3 +152,33 @@ vulnerabilities:
       is not compiled into any code path this config invokes, and nothing here
       speaks gRPC. Not reachable.
     expired_at: 2026-10-29
+
+  # ---- CRITICAL --------------------------------------------------------------
+  #
+  # The only critical entry in this file, and deliberately the last one. The
+  # HIGHs above are argued as mitigated or as unreachable in this deployment.
+  # This one is argued as code that cannot be invoked at all, and it is reviewed
+  # four weeks earlier than the rest.
+
+  - id: CVE-2026-56854
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      golang.org/x/crypto/ssh: authentication bypass through unenforced
+      source-address restrictions. It is a flaw in an SSH SERVER's
+      authentication, and this container runs no SSH server. Trivy flags it
+      because x/crypto is linked into the Caddy binary; reaching the defect
+      needs something to stand up an ssh.ServerConn and authenticate a client
+      against source-address restrictions, and nothing in this image ever does.
+      Verified against the running container on 2026-09-01 - it listens on
+      :3000 for HTTP and nothing else, the port is published to 127.0.0.1 only,
+      and container.Caddyfile is a file_server with no ssh, grpc or templates
+      directive. Not a mitigated risk: unreachable code.
+      There is also no fix available to take. caddy:2-alpine is v2.11.4, built
+      2026-08-20 on Go 1.26.3 against x/crypto v0.52.0, and it is the newest
+      tag published; the fix landed in x/crypto 0.55.0 and needs an upstream
+      rebuild.
+      ON EXPIRY: if caddy:2-alpine still ships x/crypto below 0.55.0, stop
+      accepting these one at a time and build Caddy from caddy:2-builder-alpine
+      on a current toolchain instead. That clears every entry in this file at
+      once, and it is the right answer if upstream stays behind.
+    expired_at: 2026-10-01
