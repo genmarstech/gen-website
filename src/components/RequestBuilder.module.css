@@ -274,3 +274,29 @@
     transition: none;
   }
 }
+
+/* Shown only when a draft came back from a previous visit — usually the trip
+   through the portal. A receipt, not a banner: the visitor already knows they
+   typed it, they just need confirming that nothing was lost, and a way out if
+   they would rather start over. */
+.restored {
+  margin-top: var(--sp-3);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--ink-faint);
+}
+
+.discard {
+  padding: 0;
+  font: inherit;
+  color: var(--accent-text);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-text) 35%, transparent);
+  cursor: pointer;
+}
+
+.discard:hover {
+  color: var(--link-hover);
+  border-bottom-color: var(--link-hover);
+}

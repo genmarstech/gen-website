@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { contact, nav, offers } from "@/lib/company";
+import { portal } from "@/lib/portal";
 import { applyTheme, storeTheme, type Theme } from "./theme";
 import { startRouteProgress } from "./routeProgressBus";
 import styles from "./CommandPalette.module.css";
@@ -80,6 +81,23 @@ export function CommandPalette() {
         group: "Go to",
         keywords: "quote brief enquiry start project",
         run: () => go("/request/"),
+      },
+      {
+        id: "portal",
+        label: "Sign in to the client portal",
+        group: "Go to",
+        hint: portal.host,
+        keywords: "portal account dashboard login app client",
+        /**
+         * A full navigation, not go(). The portal is a different origin and the
+         * Next router cannot route to one — router.push would leave the palette
+         * closed, the progress bar running, and the visitor exactly where they
+         * were.
+         */
+        run: () => {
+          close();
+          window.location.assign(portal.signIn);
+        },
       },
     ];
 

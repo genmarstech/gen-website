@@ -1,0 +1,93 @@
+/* The hold before local storage has been read. Same vertical weight as the
+   card that replaces it, so the page does not jump when the answer arrives. */
+.holding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22rem;
+}
+
+.gate {
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 44rem;
+  padding: clamp(var(--sp-8), 5vw, var(--sp-16));
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+}
+
+.title {
+  margin-block: var(--sp-6) var(--sp-5);
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem);
+  max-width: 22ch;
+}
+
+.lede {
+  max-width: var(--measure);
+  color: var(--ink-muted);
+}
+
+.points {
+  list-style: none;
+  margin: var(--sp-8) 0 var(--sp-10);
+  padding: 0;
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.points > li {
+  padding-left: var(--sp-5);
+  border-left: 1px solid var(--rule);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--ink-muted);
+}
+
+.pointTitle {
+  display: block;
+  margin-bottom: var(--sp-1);
+  color: var(--ink);
+}
+
+@media (min-width: 46rem) {
+  .points {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-6);
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+/* Wide enough that swapping the label for the leaving state does not resize
+   the button under the pointer that is still on it. */
+.primary {
+  min-width: 15rem;
+}
+
+/* Says which host they are about to be handed to, before it happens. A jump to
+   a different domain that asks for a password is the shape of a phishing page;
+   naming it first is the difference between a detour and an alarm. */
+.where {
+  margin-top: var(--sp-5);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--ink-faint);
+  max-width: var(--measure);
+}
+
+.fallback {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--rule);
+  font-size: 0.875rem;
+  color: var(--ink-faint);
+}

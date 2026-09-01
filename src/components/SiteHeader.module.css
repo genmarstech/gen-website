@@ -126,6 +126,30 @@
   }
 }
 
+/* A link, not a button. Someone who already has an account is looking for this
+   and will find a link; someone who does not should not be sold an account they
+   have no use for. Hidden on narrow screens with the rest of the nav — it lives
+   in the disclosure panel there. */
+.signIn {
+  display: none;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  border: 0;
+  white-space: nowrap;
+  padding-inline: var(--sp-2);
+}
+
+.signIn:hover {
+  color: var(--ink);
+  border: 0;
+}
+
+@media (min-width: 56rem) {
+  .signIn {
+    display: inline-flex;
+  }
+}
+
 .cta {
   display: none;
   padding: 0.5rem 1rem;

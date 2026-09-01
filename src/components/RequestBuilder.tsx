@@ -66,9 +66,53 @@ const EMPTY: Draft = {
   decisionMakers: "",
 };
 
+/**
+ * Where the draft is kept between page loads.
+ *
+ * Added because this form now sits behind an account step: someone can start
+ * typing, be sent to app.genmars.co.ke to set up an account, and come back. A
+ * round trip that silently emptied the form would be worse than no round trip
+ * at all — and the same saving covers the ordinary accidents, a reload or a
+ * closed tab.
+ *
+ * This does not weaken the claim the page makes. "Nothing is submitted
+ * anywhere" is about the network, and local storage is not the network: the
+ * value stays on the device, this origin is the only one that can read it, and
+ * we cannot. It is listed in the privacy policy alongside gm-theme, because a
+ * policy that names one key and not the other is worse than naming neither.
+ */
+const DRAFT_KEY = "gm-request-draft";
+
+function loadDraft(): Draft | null {
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+
+    // Anything could be under this key — an old shape, or something a person
+    // typed into the console. Every field is read individually and coerced to a
+    // string, so a malformed value degrades to an empty box rather than putting
+    // a non-string into a React input and crashing the page.
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) return null;
+    const source = parsed as Record<string, unknown>;
+
+    const draft = { ...EMPTY };
+    for (const key of Object.keys(EMPTY) as (keyof Draft)[]) {
+      const value = source[key];
+      if (typeof value === "string") draft[key] = value;
+    }
+    return draft;
+  } catch {
+    // Storage disabled, or unparseable JSON. An empty form is a fine outcome.
+    return null;
+  }
+}
+
 export function RequestBuilder() {
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [copied, setCopied] = useState(false);
+  /** Whether anything came back from a previous visit — drives one line of copy. */
+  const [restored, setRestored] = useState(false);
   /**
    * Handing off to the OS mail client. There is no completion event for a
    * mailto: — the browser either opens an app or it does not — so this is a
@@ -84,15 +128,44 @@ export function RequestBuilder() {
   }, [handingOff]);
 
   /**
-   * Deep link support: /request/?service=payments preselects an offer, which is
-   * what the command palette and the services page link into.
+   * Restore, then apply the deep link on top.
+   *
+   * Order matters. /request/?service=payments is an explicit statement of
+   * intent made just now; a saved draft is a statement made earlier. The
+   * explicit one wins, so a fresh link from the services page or the command
+   * palette always selects what it says it selects — but it only overrides the
+   * one field it actually names, leaving the rest of the saved answers alone.
    */
   useEffect(() => {
+    const saved = loadDraft();
+
     const params = new URLSearchParams(window.location.search);
-    const slug = params.get("service");
-    const match = offers.find((offer) => offer.slug === slug);
-    if (match) setDraft((d) => ({ ...d, service: match.name }));
+    const match = offers.find((offer) => offer.slug === params.get("service"));
+
+    if (!saved && !match) return;
+    setDraft({
+      ...(saved ?? EMPTY),
+      ...(match ? { service: match.name } : {}),
+    });
+    setRestored(true);
   }, []);
+
+  /**
+   * Save on every change.
+   *
+   * Skips the first pass deliberately: on mount `draft` is still EMPTY and the
+   * restore effect above has not run yet, so writing here would overwrite a
+   * real saved draft with blanks before it could be read back.
+   */
+  useEffect(() => {
+    if (draft === EMPTY) return;
+    try {
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {
+      // Storage full or blocked. The form still works for this visit; only the
+      // saving is lost, and nothing tells the visitor a lie about it.
+    }
+  }, [draft]);
 
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -140,6 +213,26 @@ export function RequestBuilder() {
   const mailto = `mailto:${contact.email}?subject=${encodeURIComponent(
     subject,
   )}&body=${encodeURIComponent(body)}`;
+
+  /**
+   * Discard the saved draft.
+   *
+   * setDraft(EMPTY) restores the module constant BY REFERENCE, which is exactly
+   * the value the save effect skips — so clearing removes the key and nothing
+   * immediately writes it back. If EMPTY is ever replaced with a fresh object
+   * literal here, that guard stops working and this writes an empty draft back
+   * to storage a tick later.
+   */
+  function clearDraft() {
+    setDraft(EMPTY);
+    setRestored(false);
+    setCopied(false);
+    try {
+      window.localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* nothing was saved in the first place */
+    }
+  }
 
   async function copy() {
     try {
@@ -356,6 +449,14 @@ export function RequestBuilder() {
               Nothing is sent from this page. This opens your own email app with
               the message ready — you keep the copy.
             </p>
+            {restored ? (
+              <p className={styles.restored}>
+                Your earlier answers are still here.{" "}
+                <button type="button" className={styles.discard} onClick={clearDraft}>
+                  Start again
+                </button>
+              </p>
+            ) : null}
           </div>
 
           <div className={styles.envelope}>

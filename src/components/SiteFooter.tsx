@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { company, contact } from "@/lib/company";
+import { portal } from "@/lib/portal";
 import { Mark } from "./Brand";
 import styles from "./SiteFooter.module.css";
 
@@ -45,6 +46,18 @@ export function SiteFooter() {
                 <li>
                   <Link href="/terms/">Terms of service</Link>
                 </li>
+              </ul>
+            </div>
+
+            <div>
+              {/* The portal is a different host, so a plain anchor — next/link
+                  routes within this export and cannot leave it. */}
+              <h2 className={styles.colTitle}>Clients</h2>
+              <ul className={styles.list}>
+                <li>
+                  <a href={portal.signIn}>Sign in to the portal</a>
+                </li>
+                <li className={styles.plain}>{portal.host}</li>
               </ul>
             </div>
 

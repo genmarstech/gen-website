@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { company, contact } from "@/lib/company";
+import { portal, PORTAL_API_ORIGIN } from "@/lib/portal";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -41,12 +42,26 @@ export const metadata: Metadata = {
  * Office of the Data Protection Commissioner is still open (Charter 03 §V).
  * That determines how this document should frame itself.
  *
+ * ── v0.2, and what it did NOT do ────────────────────────────────────────────
+ * Request work now routes through an account on app.genmars.co.ke, which made
+ * two statements on this page false the moment the link shipped: "No accounts,
+ * there is nothing to sign up for", and a browser-storage section naming one
+ * key when the site had begun writing three. Both are corrected above, and the
+ * portal is now described as the separate system it is.
+ *
+ * That is a correction, NOT the rewrite this document needs. PORTAL-INTEGRATION.md
+ * §5.2 is still open and is still a launch blocker: once the portal holds one
+ * real client account, this policy has to be rewritten against the data
+ * processing record rather than patched, and the portal needs a published
+ * policy of its own for the sentences above to point at. Do not read v0.2 as
+ * that work being done.
+ *
  * If the retention period in journald changes, THIS PAGE CHANGES. A policy
  * stating 30 days while the server keeps 90 is a misrepresentation.
  */
 
-const UPDATED = "27 August 2026";
-const VERSION = "0.1";
+const UPDATED = "1 September 2026";
+const VERSION = "0.2";
 
 export default function PrivacyPage() {
   return (
@@ -131,7 +146,11 @@ export default function PrivacyPage() {
                 loading this site.
               </li>
               <li>
-                <strong>No accounts.</strong> There is nothing to sign up for.
+                <strong>No accounts on this site.</strong> There is nothing to
+                sign in to here, and nothing on this domain holds a password.
+                Accounts live on the client portal at{" "}
+                <a href={portal.origin}>{portal.host}</a>, which is a separate
+                system on a separate domain &mdash; see below.
               </li>
             </ul>
 
@@ -148,13 +167,57 @@ export default function PrivacyPage() {
               through a third-party form service. What reaches us afterwards is
               an ordinary email that you chose to send, and you keep a copy of it.
             </p>
+            <p>
+              Reaching that form asks you to set up a client account first. That
+              happens entirely on <a href={portal.origin}>{portal.host}</a>: what
+              you type into the account setup is collected by the portal under
+              its own privacy policy, not by this site. This site is told nothing
+              about it &mdash; not your name, not your email address, not whether
+              you completed it. All it records is a flag in your own browser
+              saying &ldquo;this person has been to the portal&rdquo;, so that it
+              does not ask you a second time.
+            </p>
+
+            <h2>The client portal is a separate system</h2>
+            <p>
+              <a href={portal.origin}>{portal.host}</a> and its API at{" "}
+              {PORTAL_API_ORIGIN.replace("https://", "")} run on different
+              software from this site, and hold different things. Accounts,
+              passwords, and the details of work we are doing for a client live
+              there. None of it is on {company.domain}, and this site has no way
+              to read it.
+            </p>
+            <p>
+              That separation is the reason this policy can be as short as it is.
+              If you have a portal account, the portal&rsquo;s own privacy policy
+              governs it.
+            </p>
 
             <h2>What your browser stores</h2>
             <p>
-              If you choose a light or dark theme, that choice is saved in your
-              browser&rsquo;s local storage under <code>gm-theme</code>. It stays
-              on your device, is never transmitted to us, and we cannot read it.
+              This site writes three values to your browser&rsquo;s local
+              storage. All three stay on your device, are never transmitted to
+              us, and we cannot read them. Clearing your browser&rsquo;s storage
+              for this site removes all of them.
             </p>
+            <ul>
+              <li>
+                <code>gm-theme</code> &mdash; your light or dark theme choice, if
+                you made one.
+              </li>
+              <li>
+                <code>gm-request-draft</code> &mdash; whatever you have typed
+                into the request form, so that it survives a reload or the trip
+                to the portal and back. Written as you type. You can delete it at
+                any time with the &ldquo;Start again&rdquo; link on that page.
+              </li>
+              <li>
+                <code>gm-portal-account</code> &mdash; a single yes/no flag
+                recording that you came back from the portal, so the request page
+                does not send you there again. It holds nothing about you: not
+                your name, not your email address, not a session or a token.
+              </li>
+            </ul>
 
             <h2>Who else is involved</h2>
             <table className={styles.table}>
@@ -238,7 +301,9 @@ export default function PrivacyPage() {
                 own proxy
               </li>
               <li>
-                The site holds no database and stores no personal data at rest
+                This site holds no database and stores no personal data at rest.
+                Client accounts and the data behind them are on the portal, on a
+                different server, under its own policy
               </li>
             </ul>
 

@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { RequestBuilder } from "@/components/RequestBuilder";
+import { RequestGate } from "@/components/RequestGate";
 import { Reveal } from "@/components/Reveal";
+import { portal } from "@/lib/portal";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Request work",
   description:
-    "Tell Genmars Tech what you need. Four questions, and the page composes the email for you — nothing is submitted to us or to anyone else.",
+    "Tell Genmars Tech what you need. Set up your client account, then four questions — and the page composes the email for you.",
 };
 
 export default function RequestPage() {
@@ -23,6 +26,13 @@ export default function RequestPage() {
               anyway, and answering them here means the first reply you get is
               useful instead of a list of questions back.
             </p>
+            <p className="measure">
+              They come after a short account setup on{" "}
+              <a href={portal.origin}>{portal.host}</a>. That is where your
+              engagement lives once it starts &mdash; scope, weekly progress
+              notes, milestones and payments &mdash; and having it from the
+              first conversation is worth the minute it takes.
+            </p>
           </Reveal>
         </div>
       </section>
@@ -30,7 +40,9 @@ export default function RequestPage() {
       <section className="section">
         <div className="wrap">
           <Suspense fallback={null}>
-            <RequestBuilder />
+            <RequestGate>
+              <RequestBuilder />
+            </RequestGate>
           </Suspense>
         </div>
       </section>
@@ -54,6 +66,17 @@ export default function RequestPage() {
               processing agreement with, and our engineering charter does not
               allow adopting one casually. This does the same job with nobody
               in the middle.
+            </p>
+            <p className={styles.privacyBody}>
+              The account step is the one part that is different, and it is
+              worth being precise about. What you type into{" "}
+              <a href={portal.origin}>{portal.host}</a> is submitted &mdash; to
+              us, on our own server, under the portal&rsquo;s own policy. What
+              you type into the form on this page is not, and the portal is
+              never told about it. The two are separate systems on separate
+              domains, which is the whole reason this site can hold nothing
+              about you at all. Our{" "}
+              <Link href="/privacy/">privacy policy</Link> sets out both.
             </p>
           </Reveal>
         </div>

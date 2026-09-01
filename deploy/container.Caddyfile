@@ -54,6 +54,15 @@
 		#
 		# Making this strict requires server rendering so nonces can be issued.
 		# That is an architecture change, not a header tweak — docs/DEPLOYMENT.md.
+		#
+		# Sign in and Request work send the browser to app.genmars.co.ke. Nothing
+		# here needs widening for that: `form-action 'self'` governs form
+		# submissions, and these are ordinary top-level navigations — a link, or
+		# location.assign(). CSP has no shipped directive that restricts those.
+		# If a future change makes the site POST to the portal, or fetch from
+		# api.genmars.co.ke, THAT needs form-action or connect-src opened — and
+		# it should be questioned first, because it would put client data on the
+		# public origin (docs/PORTAL-INTEGRATION.md §1).
 		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 	}
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { nav } from "@/lib/company";
+import { portal } from "@/lib/portal";
 import { Wordmark } from "./Brand";
 import { ThemeToggle } from "./ThemeToggle";
 import { CommandPalette } from "./CommandPalette";
@@ -16,6 +17,15 @@ import styles from "./SiteHeader.module.css";
  * and stays out of the way afterwards. Below 56rem the links collapse into a
  * disclosure panel rather than wrapping — four links plus a call to action plus
  * a theme control does not fit on a phone, and wrapping it looks like a bug.
+ *
+ * ── SIGN IN ─────────────────────────────────────────────────────────────────
+ * Quiet, and deliberately so. Signing in is for people who already have an
+ * account; pushing it at strangers would imply a self-serve product we do not
+ * sell. It is a link, not a second button competing with Request work.
+ *
+ * It leaves this origin for app.genmars.co.ke — see lib/portal.ts. Until this
+ * existed, a client with an account had no way to reach the portal from here
+ * and had to know the subdomain and type it (PORTAL-INTEGRATION.md §5.1).
  */
 export function SiteHeader() {
   const pathname = usePathname();
@@ -86,6 +96,9 @@ export function SiteHeader() {
         <div className={styles.tools}>
           <CommandPalette />
           <ThemeToggle />
+          <a href={portal.signIn} className={styles.signIn}>
+            Sign in
+          </a>
           <Link href="/request/" className={styles.cta}>
             Request work
           </Link>
@@ -129,6 +142,11 @@ export function SiteHeader() {
               );
             })}
             <li style={{ ["--i" as string]: nav.length }}>
+              <a href={portal.signIn} className={styles.panelLink}>
+                Sign in
+              </a>
+            </li>
+            <li style={{ ["--i" as string]: nav.length + 1 }}>
               <Link href="/request/" className={styles.panelCta}>
                 Request work
               </Link>
