@@ -197,15 +197,35 @@ mail — verification codes, password resets, error alerts — goes through
 that `info@genmars.co.ke` reads and replies from; a six-digit code with a
 fifteen-minute life is not what it should be delivering.
 
-Two consequences worth knowing before touching DNS:
+The two senders do not share DNS records, and that is the whole trick. Read
+live on **2026-09-01**:
 
-- **`genmars.co.ke` is verified in Resend** (`eu-west-1`), and its DKIM
-  selector is published alongside `zmail`. Selectors are independent; adding
-  one did not disturb the other.
-- **SPF still lists only Zoho.** Resend's include is not there. Mail delivers
-  because DMARC passes on DKIM alignment, but add the include — and merge it
-  into the single existing record. There must be exactly one SPF TXT record on
-  a domain; two is a permerror, and a permerror fails **both** senders.
+| Name | Type | Value | Whose |
+|---|---|---|---|
+| `genmars.co.ke` | TXT | `v=spf1 include:zohomail.com ~all` | Zoho |
+| `send.genmars.co.ke` | TXT | `v=spf1 include:amazonses.com ~all` | Resend |
+| `send.genmars.co.ke` | MX | `feedback-smtp.eu-west-1.amazonses.com` | Resend |
+| `resend._domainkey` | TXT | DKIM public key | Resend |
+| `zmail._domainkey` | TXT | DKIM public key | Zoho |
+
+`genmars.co.ke` is **verified** in Resend (`eu-west-1`), and nothing further is
+outstanding. Both DKIM selectors coexist; selectors are independent.
+
+> **Do not merge Resend's include into the root SPF record.** An earlier
+> revision of this document said to, and it was wrong. Resend sends with the
+> envelope-from on `send.genmars.co.ke`, which carries its own SPF record —
+> and SPF is evaluated against the **envelope** domain, not the `From:` header.
+> The root record is Zoho's, because Zoho does send as the root. Merging them
+> would authorise all of Amazon SES to send as our root envelope domain and
+> gain nothing.
+>
+> The rule that makes the mistake tempting is real: exactly **one** SPF TXT
+> record per name, because two is a permerror that fails every sender on that
+> name at once. It just does not bite across two different names.
+
+DMARC passes on both paths: DKIM signs `d=genmars.co.ke` for strict alignment,
+and `send.genmars.co.ke` aligns with the root under relaxed alignment, which is
+the default.
 
 The SMTP path is retained as a fallback: pointing `EMAIL_BACKEND` at Django's
 smtp backend with an **application-specific password** (Zoho → Settings →
