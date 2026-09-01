@@ -135,9 +135,25 @@ alone leaves it half-open.
 ## 3. The design system is duplicated on purpose
 
 `globals.css`, `Brand.tsx`, `LoadingMark.*`, `theme.ts`, `ThemeToggle.*` and
-`scripts/check-theme-tokens.mjs` exist in **both** repositories as copies. A
-shared package is more machinery than one engineer needs today; the cost is that
-a token change applied to one is not applied to the other.
+`scripts/check-theme-tokens.mjs` exist in **all three** repositories as copies —
+gen-website, gen-portal and internals-tm. A shared package is more machinery
+than one engineer needs today; the cost is that a token change applied to one is
+not applied to the others, and there are three of them now rather than two.
+
+### The mark
+
+Two forms, and they are not interchangeable:
+
+| | Where | Why that form |
+|---|---|---|
+| `src/app/icon.png` `apple-icon.png` | all three | The favicon. **Byte-identical copies** — re-rasterising from the SVG invites three subtly different marks. They carry their own deep-well ground, so they read on light and dark browser chrome alike. Next's file convention emits the link tags; no layout code references them. |
+| Inline `<svg>` in a component | all three | On-page. `currentColor` is what lets one mark sit on a light header and a dark one without shipping two files — an `<img>` cannot inherit colour. The orbit stays `--mark-orbit` in both themes because it is a brand constant, not a themeable value. |
+| `public/genmars-mark.svg` | all three | For anything needing the mark by URL — an email signature, a document, an OG image. Not what the apps render. |
+
+The **path geometry is duplicated in three inline components**. If those `d`
+values ever change they change in all three in the same sitting, or Genmars
+quietly becomes two different logos depending on which surface you are looking
+at.
 
 Verified 2026-08-28: the token *names* are identical bar one, and every brand
 constant agrees exactly.
@@ -169,10 +185,11 @@ npm run check:theme
 
 ### When you change a token
 
-Change it in **both** repositories in the same sitting, or you will ship two
-Genmars that do not match. A client moving from the marketing site to the portal
-crosses that seam in one click, and mismatched paint is the most visible
-possible failure.
+Change it in **all three** repositories in the same sitting, or you will ship
+two Genmars that do not match. A client moving from the marketing site to the
+portal crosses that seam in one click, and mismatched paint is the most visible
+possible failure. internals-tm is seen only by staff, so it is the one that
+drifts unnoticed — check it last and check it deliberately.
 
 ---
 
