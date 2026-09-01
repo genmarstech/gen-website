@@ -1,0 +1,193 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Depth behind the hero.
+
+   Sits under everything: the hero already has position:relative and
+   overflow:hidden, so nothing here can spill into the sections below or add a
+   scrollbar. .heroGrid is lifted above it in page.module.css.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+
+  /* Fades out toward the bottom and the left, where the headline and the lede
+     live. Stars behind body text are texture competing with the thing the page
+     exists to say — this keeps the density in the upper right, around the orbit
+     visual, and lets it thin to nothing under the copy. */
+  mask-image:
+    radial-gradient(150% 130% at 72% 10%, #000 0%, #000 52%, transparent 88%);
+  -webkit-mask-image:
+    radial-gradient(150% 130% at 72% 10%, #000 0%, #000 52%, transparent 88%);
+}
+
+/* Each layer is a single 1px element; its stars are the box-shadow list. The
+   element itself must not paint, hence transparent. */
+.far,
+.mid,
+.near {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background: transparent;
+  will-change: transform;
+}
+
+/* ---- depth ----------------------------------------------------------------
+   Size, blur and drift rate all agree about distance, so the order survives
+   even when the motion stops. */
+
+.far {
+  width: 1px;
+  height: 1px;
+  opacity: 0.55;
+  filter: blur(0.2px);
+  animation: drift-far 240s linear infinite;
+}
+
+.mid {
+  width: 1.5px;
+  height: 1.5px;
+  opacity: 0.75;
+  animation: drift-mid 150s linear infinite;
+}
+
+.near {
+  width: 2.5px;
+  height: 2.5px;
+  opacity: 1;
+  /* A soft bloom on the nearest layer only. Without it every star is the same
+     flat dot and the field reads as noise; with it there are a few points the
+     eye settles on, which is what makes the rest read as distance. */
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 60%, transparent));
+  animation: drift-near 90s linear infinite;
+}
+
+/* Different distances, therefore different speeds. That difference IS the
+   depth cue — more than size, more than brightness. */
+@keyframes drift-far {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-6vmax, 2vmax, 0); }
+}
+
+@keyframes drift-mid {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-14vmax, 4vmax, 0); }
+}
+
+@keyframes drift-near {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-26vmax, 7vmax, 0); }
+}
+
+/* ---- meteors ---------------------------------------------------------------
+   A head with a tail drawn behind it by a gradient, travelling along its own
+   angle. Long delays: one every twenty seconds or so, never a shower. */
+
+/* A meteor is a bright HEAD with a tail behind it, not a glowing line. Drawn
+   as a line the first version was technically present and visually absent —
+   seeked to its brightest frame it still could not be picked out against the
+   hero's glow. The head is what the eye actually catches. */
+.meteor {
+  position: absolute;
+  width: 13rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 35%, transparent) 45%,
+    color-mix(in srgb, var(--accent) 85%, transparent) 88%,
+    var(--accent) 100%
+  );
+  opacity: 0;
+  transform: rotate(18deg);
+}
+
+.meteor::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow:
+    0 0 6px 1px var(--accent),
+    0 0 14px 3px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.meteorOne {
+  top: 10%;
+  left: 58%;
+  animation: streak 21s ease-out infinite;
+  animation-delay: 3s;
+}
+
+.meteorTwo {
+  top: 24%;
+  left: 70%;
+  width: 8rem;
+  animation: streak 27s ease-out infinite;
+  animation-delay: 12s;
+}
+
+.meteorThree {
+  top: 4%;
+  left: 64%;
+  width: 15rem;
+  animation: streak 33s ease-out infinite;
+  animation-delay: 24s;
+}
+
+/* Visible for about a second and a half of each cycle. The long tail of the
+   keyframe is deliberately empty — that emptiness is what makes the next one
+   feel like an event rather than a loop. */
+@keyframes streak {
+  0%      { opacity: 0; transform: translate3d(-8vmax, -3vmax, 0) rotate(18deg); }
+  2%      { opacity: 0; }
+  4%      { opacity: 1; }
+  9%      { opacity: 0; transform: translate3d(14vmax, 5vmax, 0) rotate(18deg); }
+  100%    { opacity: 0; transform: translate3d(14vmax, 5vmax, 0) rotate(18deg); }
+}
+
+/* ---- theme -----------------------------------------------------------------
+   The field is toned from --accent, which is Ignition in both themes, so it
+   does not need swapping. It does need to be quieter on the light ground:
+   cream has far less contrast headroom than Deep Well, and at dark-theme
+   strength the same marks stop reading as atmosphere and start reading as
+   specks on the screen. */
+.field {
+  opacity: 0.45;
+}
+
+:root[data-theme="dark"] .field {
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .field {
+    opacity: 1;
+  }
+}
+
+/* ---- motion ----------------------------------------------------------------
+   Everything stops. The field is composed to look right standing still, and a
+   meteor is exactly the kind of sudden peripheral movement that reduced-motion
+   exists to suppress. */
+@media (prefers-reduced-motion: reduce) {
+  .far,
+  .mid,
+  .near {
+    animation: none;
+  }
+
+  .meteor {
+    display: none;
+  }
+}

@@ -9,6 +9,7 @@ import {
 import { Wordmark } from "@/components/Brand";
 import { MonitoredMark } from "@/components/Illustration";
 import { OrbitSystem } from "@/components/OrbitSystem";
+import { Starfield } from "@/components/Starfield";
 import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
 
@@ -33,6 +34,9 @@ export default function HomePage() {
     <>
       {/* ---------- hero ---------- */}
       <section className={`section section--flush ${styles.hero}`}>
+        {/* Behind everything. The hero already clips, so nothing escapes it. */}
+        <Starfield />
+
         <div className={`wrap ${styles.heroGrid}`}>
           <div className={styles.heroCopy}>
             <Wordmark width={260} className={styles.heroMark} />

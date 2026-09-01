@@ -8,6 +8,11 @@
 }
 
 .heroGrid {
+  /* Above the starfield, which is absolutely positioned at z-index 0 inside
+     this section. Without a stacking context of its own the copy would share a
+     layer with the stars and the mask would be doing nothing useful. */
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: clamp(var(--sp-12), 6vw, var(--sp-16));
   align-items: center;
@@ -83,6 +88,8 @@
 /* ---------- scroll hint ---------- */
 
 .scrollHint {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
