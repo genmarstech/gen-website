@@ -108,10 +108,16 @@
 	#     and redirecting the health probe would take the container out of
 	#     rotation the moment this shipped
 	#   · / itself, which already ends in a slash
+	# `file` is the condition that makes this safe, and the smoke test is what
+	# proved it necessary: without it the matcher caught EVERY extensionless
+	# path, so /does-not-exist 308'd to /does-not-exist/ and only then 404'd.
+	# A redirect chain to a 404 is worse than a 404 — it wastes a crawl and
+	# reports the wrong status to anything following the first hop.
 	@needsTrailingSlash {
 		not path */
 		not path /*.*
 		not path /healthz
+		file {path}/index.html
 	}
 	redir @needsTrailingSlash {path}/ 308
 
