@@ -8,6 +8,10 @@ import { portal } from "@/lib/portal";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
+  /* Absolute canonical, resolved against metadataBase in layout.tsx.
+     Without one, /request and /request/ and www. and non-www are four URLs
+     for one page as far as a crawler is concerned. */
+  alternates: { canonical: "/request/" },
   title: "Request work",
   description:
     "Tell Genmars Tech what you need. Set up your client account, then four questions — and the page composes the email for you.",

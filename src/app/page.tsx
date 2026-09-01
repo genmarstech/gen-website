@@ -13,6 +13,23 @@ import { Starfield } from "@/components/Starfield";
 import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
 
+import type { Metadata } from "next";
+
+/**
+ * Only the canonical. Title, description and Open Graph come from the defaults
+ * in layout.tsx and are correct for the home page already.
+ *
+ * Declared HERE rather than as `alternates` in layout.tsx on purpose: a
+ * canonical in the root layout is inherited by every route that does not
+ * override it, so the day someone adds a page and forgets one, that page
+ * quietly tells Google it IS the home page and asks to be de-duplicated away.
+ * Explicit per route means a missing canonical is merely missing.
+ */
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+
 /**
  * Home.
  *

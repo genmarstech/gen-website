@@ -5,6 +5,10 @@ import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
+  /* Absolute canonical, resolved against metadataBase in layout.tsx.
+     Without one, /work and /work/ and www. and non-www are four URLs
+     for one page as far as a crawler is concerned. */
+  alternates: { canonical: "/work/" },
   title: "Work",
   description:
     "Delivered client work from Genmars Tech — booking systems, mobile-money payment paths, and sites built for Kenyan market realities.",

@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8">
+<style>
+/* Regenerate:
+     1. npm run build            (emits the self-hosted Jost woff2 files)
+     2. paste @font-face rules here pointing at .next/static/media/*.woff2
+     3. google-chrome-stable --headless=new --window-size=1200,630 \
+          --allow-file-access-from-files --screenshot=out.png \
+          --virtual-time-budget=5000 file://$PWD/opengraph-image.source.html
+     4. cp out.png ../../src/app/opengraph-image.png (and twitter-image.png)
+
+   The font rules are deliberately NOT committed: they reference content-hashed
+   filenames that change on every build, so a committed copy would be wrong
+   almost immediately and silently fall back to a system font. */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{font-family:Jost,system-ui,sans-serif;
+  background:radial-gradient(120% 120% at 78% 12%, #3a3540 0%, #2e2b34 42%, #211e27 100%);
+  color:#f4efec;display:flex;flex-direction:column;justify-content:center;padding:96px;position:relative}
+.glow{position:absolute;top:-340px;right:-320px;width:1240px;height:1240px;border-radius:50%;
+  background:radial-gradient(circle at 40% 36%, rgba(219,123,81,.26) 0%, rgba(219,123,81,.12) 26%, rgba(219,123,81,.04) 48%, transparent 72%)}
+.planet{position:absolute;right:118px;top:152px;width:326px;height:326px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%, #a9705c 0%, #834f49 34%, #4a3a3f 72%, #2e2b34 100%);
+  box-shadow:inset -14px -18px 44px rgba(23,20,27,.85), inset 8px 10px 26px rgba(219,123,81,.20), 0 24px 70px rgba(23,20,27,.6)}
+.ring{position:absolute;right:32px;top:232px;width:500px;height:162px;border:1px solid rgba(219,123,81,.55);
+  border-radius:50%;transform:rotate(-18deg)}
+.ring2{position:absolute;right:72px;top:258px;width:424px;height:122px;border:1px solid rgba(244,239,236,.16);
+  border-radius:50%;transform:rotate(-13deg)}
+.inner{position:relative;z-index:2;max-width:620px}
+.word{font-size:32px;letter-spacing:.30em;font-weight:400;text-transform:uppercase}
+.tag{margin-top:16px;font-size:12px;letter-spacing:.42em;color:#a69fad;text-transform:uppercase}
+h1{margin-top:54px;font-size:64px;line-height:1.1;font-weight:300;letter-spacing:-.01em}
+h1 span{display:block;color:#bdb6c2}
+.rule{margin-top:42px;width:76px;height:2px;background:#db7b51}
+.foot{margin-top:26px;font-size:19px;color:#bdb6c2;letter-spacing:.01em}
+</style>
+<div class="glow"></div><div class="ring"></div><div class="ring2"></div><div class="planet"></div>
+<div class="inner">
+  <div class="word">Genmars</div>
+  <div class="tag">Next-generation software</div>
+  <h1>Production software,<span>not prototypes.</span></h1>
+  <div class="rule"></div>
+  <div class="foot">Nairobi, Kenya &middot; genmars.co.ke</div>
+</div>

@@ -12,6 +12,10 @@ import { GatesMark } from "@/components/Illustration";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
+  /* Absolute canonical, resolved against metadataBase in layout.tsx.
+     Without one, /approach and /approach/ and www. and non-www are four URLs
+     for one page as far as a crawler is concerned. */
+  alternates: { canonical: "/approach/" },
   title: "Approach",
   description:
     "The stack Genmars Tech runs, the definition of done every project is held to, the security gates a system passes before it goes live, and how incidents are handled.",

@@ -5,6 +5,10 @@ import { portal, PORTAL_API_ORIGIN } from "@/lib/portal";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
+  /* Absolute canonical, resolved against metadataBase in layout.tsx.
+     Without one, /privacy and /privacy/ and www. and non-www are four URLs
+     for one page as far as a crawler is concerned. */
+  alternates: { canonical: "/privacy/" },
   title: "Privacy policy",
   description:
     "What genmars.co.ke collects, why, how long it is kept, and your rights. Short, because the site collects almost nothing.",

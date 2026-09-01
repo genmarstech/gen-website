@@ -6,6 +6,10 @@ import { ReconciliationMark } from "@/components/Illustration";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
+  /* Absolute canonical, resolved against metadataBase in layout.tsx.
+     Without one, /services and /services/ and www. and non-www are four URLs
+     for one page as far as a crawler is concerned. */
+  alternates: { canonical: "/services/" },
   title: "Services",
   description:
     "Paid discovery, custom build, payments and reconciliation, and maintenance retainers. What Genmars Tech sells, and how each engagement works.",

@@ -40,12 +40,77 @@ export const metadata: Metadata = {
     title: `${company.formalName} — Production software for African businesses`,
     description:
       "Custom software, mobile-money and payments integration, and the infrastructure to keep it running. Nairobi, Kenya.",
+    /**
+     * Declared explicitly rather than via Next's `opengraph-image.png` file
+     * convention. The convention emits og:image, :type, :width and :height —
+     * but NOT og:image:alt from the adjacent .alt.txt, at least not in a static
+     * export, which was checked in `out/` rather than assumed. Alt text is the
+     * only part a screen-reader user of a social platform actually gets, so it
+     * is worth the explicitness.
+     *
+     * `?v=` is the cache bust the file convention gave for free. Bump it when
+     * the image changes, or Slack, WhatsApp and Twitter will serve the old one
+     * for weeks.
+     */
+    images: [
+      {
+        url: "/og.png?v=2026-09-01",
+        width: 1200,
+        height: 630,
+        alt: "Genmars Tech — production software, not prototypes. Nairobi, Kenya.",
+        type: "image/png",
+      },
+    ],
   },
+  /**
+   * Twitter reads its own tags and falls back to Open Graph inconsistently.
+   * `summary_large_image` is what turns a link into the 1200x630 card rather
+   * than a thumbnail beside two lines of text; the image itself comes from
+   * src/app/twitter-image.png via Next's file convention.
+   */
+  twitter: {
+    card: "summary_large_image",
+    title: `${company.formalName} — Production software for African businesses`,
+    description:
+      "Custom software, mobile-money and payments integration, and the infrastructure to keep it running. Nairobi, Kenya.",
+    images: [
+      {
+        url: "/og.png?v=2026-09-01",
+        alt: "Genmars Tech — production software, not prototypes. Nairobi, Kenya.",
+      },
+    ],
+  },
+
+  /**
+   * Search Console verification.
+   *
+   * Empty unless NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION is set at BUILD time —
+   * this is a static export, so there is no runtime to read it later. Next
+   * omits the tag entirely when the value is undefined, which is correct: an
+   * empty verification meta tag is worse than none, because Search Console
+   * reports it as "found but wrong" rather than "not found".
+   *
+   * PREFER THE DNS METHOD. A TXT record on genmars.co.ke verifies a *domain
+   * property*, which covers app., api. and ops. and both http and https in one
+   * go — and it cannot be lost by a redeploy, which an HTML tag can. This is
+   * here for the case where DNS is not available to whoever is verifying.
+   * See docs/SEARCH-CONSOLE.md.
+   */
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
+
   robots: {
     /**
      * The site is NOT cleared to publish: Charter 03 §IV Tier 1 requires a
      * privacy policy and terms of service, and both are still drafts awaiting
      * advocate review. Indexing stays off until docs/PRE-LAUNCH.md is complete.
+     *
+     * ⚠ VERIFICATION DOES NOT NEED THIS OFF. A property can be verified, and a
+     * sitemap submitted, while the site is noindex — Search Console will simply
+     * report the pages as excluded. So this stays as it is until the gates in
+     * docs/PRE-LAUNCH.md are actually met; flipping it is a launch decision,
+     * not an SEO task. docs/SEARCH-CONSOLE.md has the exact two-line change.
      */
     index: false,
     follow: false,

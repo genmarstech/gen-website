@@ -4,6 +4,10 @@ import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
+  /* Absolute canonical, resolved against metadataBase in layout.tsx.
+     Without one, /contact and /contact/ and www. and non-www are four URLs
+     for one page as far as a crawler is concerned. */
+  alternates: { canonical: "/contact/" },
   title: "Contact",
   description:
     "How to reach Genmars Tech. Nairobi, Kenya. Tell us the problem, what it costs you each month, and when it started.",

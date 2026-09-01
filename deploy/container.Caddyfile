@@ -93,10 +93,31 @@
 		respond "ok" 200
 	}
 
+	# ── ONE URL PER PAGE ─────────────────────────────────────────────────────
+	# next.config.ts sets trailingSlash: true and every canonical and sitemap
+	# entry uses the slash. Without this redirect /services AND /services/ both
+	# returned 200 with byte-identical content — two URLs for one page.
+	#
+	# The canonical tag alone would have been enough for Google to consolidate
+	# them, but a 308 is the stronger signal, it stops the duplicate being
+	# linked or shared in the first place, and it costs one matcher.
+	#
+	# Excludes, in order of how easy each is to break:
+	#   · anything with a dot — /robots.txt, /sitemap.xml, /og.png, every asset
+	#   · /healthz — no extension and no trailing slash, so it WOULD be caught,
+	#     and redirecting the health probe would take the container out of
+	#     rotation the moment this shipped
+	#   · / itself, which already ends in a slash
+	@needsTrailingSlash {
+		not path */
+		not path /*.*
+		not path /healthz
+	}
+	redir @needsTrailingSlash {path}/ 308
+
 	handle {
-		# next.config.ts sets trailingSlash: true, so the export is a tree of
-		# directories containing index.html. This resolves /approach, /approach/
-		# and /approach/index.html to the same file.
+		# The export is a tree of directories containing index.html. This
+		# resolves /approach/ and /approach/index.html to the same file.
 		try_files {path} {path}/index.html {path}.html
 		file_server
 	}
