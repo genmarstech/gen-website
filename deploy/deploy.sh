@@ -7,7 +7,7 @@
 # Driven by the GitHub Actions `deploy` workflow over SSH, and run by hand for a
 # rollback:
 #
-#   cd /srv/gen-website && ./deploy/deploy.sh <any-previous-sha>
+#   cd /opt/gen-website && ./deploy/deploy.sh <any-previous-sha>
 #
 # Images are tagged with the full commit SHA and are immutable, so a deploy and
 # a rollback are both to a known artefact rather than to "whatever :latest was

@@ -311,7 +311,7 @@ Secrets on that environment:
 | `DEPLOY_SSH_KEY` | private half of a deploy-only keypair, unencrypted PEM |
 | `DEPLOY_KNOWN_HOSTS` | output of `ssh-keyscan -H <host>` |
 
-Repository variables, all optional: `DEPLOY_PATH` (default `/srv/gen-website`),
+Repository variables, all optional: `DEPLOY_PATH` (default `/opt/gen-website`),
 `DEPLOY_PORT` (default `22`), `SITE_URL` (default `https://genmars.co.ke`).
 
 `DEPLOY_KNOWN_HOSTS` is not optional in spirit. Without it the only way to make
@@ -348,7 +348,7 @@ Deploy or roll back to **any commit whose image is still in GHCR** by running
 `deploy` from the Actions tab with a full 40-character SHA — or on the host:
 
 ```bash
-cd /srv/gen-website
+cd /opt/gen-website
 ./deploy/deploy.sh <commit-sha>
 ```
 

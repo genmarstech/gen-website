@@ -30,7 +30,7 @@ name: deploy
 #     DEPLOY_KNOWN_HOSTS output of: ssh-keyscan -H <host>
 #
 #   Variables (Settings → Variables), all optional:
-#     DEPLOY_PATH        checkout on the host      (default /srv/gen-website)
+#     DEPLOY_PATH        checkout on the host      (default /opt/gen-website)
 #     DEPLOY_PORT        SSH port                  (default 22)
 #     SITE_URL           public URL to verify      (default https://genmars.co.ke)
 #
@@ -90,7 +90,7 @@ jobs:
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/srv/gen-website' }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/gen-website' }}
       DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
       SITE_URL: ${{ vars.SITE_URL || 'https://genmars.co.ke' }}
 
