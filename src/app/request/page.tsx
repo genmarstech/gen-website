@@ -26,12 +26,19 @@ export default function RequestPage() {
               anyway, and answering them here means the first reply you get is
               useful instead of a list of questions back.
             </p>
+            {/*
+              Read by two audiences and written for both: someone waiting the
+              moment before the browser leaves for the portal, and someone back
+              from it with the form in front of them. So it says what the
+              account is FOR rather than announcing a step — the step either
+              has not happened yet or is already done.
+            */}
             <p className="measure">
-              They come after a short account setup on{" "}
-              <a href={portal.origin}>{portal.host}</a>. That is where your
+              Your answers land against your account on{" "}
+              <a href={portal.origin}>{portal.host}</a>, which is where the
               engagement lives once it starts &mdash; scope, weekly progress
-              notes, milestones and payments &mdash; and having it from the
-              first conversation is worth the minute it takes.
+              notes, milestones and payments, in one place instead of scattered
+              through an email thread.
             </p>
           </Reveal>
         </div>
