@@ -317,9 +317,30 @@ migrations.
 | The `contact/` URL | The portal's empty state links to it |
 | A new port or container | Shared host, and a live client site on it |
 | Caddy `conf.d` | One bad reload affects every site on the box |
+| **Cloudflare proxy status** | Every Genmars record is DNS-only. See below — three separate things break |
 | The `?return=` parameter name | Both halves must agree, or the loop is a one-way door |
 | The portal's allowlisted origins | Drop one and returning visitors land on the dashboard instead |
 | `/request/` or its gate | The site's primary conversion path goes through the portal now |
+
+### Every record stays DNS-only (grey cloud)
+
+Verified 2026-09-01, after the orange cloud was briefly enabled and reverted.
+Three unrelated things break with it on, which is why this is in the
+coordination table rather than left to whoever is next in the DNS panel:
+
+| Host | What breaks | Where it is documented |
+|---|---|---|
+| `app` `api` `ops` | `NUM_PROXIES = 1` becomes wrong. DRF reads Cloudflare's edge as the client, so per-IP sign-in and code-request throttles collapse into one bucket shared by everyone behind that edge — one abusive client can lock out legitimate users. Proved in Redis: the same probe recorded `162.158.23.122` proxied and `102.211.145.29` direct. | `gen-portal/backend/config/settings.py` |
+| `genmars.co.ke` `www` | The **published privacy policy becomes false**. It tells visitors Cloudflare sees "which domain was looked up, not the pages you visit or anything you send", and that "your browser does not contact anyone else while loading this site". Proxied, Cloudflare terminates TLS and neither holds. | `gen-website/deploy/genmars.caddy`, `src/app/privacy/page.tsx` |
+| all | Cloudflare injects a managed `robots.txt` **above** ours, adding `User-agent: * / Allow: /` against our deliberate `Disallow: /`. Groups for one user-agent merge, and Google resolves an equal-length Allow over Disallow — so the pre-launch block may not hold. | `gen-website/docs/SEARCH-CONSOLE.md` |
+
+It also adds AAAA records, which broke reachability for an operator whose
+network has no working IPv6 path to Cloudflare.
+
+To proxy anything anyway: fix the policy text first, disable Cloudflare's
+managed robots.txt, and set `NUM_PROXIES = 2` **with** Caddy `trusted_proxies`
+scoped to Cloudflare's ranges — without the second half the forwarded header is
+spoofable, which is worse than the problem it solves.
 
 **Rollback is per-site.** Removing the portal's drop-in and reloading Caddy
 takes the portal dark and leaves `genmars.co.ke` and the client site untouched.

@@ -62,6 +62,15 @@ export const metadata: Metadata = {
  *
  * If the retention period in journald changes, THIS PAGE CHANGES. A policy
  * stating 30 days while the server keeps 90 is a misrepresentation.
+ *
+ * ── SO DOES THE CLOUDFLARE ROW, IF THE ORANGE CLOUD IS EVER TURNED ON ───────
+ * Two claims below are true only while genmars.co.ke is DNS-only (grey cloud):
+ * that Cloudflare sees "which domain was looked up, not the pages you visit or
+ * anything you send", and that "your browser does not contact anyone else
+ * while loading this site". Proxied, Cloudflare terminates TLS and both become
+ * false. The record was briefly proxied on 2026-09-01 and was returned to grey
+ * the same day. deploy/genmars.caddy carries the same warning where an
+ * infrastructure change would be made.
  */
 
 const UPDATED = "1 September 2026";

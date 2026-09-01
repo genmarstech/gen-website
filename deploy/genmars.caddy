@@ -19,6 +19,39 @@
 # certificate issued.
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ⚠ genmars.co.ke AND www MUST STAY DNS-ONLY (GREY CLOUD) IN CLOUDFLARE.
+#
+# Not a preference, and not only an infrastructure question — the published
+# privacy policy depends on it. /privacy/ tells visitors:
+#
+#   "No third-party requests. Your browser does not contact anyone else
+#    while loading this site."
+#
+#   Cloudflare — "Provides DNS for our domain. Which domain was looked up.
+#    NOT the pages you visit or anything you send."
+#
+# Both are true only while the record is grey. Proxied, Cloudflare terminates
+# TLS: it sees every page and everything submitted, and the browser talks to
+# its edge rather than to this server. Both statements become false, which the
+# Policy Pack's governing rule calls a misrepresentation to every user who read
+# them.
+#
+# Two other things break with the orange cloud on, found on 2026-09-01 when it
+# was briefly enabled:
+#
+#   · Cloudflare injects its own managed robots.txt ABOVE ours, adding a
+#     `User-agent: * / Allow: /` group that competes with our deliberate
+#     `Disallow: /`. Two groups for one user-agent get merged, and Google
+#     resolves an equal-length Allow over Disallow — so the pre-launch block
+#     may not hold.
+#   · The AAAA records it adds broke reachability for at least one operator
+#     whose network has no working IPv6 path to Cloudflare.
+#
+# TO PROXY THIS ANYWAY: rewrite the Cloudflare row and the third-party claim in
+# src/app/privacy/page.tsx FIRST, and disable Cloudflare's managed robots.txt.
+# See gen-portal/deploy/genmars-portal.caddy for why app/api/ops must stay grey
+# too — a different reason, per-IP rate limiting, and equally non-optional.
+
 genmars.co.ke {
 	encode zstd gzip
 
