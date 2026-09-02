@@ -153,6 +153,30 @@ vulnerabilities:
       speaks gRPC. Not reachable.
     expired_at: 2026-10-29
 
+  - id: CVE-2026-84304
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      gRPC-Go heap exhaustion (OOM) via HTTP/2 DATA frame fragmentation. An
+      unauthenticated attacker OPENS A GRPC STREAM and fragments the payload
+      into millions of one-byte DATA frames; per-fragment tracking overhead
+      inflates the heap until the runtime panics. google.golang.org/grpc
+      <= 1.83.0, fixed in 1.83.1; caddy:2-alpine links v1.81.0.
+      Reaching it requires a gRPC server to accept the stream, and this image
+      runs none. Verified against the deployed container on 2026-09-02:
+      container.Caddyfile contains no grpc, xds, reverse_proxy or forward_auth
+      directive - it is a file_server with `admin off`, so the admin API that
+      could load an xDS config is not listening either - and the container's
+      only listener is :3000 for HTTP, published to 127.0.0.1 only.
+      Note this is a defect in gRPC-Go's OWN HTTP/2 transport, not in Go's
+      net/http2, so Caddy's HTTP/2 file serving is not the affected code path.
+      Not a mitigated risk: unreachable code. Same argument, same library and
+      the same expiry as GHSA-hrxh-6v49-42gf above, so both are re-reviewed
+      together.
+      No fix is available to take: it needs an upstream caddy:2-alpine rebuild
+      against grpc 1.83.1, and the Dockerfile already pulls the newest tag on
+      every build.
+    expired_at: 2026-10-29
+
   # ---- CRITICAL --------------------------------------------------------------
   #
   # The only critical entry in this file, and deliberately the last one. The
