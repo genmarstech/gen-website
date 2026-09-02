@@ -85,6 +85,17 @@
 	@documents path *.html / */
 	header @documents Cache-Control "public, max-age=0, must-revalidate"
 
+	# security.txt (RFC 9116) carries an expiry date and must be re-issued
+	# before it passes. Revalidating rather than caching means the renewed file
+	# is live the moment it ships, instead of whenever a stale copy happens to
+	# expire — which for a document about how to reach us in a hurry is the
+	# whole point.
+	@securitytxt path /.well-known/security.txt
+	header @securitytxt {
+		Cache-Control "public, max-age=0, must-revalidate"
+		Content-Type "text/plain; charset=utf-8"
+	}
+
 	# ---- routing ------------------------------------------------------------
 	# `handle` blocks are mutually exclusive and evaluated in the order written,
 	# which is why they are used here rather than bare directives.

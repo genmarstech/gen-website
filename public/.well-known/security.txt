@@ -1,0 +1,29 @@
+# Genmars Tech Limited — how to report a security problem.
+#
+# RFC 9116. This file is the reason a security mailbox is useful: without it a
+# researcher who finds something has to guess where to write, and most will not
+# bother guessing twice.
+
+Contact: mailto:security@genmars.co.ke
+Contact: https://genmars.co.ke/contact/
+
+Expires: 2027-09-03T00:00:00.000Z
+
+Preferred-Languages: en, sw
+Canonical: https://genmars.co.ke/.well-known/security.txt
+
+# What we ask
+#
+# Tell us what you found and how to reproduce it. Please do not access, change
+# or keep anybody else's data while proving a point — a description is enough,
+# and we would rather fix a report we had to think about than receive proof
+# that cost a client their privacy.
+#
+# What we will do
+#
+# Acknowledge that a person has read it, tell you what we found when we have
+# looked, and tell you when it is fixed. We do not state a timeframe here,
+# because we have not run this long enough to promise one and a number we
+# cannot keep is worse than no number.
+#
+# We do not run a bounty programme. If that changes it will be said here.
