@@ -225,6 +225,22 @@ export const securityTiers = [
  * So each entry declares whether it can be bought now. "building" entries are
  * rendered apart, labelled, and route to a conversation rather than a signup.
  * If that ever stops being true, change the flag — do not change the label.
+ *
+ * ── THE PORTAL KEEPS A COPY OF THE TIERS ────────────────────────────────────
+ *
+ * This file is the price list. The client portal shows the same tier cards on
+ * its order page, so a signed-in client can pick a size without being sent out
+ * here to read a number and come back — and it holds its own copy of them, in
+ * gen-portal `operations/management/commands/seed_services.py`.
+ *
+ * CHANGING A PRICE HERE IS HALF THE JOB. Update that command and re-run
+ * `seed_services --force` against production, or the portal will keep offering
+ * the old number. Nothing detects the drift automatically: the two repositories
+ * deploy separately, and a client quoted one figure and billed another is the
+ * failure this note exists to prevent.
+ *
+ * Only `available: "now"` entries are copied. Something we cannot deliver yet
+ * must not be orderable.
  */
 export type Availability = "now" | "building";
 
