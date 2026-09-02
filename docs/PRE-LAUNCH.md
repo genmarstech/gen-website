@@ -145,9 +145,16 @@ decision.** Nothing below is for anyone else to sign off.
 - [ ] Confirm the site correctly says nothing about AuthGate. Charter 04 §IV
       forbids announcing a product before it can be used, and AuthGate has no
       product brief and no gate position (`08-products/authgate/README.md`)
-- [ ] Confirm no prices appear anywhere — they are still open
+- [ ] ~~Confirm no prices appear anywhere~~ — **superseded.** Prices are now
+      published: 27 tier prices across the services catalogue, plus
+      `pricingNote` in `src/lib/company.ts`. The check is no longer "are there
+      prices" but **is every published price one we will actually honour**, and
+      does it still match the pricing model the founder approved. Re-read the
+      whole catalogue against it before launch, and again whenever it changes
 - [ ] Confirm no response times or SLAs appear anywhere — Charter 03 §IV standing
-      rule, and Tier 2 is not met
+      rule, and Tier 2 is not met. Note the catalogue publishes **lead times**
+      per tier; those are delivery estimates, not a support SLA, and must stay
+      worded that way
 
 ---
 
@@ -159,18 +166,30 @@ decision.** Nothing below is for anyone else to sign off.
       text
 - [ ] Confirm the theme toggle persists across a reload in a private window
       (storage can throw; the code falls back to "system")
-- [ ] Test the request builder end-to-end on a phone — the `mailto:` must open
-      the device's mail app with the body intact
+- [ ] Test **ordering** end-to-end on a phone: pick a tier on `/services/`,
+      follow it to `app.genmars.co.ke/order`, sign in, submit. The request
+      builder this line used to name no longer exists — `/request/` was removed
+      and now 301s to `/services/`, and ordering is the only path in
 - [ ] Add an OG image — export from `06-brand/source/`, then set `openGraph.images`
       in `src/app/layout.tsx`. `06-brand/logo/png/genmars-banner-gradient.png`
       (2400×900) is the intended source
-- [ ] TLS in front of the site (Charter 03 §IV Tier 1 — TLS everywhere). Caddy
-      does this automatically; confirm the certificate actually issued
-- [ ] Error monitoring that reaches a human (Tier 1). A static site fails
-      differently from an app, but "the site is down" still needs to reach someone
+- [x] TLS in front of the site (Charter 03 §IV Tier 1 — TLS everywhere). Caddy
+      issues and renews it. `gen-portal/scripts/uptime-check.sh` re-checks the
+      certificate's expiry every 15 minutes, so this stays true rather than
+      having been true once
+- [x] Error monitoring that reaches a human (Tier 1). `genmars-uptime.timer`
+      checks `https://genmars.co.ke/` alongside the portal every 15 minutes and
+      mails `info@genmars.co.ke` through Resend on failure. Lives in
+      `gen-portal/` because that is where the host units are, not because the
+      site is an afterthought
 - [ ] Automated backup of the repository, with a **tested restore** (Tier 1 — an
-      untested backup is not a backup)
-- [ ] Deploy and rollback procedure written down (Charter 03 §II item 5)
+      untested backup is not a backup). GitHub is the off-box copy; the untested
+      half is a clone-and-build from scratch, which is what actually gets used
+      after a laptop dies. The *database* half of this is done and tested — see
+      `gen-portal/docs/DEPLOYMENT.md`, restore-test log
+- [x] Deploy and rollback procedure written down (Charter 03 §II item 5) —
+      `docs/DEPLOYMENT.md`, "Deploying a new version". Images are pinned by
+      commit SHA, so a rollback always names a known artefact
 - [ ] Check the built output for anything that should not ship:
       `grep -ri "TODO\|FIXME\|lorem" out/`
 
