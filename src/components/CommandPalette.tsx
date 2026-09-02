@@ -101,14 +101,26 @@ export function CommandPalette() {
       },
     ];
 
-    const services: Command[] = offers.map((offer) => ({
-      id: `svc-${offer.slug}`,
-      label: offer.name,
-      group: "Services",
-      hint: "Request this",
-      keywords: offer.lead,
-      run: () => go(`/request/?service=${offer.slug}`),
-    }));
+    /* Everything is findable; only what exists is requestable. Sending someone
+       to the request form for the platform would take an enquiry for something
+       nobody can buy yet, so those entries go to the services page instead —
+       where the "in development" label is, and has room to be explained. */
+    const services: Command[] = offers.map((offer) => {
+      const buyable = offer.available === "now";
+      return {
+        id: `svc-${offer.slug}`,
+        label: offer.name,
+        group: "Services",
+        hint: buyable ? `Request this · from ${offer.from}` : "In development",
+        keywords: offer.lead,
+        run: () =>
+          go(
+            buyable
+              ? `/request/?service=${offer.slug}`
+              : `/services/#${offer.slug}`,
+          ),
+      };
+    });
 
     const actions: Command[] = [
       {

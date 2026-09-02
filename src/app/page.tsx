@@ -97,30 +97,37 @@ export default function HomePage() {
           <Reveal>
             <p className="eyebrow">What we do</p>
             <div className={styles.sectionHead}>
-              <h2>Four ways to work with us.</h2>
+              <h2>What you can buy today.</h2>
               <p className="lede measure">
-                Everything we sell is one of these, or a combination. If what you
-                need is outside the list, we will say so rather than stretch to
-                fit it.
+                Seven services, each with a starting price. There is a platform
+                underneath them that we are still building &mdash; it is on the
+                services page, marked as such, because we would rather show you
+                where this is going than pretend it has arrived.
               </p>
             </div>
           </Reveal>
 
           <ul className={styles.offerList}>
-            {offers.map((offer, i) => (
-              <Reveal
-                as="li"
-                key={offer.slug}
-                delay={i * 70}
-                className={styles.offer}
-              >
-                <span className={styles.offerNum}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className={styles.offerName}>{offer.name}</h3>
-                <p className={styles.offerLead}>{offer.lead}</p>
-              </Reveal>
-            ))}
+            {offers
+              .filter((offer) => offer.available === "now")
+              .map((offer, i) => (
+                <Reveal
+                  as="li"
+                  key={offer.slug}
+                  delay={i * 70}
+                  className={styles.offer}
+                >
+                  <span className={styles.offerNum}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className={styles.offerName}>{offer.name}</h3>
+                  <p className={styles.offerLead}>{offer.lead}</p>
+                  <p className={styles.offerPrice}>
+                    from {offer.from}{" "}
+                    <span className={styles.offerUnit}>{offer.unit}</span>
+                  </p>
+                </Reveal>
+              ))}
           </ul>
 
           <Reveal className={styles.more}>

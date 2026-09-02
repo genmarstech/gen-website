@@ -196,49 +196,162 @@ export const securityTiers = [
 ] as const;
 
 /**
- * Charter 02 §II / Commercial Playbook §2 — the four offers.
+ * The service catalogue — Technical Team Service & Pricing Model, §15.
  *
- * NO PRICES. The price bands in the Playbook are deliberately blank — they are
- * an open decision (root README, blocking items). Publishing a number we have
- * not settled would breach Charter 04 §IV and box in the pricing floor, which
- * is the founder's sole call (Charter 02 §I).
+ * ── THIS REPLACED FOUR HAND-WRITTEN "OFFERS" ────────────────────────────────
+ *
+ * The old list described a custom software agency. The pricing model opens by
+ * rejecting that outright: "Genmars should operate as a product company with a
+ * services layer — not as a general-purpose custom software agency." So the
+ * catalogue is now the real portfolio, in the model's own words and numbers.
+ *
+ * ── WHY THERE ARE PRICES HERE NOW ───────────────────────────────────────────
+ *
+ * This file used to say, in capitals, that there were no prices — the bands
+ * were an open decision and publishing one would have boxed in a floor that is
+ * the founder's sole call (Charter 02 §I). That decision has since been made.
+ * §14 of the pricing model settles it: "Website: show simple 'from' pricing and
+ * package positioning." Detailed tier matrices, add-ons and discounts stay with
+ * sales; the site shows the entry point and says it is an entry point.
+ *
+ * ── `available` IS LOAD-BEARING, NOT DECORATION ─────────────────────────────
+ *
+ * Charter 04 §IV: nothing untrue on a Genmars surface. The Business Platform
+ * and the vertical solutions are the target model — §16 lists multi-tenant
+ * architecture, subscription billing and modular features as things the team
+ * must still BUILD. A live price table for them would read as "subscribe
+ * today" for something nobody can subscribe to.
+ *
+ * So each entry declares whether it can be bought now. "building" entries are
+ * rendered apart, labelled, and route to a conversation rather than a signup.
+ * If that ever stops being true, change the flag — do not change the label.
  */
+export type Availability = "now" | "building";
+
 export const offers = [
+  /* ── available now: the services layer ──────────────────────────────────── */
   {
-    slug: "discovery",
-    name: "Paid discovery",
-    lead: "A short, paid engagement that produces a written scope, an architecture outline, and a fixed quote.",
-    body: "Sold when you know you have a problem but cannot yet describe the solution. You own the output either way — if you take it to another firm, it still works. If you build with us, the fee comes off the project.",
-    forYouIf:
-      "You have been asked for a budget figure and have no defensible way to produce one.",
+    slug: "implementation",
+    name: "Implementation & configuration",
+    available: "now",
+    /* "From" pricing per §14. The number is the floor of the Essential Setup
+       tier, and the copy never implies it is the whole price. */
+    from: "KES 25,000",
+    unit: "one-time",
+    lead: "Setup, configuration, data migration and go-live, as a fixed-price project.",
+    body: "Three sizes: Essential for a straightforward single-location setup, Business where there is real data to migrate and workflows to configure, Enterprise where it spans locations and systems. Every one begins with discovery and ends with a documented go-live.",
+    forYouIf: "You have bought software before and watched it never quite get switched on.",
+    /* §5 of the model, stated publicly because it is the clause that protects
+       both sides. It is the same promise Charter 05 §I already makes. */
+    note: "Anything outside the signed implementation scope becomes a change request or a separate engagement. We would rather write that down than discover it in month three.",
   },
   {
-    slug: "custom-build",
-    name: "Custom build",
-    lead: "Fixed-scope, fixed-price delivery of a working system. The core services offer.",
-    body: "Scoped in three broad shapes: a single-purpose tool with one integration; a multi-user system with payments, a dashboard, deployed and monitored; or a multi-role platform with a mobile app, several integrations, and a data migration.",
-    forYouIf:
-      "You know what needs to exist and you need someone accountable for it existing.",
+    slug: "custom-development",
+    name: "Integrations & custom development",
+    available: "now",
+    from: "KES 50,000",
+    unit: "starting",
+    lead: "Paid engineering for the things the standard product does not do.",
+    body: "One low-complexity integration at the basic tier; multiple integrations with custom interfaces and reporting above that; large workflows, portals and high-assurance work at the top. Discovery is separated from implementation on anything substantial.",
+    forYouIf: "Your systems do not talk to each other and someone is the integration.",
+    note: "We do not promise feasibility or a delivery date before technical review. A date given before anyone has looked is not a commitment, it is a guess with a deadline attached.",
   },
   {
-    slug: "payments",
-    name: "Payments and reconciliation",
-    lead: "Mobile money integration, automated reconciliation, receipting, and reporting.",
-    body: "The pain here is measurable: count the hours someone spends each week matching payments to invoices by hand, and multiply by what that hour costs you. That number is the whole business case, and it is usually larger than people expect.",
-    forYouIf:
-      "Someone in your organisation reconciles M-Pesa against invoices manually.",
+    slug: "managed-services",
+    name: "Application managed services",
+    available: "now",
+    from: "KES 10,000",
+    unit: "per month",
+    lead: "Monitoring, backups, patching and support for systems already running.",
+    body: "Care covers monitoring, daily backups, updates and business-hours support. Business Care adds extended support, performance work, a monthly report and a named contact. Enterprise Care adds a 24/7 option and a custom SLA.",
+    forYouIf: "Something important is in production and nobody is watching it.",
+    note: "Hosting and infrastructure are bounded or billed separately. An unlimited resource commitment inside a fixed monthly fee is a promise that gets quietly broken.",
   },
   {
-    slug: "retainer",
-    name: "Maintenance retainer",
-    lead: "Hosting, monitoring, backups, security patching, and a defined allowance of small changes.",
-    body: "Offered in three tiers, from hosting-and-monitoring up to faster response commitments with a monthly review. Every proposal includes one — not as an upsell at the end, but as part of the offer from the first conversation.",
-    forYouIf:
-      "You want the system watched by the people who built it.",
-    /** Commercial Playbook §2.4 — the sentence that sells it. */
-    note: "If you decline the retainer, the contract says plainly that the system is unmonitored from handover and we are not responsible for its availability. We would rather write that down than imply cover we are not providing.",
+    slug: "securecare",
+    name: "Genmars SecureCare",
+    available: "now",
+    from: "KES 15,000",
+    unit: "per month",
+    lead: "Security and data-protection readiness: assessments, access reviews, MFA guidance and incident support.",
+    body: "Quarterly assessment and reporting at the basic tier, monthly at Business with incident support, continuous at Plus with executive reporting.",
+    forYouIf: "You have been asked how you protect client data and did not enjoy answering.",
+    /* The model is explicit: "not a blanket legal compliance guarantee."
+       Charter 04 §IV — this is the difference between a service and a claim. */
+    note: "This is security and data-protection readiness with technical support. It is not a blanket guarantee of legal compliance, and we will not describe it as one.",
+  },
+  {
+    slug: "advisory",
+    name: "Digital transformation advisory",
+    available: "now",
+    from: "KES 35,000",
+    unit: "starting",
+    lead: "Assessment, process mapping and a costed roadmap you own either way.",
+    body: "An assessment produces a business, process and technology review with a basic roadmap. A transformation plan adds process mapping and a twelve-month roadmap with budget. Strategic advisory runs to twenty-four months with vendor evaluation and workshops.",
+    forYouIf: "You have been asked for a budget figure and have no defensible way to produce one.",
+    note: "You own the output. If you take the roadmap to another firm it still works — that is what makes it worth paying for rather than a sales exercise.",
+  },
+  {
+    slug: "complianceready",
+    name: "ComplianceReady",
+    available: "now",
+    from: "KES 35,000",
+    unit: "starting",
+    lead: "Data mapping, gap analysis, policy templates and controls review.",
+    body: "A compliance check gives an initial assessment and gap analysis. Compliance Ready adds data mapping, policy templates and a roadmap. A compliance programme adds staff awareness and implementation support.",
+    forYouIf: "You hold personal data and have never written down where it lives.",
+    /* Again the model's own framing, and again Charter 04 §IV. We are not
+       lawyers and the site must not let anyone infer that we are. */
+    note: "This is readiness and support work. Formal legal advice is coordinated with qualified legal professionals — we do not provide it ourselves.",
+  },
+  {
+    slug: "training",
+    name: "Product training",
+    available: "now",
+    from: "KES 15,000",
+    unit: "per session",
+    lead: "Enablement for the people who actually have to use the thing.",
+    body: "A single two-hour session for up to ten people, three longer sessions with recordings, admin training and certification, or a custom curriculum built around your own configuration.",
+    forYouIf: "The software is fine and nobody is using it properly.",
+  },
+
+  /* ── in development ─────────────────────────────────────────────────────────
+     Shown because they are what the company is for, and priced because §14 says
+     to. Marked `building` because nobody can buy one today, and a page that let
+     someone believe otherwise would breach Charter 04 §IV. */
+  {
+    slug: "business-platform",
+    name: "Genmars Business Platform",
+    available: "building",
+    from: "KES 3,500",
+    unit: "per month",
+    lead: "A reusable core platform for SMEs — reports, inventory, permissions and integrations.",
+    body: "Starter covers up to five users with the core modules and basic reporting. Business adds advanced reports and permissions, limited custom workflows and one integration. Enterprise adds custom workflows, multiple integrations, a dedicated environment and a custom SLA.",
+    forYouIf: "You are running a growing operation on spreadsheets and goodwill.",
+  },
+  {
+    slug: "industry-solutions",
+    name: "Industry solutions",
+    available: "building",
+    from: "KES 5,000",
+    unit: "per month",
+    lead: "The same platform, configured for a sector: schools, clinics, retail, logistics, professional services.",
+    body: "Sector modules and reporting at the essential tier; advanced workflows and portals or payments where they apply at professional; custom workflows, integrations and a dedicated environment at enterprise.",
+    forYouIf: "Every vendor who has pitched you sells the same generic system with your industry's logo on it.",
   },
 ] as const;
+
+/**
+ * What the `from` prices mean, said once and shown wherever they are.
+ *
+ * §14 and the model's closing note both require this: pricing is indicative,
+ * enterprise tiers deliberately have no public ceiling, and a final number
+ * follows technical discovery. Charter 04 §IV means the caveat travels with
+ * the number rather than living in a footer nobody reads.
+ */
+export const pricingNote =
+  "Starting prices, in Kenyan shillings. What you actually pay depends on scope, and we quote it after discovery rather than before — enterprise tiers deliberately have no published ceiling.";
+
 
 /** Charter 01 §V — founding principles worth stating publicly. */
 export const principles = [

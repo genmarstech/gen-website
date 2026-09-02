@@ -35,12 +35,33 @@
   position: sticky;
   top: 6rem;
   align-self: start;
+  display: grid;
+  gap: var(--sp-3);
 }
 
 .offerNum {
   font-size: 0.75rem;
   letter-spacing: var(--track-eyebrow);
   color: var(--accent-text);
+}
+
+/* The price lives beside the number rather than in the prose, so a reader
+   scanning for cost finds it in the same place on every card. */
+.offerPrice {
+  display: grid;
+  gap: 0.1rem;
+  font-size: 1.0625rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.offerFrom,
+.offerUnit {
+  font-size: 0.6875rem;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-faint);
 }
 
 .offerBody {
@@ -123,4 +144,65 @@
   padding-top: var(--sp-6);
   border-top: 1px solid var(--rule);
   max-width: 22rem;
+}
+
+
+/* ---------- group headings ---------- */
+
+/* "Available now" versus "In development" is the most important distinction
+   on this page (Charter 04 §IV), so it is a heading with room around it, not
+   a footnote. */
+.groupTitle {
+  font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.6rem);
+  font-weight: 300;
+  margin-bottom: var(--sp-4);
+}
+
+.groupNote {
+  max-width: var(--measure);
+  margin-bottom: clamp(var(--sp-8), 4vw, var(--sp-12));
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-muted);
+}
+
+/* A different ground, so the reader registers a change of category even if
+   they scrolled past the heading. */
+.building {
+  background: var(--bg-raised, color-mix(in srgb, var(--ink) 3%, var(--bg)));
+  border-block: 1px solid var(--rule);
+}
+
+/* Repeated on every card in the group. The section heading is easy to scroll
+   past and this is the one fact that must not be missed. */
+.badge {
+  display: inline-block;
+  margin-left: var(--sp-3);
+  padding: 0.1rem 0.55rem;
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+@media (max-width: 48rem) {
+  /* Sticky is pointless in a single column and pins the price off-screen. */
+  .offerAside {
+    position: static;
+    grid-auto-flow: column;
+    justify-content: start;
+    align-items: baseline;
+    gap: var(--sp-4);
+  }
+
+  .offerPrice {
+    grid-auto-flow: column;
+    gap: var(--sp-2);
+    align-items: baseline;
+  }
 }

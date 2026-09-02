@@ -413,3 +413,17 @@
   font-size: 0.9375rem;
   color: var(--ink-muted);
 }
+
+
+/* Starting price on the home-page catalogue. Tabular figures so a column of
+   them aligns, and quiet enough not to outrank the name. */
+.offerPrice {
+  margin-top: var(--sp-3);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+.offerUnit {
+  color: var(--ink-faint);
+}

@@ -256,7 +256,11 @@ export function RequestBuilder() {
           </legend>
 
           <div className={styles.chips} role="group" aria-label="Service">
-            {offers.map((offer) => {
+            {/* Available-now only. A chip for something nobody can buy yet
+                would collect enquiries we cannot fulfil, and the visitor would
+                have no way to know that from the chip alone. The platform is
+                introduced on /services/ where there is room to be clear. */}
+            {offers.filter((o) => o.available === "now").map((offer) => {
               const active = draft.service === offer.name;
               return (
                 <button
