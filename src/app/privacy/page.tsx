@@ -167,28 +167,26 @@ export default function PrivacyPage() {
               </li>
             </ul>
 
-            <h2>The request form does not send us anything</h2>
+            <h2>There is no form on this site</h2>
             <p>
-              The form at <Link href="/request/">Request work</Link> looks like a
-              contact form and behaves like one, but nothing you type is
-              submitted to us or to anyone else. It stays in your browser, and
-              the button opens your own email application with the message
-              already written.
+              Not a contact form, not a newsletter box, not a search field.
+              There is nowhere on {company.domain} to type anything, so there is
+              nothing for us to collect and no third-party form service in the
+              middle.
             </p>
             <p>
-              We built it that way deliberately, so that your details never pass
-              through a third-party form service. What reaches us afterwards is
-              an ordinary email that you chose to send, and you keep a copy of it.
+              Ordering a service is a link, not a submission. It opens{" "}
+              <a href={portal.origin}>{portal.host}</a> and carries which
+              service and tier you clicked in the address, so the portal can
+              show it back to you. That is the only thing that travels, it goes
+              to us and to nobody else, and it is a fact about a button rather
+              than about you.
             </p>
             <p>
-              Reaching that form asks you to set up a client account first. That
-              happens entirely on <a href={portal.origin}>{portal.host}</a>: what
-              you type into the account setup is collected by the portal under
-              its own privacy policy, not by this site. This site is told nothing
-              about it &mdash; not your name, not your email address, not whether
-              you completed it. All it records is a flag in your own browser
-              saying &ldquo;this person has been to the portal&rdquo;, so that it
-              does not ask you a second time.
+              Everything after that happens on the portal, under its own privacy
+              policy: your name, your email address, and what you tell us about
+              the problem. This site is told none of it &mdash; not whether you
+              signed up, not whether you finished, not whether you came back.
             </p>
 
             <h2>The client portal is a separate system</h2>

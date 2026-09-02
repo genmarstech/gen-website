@@ -129,7 +129,7 @@ export default function WorkPage() {
                 with the client&rsquo;s knowledge.
               </p>
               <div className={styles.holdingActions}>
-                <Link href="/request/" className="btn">
+                <Link href="/services/" className="btn">
                   Ask about our work
                 </Link>
                 <Link href="/approach/" className="btn btn--ghost">
@@ -191,7 +191,7 @@ export default function WorkPage() {
               questions and composes the email for you.
             </p>
             <div className={styles.holdingActions}>
-              <Link href="/request/" className="btn">
+              <Link href="/services/" className="btn">
                 Request work
               </Link>
             </div>

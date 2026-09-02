@@ -244,6 +244,17 @@ export const offers = [
     /* §5 of the model, stated publicly because it is the clause that protects
        both sides. It is the same promise Charter 05 §I already makes. */
     note: "Anything outside the signed implementation scope becomes a change request or a separate engagement. We would rather write that down than discover it in month three.",
+    tiers: [
+      { slug: "essential-setup", name: "Essential Setup", price: "KES 25,000",
+        lead: "A straightforward single-location setup.",
+        includes: ["Discovery", "Basic configuration", "Up to 10 users", "Basic data migration", "1 integration", "1 training session", "3 days go-live support"] },
+      { slug: "business-setup", name: "Business Setup", price: "KES 75,000",
+        lead: "Real data to migrate and workflows to configure.",
+        includes: ["Discovery", "Advanced configuration", "Up to 30 users", "Full data migration", "Up to 2 integrations", "2 training sessions", "Full documentation", "7 days go-live support"] },
+      { slug: "enterprise-setup", name: "Enterprise Setup", price: "KES 150,000", open: true,
+        lead: "Multiple locations and systems.",
+        includes: ["Discovery", "Custom configuration", "30+ users", "Advanced data migration", "Multiple integrations", "Custom training", "Full documentation", "14+ days go-live support"] },
+    ],
   },
   {
     slug: "custom-development",
@@ -255,6 +266,17 @@ export const offers = [
     body: "One low-complexity integration at the basic tier; multiple integrations with custom interfaces and reporting above that; large workflows, portals and high-assurance work at the top. Discovery is separated from implementation on anything substantial.",
     forYouIf: "Your systems do not talk to each other and someone is the integration.",
     note: "We do not promise feasibility or a delivery date before technical review. A date given before anyone has looked is not a commitment, it is a guess with a deadline attached.",
+    tiers: [
+      { slug: "basic", name: "Basic", price: "KES 50,000",
+        lead: "One low-complexity integration or extension.",
+        includes: ["Technical specification", "One integration or extension", "Automated tests", "Deployment", "Handover documentation"] },
+      { slug: "advanced", name: "Advanced", price: "KES 150,000",
+        lead: "Multiple integrations, custom interfaces and reporting.",
+        includes: ["Technical specification", "Multiple integrations", "Custom UI, API or reporting", "Automated tests", "Deployment", "Handover documentation"] },
+      { slug: "enterprise", name: "Enterprise", price: "KES 350,000", open: true,
+        lead: "Large integrations, complex workflows, portals and apps.",
+        includes: ["Separate discovery phase", "Complex workflows", "Portals or mobile apps", "High-assurance testing", "Deployment and monitoring", "Full handover documentation"] },
+    ],
   },
   {
     slug: "managed-services",
@@ -266,6 +288,17 @@ export const offers = [
     body: "Care covers monitoring, daily backups, updates and business-hours support. Business Care adds extended support, performance work, a monthly report and a named contact. Enterprise Care adds a 24/7 option and a custom SLA.",
     forYouIf: "Something important is in production and nobody is watching it.",
     note: "Hosting and infrastructure are bounded or billed separately. An unlimited resource commitment inside a fixed monthly fee is a promise that gets quietly broken.",
+    tiers: [
+      { slug: "care", name: "Care", price: "KES 10,000",
+        lead: "Keeping a running system running.",
+        includes: ["Monitoring", "Daily backups", "Updates and patches", "Limited user management", "Business-hours support", "Standard SLA"] },
+      { slug: "business-care", name: "Business Care", price: "KES 25,000",
+        lead: "Extended support and someone whose name you know.",
+        includes: ["Monitoring", "Daily backups", "Updates and patches", "Full user management", "Extended support hours", "Advanced performance work", "Monthly report", "Dedicated contact", "Priority SLA"] },
+      { slug: "enterprise-care", name: "Enterprise Care", price: "KES 60,000", open: true,
+        lead: "Round-the-clock cover on a custom SLA.",
+        includes: ["Monitoring", "Advanced backups", "Updates and patches", "Full user management", "24/7 support option", "Advanced performance work", "Monthly report", "Dedicated contact", "Custom SLA"] },
+    ],
   },
   {
     slug: "securecare",
@@ -279,6 +312,17 @@ export const offers = [
     /* The model is explicit: "not a blanket legal compliance guarantee."
        Charter 04 §IV — this is the difference between a service and a claim. */
     note: "This is security and data-protection readiness with technical support. It is not a blanket guarantee of legal compliance, and we will not describe it as one.",
+    tiers: [
+      { slug: "basic", name: "Basic", price: "KES 15,000",
+        lead: "A quarterly look, and the basics enforced.",
+        includes: ["Quarterly security assessment", "Access review", "MFA guidance", "Backup review", "Basic endpoint review", "Quarterly awareness material", "Quarterly report"] },
+      { slug: "business", name: "Business", price: "KES 35,000",
+        lead: "Monthly cadence, with incident support.",
+        includes: ["Monthly security assessment", "Access review", "MFA guidance", "Backup review", "Full endpoint review", "Monthly awareness material", "Incident support", "Monthly report"] },
+      { slug: "plus", name: "Plus", price: "KES 75,000", open: true,
+        lead: "Continuous, with reporting an executive can read.",
+        includes: ["Continuous assessment", "Access review", "MFA guidance", "Backup review", "Advanced endpoint review", "Custom awareness programme", "Priority incident support", "Executive and monthly reporting"] },
+    ],
   },
   {
     slug: "advisory",
@@ -290,6 +334,17 @@ export const offers = [
     body: "An assessment produces a business, process and technology review with a basic roadmap. A transformation plan adds process mapping and a twelve-month roadmap with budget. Strategic advisory runs to twenty-four months with vendor evaluation and workshops.",
     forYouIf: "You have been asked for a budget figure and have no defensible way to produce one.",
     note: "You own the output. If you take the roadmap to another firm it still works — that is what makes it worth paying for rather than a sales exercise.",
+    tiers: [
+      { slug: "assessment", name: "Assessment", price: "KES 35,000",
+        lead: "Where you actually are, and a first roadmap.",
+        includes: ["Business, process and technology assessment", "Basic roadmap", "Findings presentation"] },
+      { slug: "transformation-plan", name: "Transformation Plan", price: "KES 100,000",
+        lead: "A twelve-month plan with a budget attached.",
+        includes: ["Process mapping", "Technology review", "12-month roadmap", "Indicative budget", "Findings presentation"] },
+      { slug: "strategic-advisory", name: "Strategic Advisory", price: "KES 250,000", open: true,
+        lead: "Two years out, with vendor evaluation and workshops.",
+        includes: ["12-24 month roadmap", "Vendor evaluation", "Workshops", "Ongoing advisory", "Findings presentation"] },
+    ],
   },
   {
     slug: "complianceready",
@@ -303,6 +358,17 @@ export const offers = [
     /* Again the model's own framing, and again Charter 04 §IV. We are not
        lawyers and the site must not let anyone infer that we are. */
     note: "This is readiness and support work. Formal legal advice is coordinated with qualified legal professionals — we do not provide it ourselves.",
+    tiers: [
+      { slug: "compliance-check", name: "Compliance Check", price: "KES 35,000",
+        lead: "Where the gaps are.",
+        includes: ["Initial assessment", "Gap analysis", "Basic controls review"] },
+      { slug: "compliance-ready", name: "Compliance Ready", price: "KES 85,000",
+        lead: "Know what data you hold, and have the policies written.",
+        includes: ["Data mapping", "Gap analysis", "Policy templates", "Controls review", "Implementation roadmap"] },
+      { slug: "compliance-program", name: "Compliance Program", price: "KES 200,000", open: true,
+        lead: "The whole programme, with help putting it in place.",
+        includes: ["Comprehensive programme", "Data mapping", "Policy templates", "Staff awareness", "Implementation support", "Controls review"] },
+    ],
   },
   {
     slug: "training",
@@ -313,6 +379,17 @@ export const offers = [
     lead: "Enablement for the people who actually have to use the thing.",
     body: "A single two-hour session for up to ten people, three longer sessions with recordings, admin training and certification, or a custom curriculum built around your own configuration.",
     forYouIf: "The software is fine and nobody is using it properly.",
+    tiers: [
+      { slug: "essential", name: "Essential", price: "KES 15,000",
+        lead: "One session, for a small group.",
+        includes: ["1 session", "Up to 2 hours", "Up to 10 participants", "Training materials"] },
+      { slug: "professional", name: "Professional", price: "KES 35,000",
+        lead: "Three sessions, recorded, with admin training.",
+        includes: ["3 sessions", "Up to 6 hours", "Up to 25 participants", "Training materials", "Recorded sessions", "Admin training", "Certification"] },
+      { slug: "enterprise", name: "Enterprise", price: "KES 75,000", open: true,
+        lead: "Built around your own configuration.",
+        includes: ["Custom session count", "Custom duration", "25+ participants", "Training materials", "Recorded sessions", "Admin training", "Certification", "Custom curriculum"] },
+    ],
   },
 
   /* ── in development ─────────────────────────────────────────────────────────
@@ -328,6 +405,17 @@ export const offers = [
     lead: "A reusable core platform for SMEs — reports, inventory, permissions and integrations.",
     body: "Starter covers up to five users with the core modules and basic reporting. Business adds advanced reports and permissions, limited custom workflows and one integration. Enterprise adds custom workflows, multiple integrations, a dedicated environment and a custom SLA.",
     forYouIf: "You are running a growing operation on spreadsheets and goodwill.",
+    tiers: [
+      { slug: "starter", name: "Starter", price: "KES 3,500",
+        lead: "A small team on the core modules.",
+        includes: ["Up to 5 users", "Core modules", "Basic reports", "Basic inventory", "Basic permissions", "Email support", "Standard SLA"] },
+      { slug: "business", name: "Business", price: "KES 8,500",
+        lead: "Advanced reporting, and one integration included.",
+        includes: ["Up to 15 users", "Core modules", "Advanced reports", "Full inventory", "Advanced permissions", "Limited custom workflows and reports", "1 integration included", "Priority support", "Priority SLA"] },
+      { slug: "enterprise", name: "Enterprise", price: "KES 20,000", open: true,
+        lead: "Custom workflows and a dedicated environment.",
+        includes: ["25+ users", "Core modules", "Advanced and custom reports", "Full inventory", "Advanced permissions", "Full custom workflows and reports", "Multiple integrations", "Dedicated support", "Optional dedicated environment", "Custom SLA"] },
+    ],
   },
   {
     slug: "industry-solutions",
@@ -338,6 +426,17 @@ export const offers = [
     lead: "The same platform, configured for a sector: schools, clinics, retail, logistics, professional services.",
     body: "Sector modules and reporting at the essential tier; advanced workflows and portals or payments where they apply at professional; custom workflows, integrations and a dedicated environment at enterprise.",
     forYouIf: "Every vendor who has pitched you sells the same generic system with your industry's logo on it.",
+    tiers: [
+      { slug: "essential", name: "Essential", price: "KES 5,000",
+        lead: "Core modules for your sector.",
+        includes: ["5 users", "Core sector modules", "Basic reports"] },
+      { slug: "professional", name: "Professional", price: "KES 12,500",
+        lead: "Advanced workflows, with portals or payments where they apply.",
+        includes: ["15 users", "Sector modules", "Advanced workflows", "Portals or payments where applicable"] },
+      { slug: "enterprise", name: "Enterprise", price: "KES 30,000", open: true,
+        lead: "Custom workflows, integrations and a dedicated environment.",
+        includes: ["30+ users", "Sector modules", "Custom workflows", "Integrations", "Dedicated support", "Dedicated environment"] },
+    ],
   },
 ] as const;
 

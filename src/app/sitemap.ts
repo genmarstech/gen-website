@@ -14,12 +14,11 @@ import { company } from "@/lib/company";
  * policy page in Google's index saying that is worse than no policy page in it.
  * Add them when real text is in place (docs/PRE-LAUNCH.md, Gate 1).
  *
- * `/request/` — it no longer renders as a page for a first-time visitor. It
- * sends them to app.genmars.co.ke to set up an account and brings them back,
- * which a crawler experiences as a client-side redirect off the site. Listing
- * a URL that redirects away is asking Google to discover a page and then
- * telling it the page is somewhere else. `/contact/` is the indexable route
- * for someone who wants to get in touch.
+ * `/request/` — REMOVED, not merely unlisted. Ordering now happens per tier on
+ * `/services/`, which is listed and is the page worth ranking: it carries the
+ * catalogue, the tiers and the prices. Caddy 301s the old path there so the
+ * links already in the world, and anything Google has indexed, land somewhere
+ * that answers the same question.
  *
  * ── WHY lastModified IS A CONSTANT ──────────────────────────────────────────
  *
@@ -35,14 +34,14 @@ import { company } from "@/lib/company";
 export const dynamic = "force-static";
 
 /** Bump when page copy meaningfully changes. Not on every deploy. */
-const CONTENT_REVIEWED = "2026-09-01";
+const CONTENT_REVIEWED = "2026-09-02";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = CONTENT_REVIEWED;
 
   return [
     { url: `${company.url}/`, lastModified, priority: 1, changeFrequency: "monthly" },
-    { url: `${company.url}/services/`, lastModified, priority: 0.8, changeFrequency: "monthly" },
+    { url: `${company.url}/services/`, lastModified, priority: 0.9, changeFrequency: "monthly" },
     { url: `${company.url}/work/`, lastModified, priority: 0.8, changeFrequency: "monthly" },
     { url: `${company.url}/approach/`, lastModified, priority: 0.8, changeFrequency: "yearly" },
     { url: `${company.url}/contact/`, lastModified, priority: 0.6, changeFrequency: "yearly" },

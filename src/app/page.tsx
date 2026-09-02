@@ -71,7 +71,7 @@ export default function HomePage() {
             </p>
 
             <div className={styles.heroActions}>
-              <Link href="/request/" className="btn">
+              <Link href="/services/" className="btn">
                 Request work
               </Link>
               <Link href="/work/" className="btn btn--ghost">
@@ -135,7 +135,7 @@ export default function HomePage() {
           </Reveal>
 
           <Reveal className={styles.more}>
-            <Link href="/request/">Request one of them &rarr;</Link>
+            <Link href="/services/">See the tiers and prices &rarr;</Link>
           </Reveal>
         </div>
       </section>

@@ -93,6 +93,23 @@
 		respond "ok" 200
 	}
 
+	# ── RETIRED PATHS ────────────────────────────────────────────────────────
+	# /request/ was the old "request work" page: a free-text form that composed
+	# an email. Ordering now happens per tier on /services/, which answers the
+	# same question and more, so the path is a permanent redirect rather than a
+	# 404.
+	#
+	# 301 and not 308 deliberately. This is a GET-only marketing page with no
+	# form left to re-submit, and 301 is the status search engines treat as
+	# "move the ranking" rather than merely "look over there". Both spellings
+	# are matched because the old page was linked with and without the slash.
+	#
+	# Placed BEFORE the trailing-slash rule: that matcher requires
+	# file {path}/index.html to exist, and this page no longer exists, so
+	# /request would otherwise fall through to a 404 rather than redirect.
+	@retired path /request /request/
+	redir @retired /services/ 301
+
 	# ── ONE URL PER PAGE ─────────────────────────────────────────────────────
 	# next.config.ts sets trailingSlash: true and every canonical and sitemap
 	# entry uses the slash. Without this redirect /services AND /services/ both

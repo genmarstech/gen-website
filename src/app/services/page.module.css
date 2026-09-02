@@ -24,21 +24,6 @@
   padding-top: 0;
 }
 
-@media (min-width: 48rem) {
-  .offer {
-    grid-template-columns: 6rem 1fr;
-    gap: var(--sp-8);
-  }
-}
-
-.offerAside {
-  position: sticky;
-  top: 6rem;
-  align-self: start;
-  display: grid;
-  gap: var(--sp-3);
-}
-
 .offerNum {
   font-size: 0.75rem;
   letter-spacing: var(--track-eyebrow);
@@ -47,22 +32,6 @@
 
 /* The price lives beside the number rather than in the prose, so a reader
    scanning for cost finds it in the same place on every card. */
-.offerPrice {
-  display: grid;
-  gap: 0.1rem;
-  font-size: 1.0625rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-  line-height: 1.25;
-}
-
-.offerFrom,
-.offerUnit {
-  font-size: 0.6875rem;
-  letter-spacing: var(--track-eyebrow);
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
 
 .offerBody {
   max-width: var(--measure);
@@ -190,19 +159,179 @@
   white-space: nowrap;
 }
 
-@media (max-width: 48rem) {
-  /* Sticky is pointless in a single column and pins the price off-screen. */
-  .offerAside {
-    position: static;
-    grid-auto-flow: column;
-    justify-content: start;
-    align-items: baseline;
-    gap: var(--sp-4);
-  }
 
-  .offerPrice {
-    grid-auto-flow: column;
-    gap: var(--sp-2);
-    align-items: baseline;
+
+/* ---------- offer head ---------- */
+
+.offerHead {
+  display: grid;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+}
+
+.offerName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-3);
+  /* Deep-linked from the command palette, so it must not land under the
+     sticky header. */
+  scroll-margin-top: 6rem;
+}
+
+/* ---------- tiers ---------- */
+
+/* Three across on a wide screen, because the whole point is comparing them.
+   Below that they stack, and each stays a complete proposition on its own —
+   name, price, what is in it, and how to order it — rather than a column of
+   ticks that only makes sense next to its neighbours. */
+.tiers {
+  display: grid;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-8);
+}
+
+@media (min-width: 52rem) {
+  .tiers {
+    grid-template-columns: repeat(3, 1fr);
   }
+}
+
+.tier {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  background: var(--bg-raised, color-mix(in srgb, var(--ink) 2.5%, var(--bg)));
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.tierHead {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.tierName {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.tierPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-size: 1.375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* Not decoration: it means there is no published ceiling, which the pricing
+   section explains. Sized so it reads as part of the number. */
+.plus {
+  font-size: 1.375rem;
+  color: var(--accent-text);
+}
+
+.tierUnit {
+  margin-left: 0.35rem;
+  font-size: 0.6875rem;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.tierLead {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.includes {
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+  /* Pushes the order button to the bottom so the buttons line up across the
+     three cards regardless of how much each tier includes. */
+  margin-bottom: auto;
+  padding-bottom: var(--sp-2);
+}
+
+.includes li {
+  position: relative;
+  padding-left: 1.1rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.includes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.55;
+}
+
+.orderButton,
+.askButton {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--radius);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.orderButton {
+  color: var(--bg);
+  background: var(--ink);
+  border: 1px solid var(--ink);
+}
+
+.orderButton:hover {
+  background: var(--accent-text);
+  border-color: var(--accent-text);
+}
+
+/* Quieter than an order, because it is a different act — asking about
+   something that does not exist yet, not buying something that does. */
+.askButton {
+  color: var(--ink);
+  background: none;
+  border: 1px dashed var(--rule-strong);
+}
+
+.askButton:hover {
+  border-color: var(--accent);
+}
+
+:is(.orderButton, .askButton):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The service name is in the card heading above, but a screen reader moving
+   button to button hears only "Order Business Setup" three times across the
+   page otherwise. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.offerBody {
+  max-width: var(--measure);
 }

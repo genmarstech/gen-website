@@ -21,7 +21,7 @@ import styles from "./SiteHeader.module.css";
  * ── SIGN IN ─────────────────────────────────────────────────────────────────
  * Quiet, and deliberately so. Signing in is for people who already have an
  * account; pushing it at strangers would imply a self-serve product we do not
- * sell. It is a link, not a second button competing with Request work.
+ * sell. It is a link, not a second button competing with Services.
  *
  * It leaves this origin for app.genmars.co.ke — see lib/portal.ts. Until this
  * existed, a client with an account had no way to reach the portal from here
@@ -99,8 +99,8 @@ export function SiteHeader() {
           <a href={portal.signIn} className={styles.signIn}>
             Sign in
           </a>
-          <Link href="/request/" className={styles.cta}>
-            Request work
+          <Link href="/services/" className={styles.cta}>
+            Services
           </Link>
 
           <button
@@ -147,8 +147,8 @@ export function SiteHeader() {
               </a>
             </li>
             <li style={{ ["--i" as string]: nav.length + 1 }}>
-              <Link href="/request/" className={styles.panelCta}>
-                Request work
+              <Link href="/services/" className={styles.panelCta}>
+                Services
               </Link>
             </li>
           </ul>

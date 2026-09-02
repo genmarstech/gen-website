@@ -71,80 +71,27 @@ export const portal = {
  * gen-portal/frontend/src/lib/returnTo.ts, and renaming it on one side turns
  * the round trip into a one-way door onto the dashboard.
  */
-const RETURN_PARAM = "return";
-
-/** The marker the portal hands back on the return URL. See rememberAccount(). */
-export const RETURNED_PARAM = "from";
-export const RETURNED_VALUE = "portal";
-
-/**
- * A portal URL that comes back here when the account is set up.
+/*
+ * ── WHAT USED TO BE HERE ────────────────────────────────────────────────────
  *
- * `returnTo` is built from the live location rather than from company.url, so
- * the loop closes on whichever origin the visitor is actually on — localhost
- * in development, www or bare in production. Hard-coding one origin sends
- * anyone on the other to a domain they were not browsing.
- */
-export function portalUrlWithReturn(base: string, returnTo: string): string {
-  return `${base}?${RETURN_PARAM}=${encodeURIComponent(returnTo)}`;
-}
-
-/**
- * The URL to come back to: where the visitor is now, marked as a return.
+ * A return-trip mechanism and a localStorage flag ("this person has been to
+ * the portal"), both serving the /request/ gate: send the visitor to the
+ * portal to make an account, then bring them back to a form on this site.
  *
- * Preserves the existing query string — someone who arrived on
- * /request/?service=payments must not lose that preselection on the round trip.
+ * The gate and the form are gone — ordering happens per tier on /services/ and
+ * finishes in the portal — so this became dead code that still wrote to a
+ * visitor's browser. Removed rather than left: the privacy policy has to
+ * describe every byte this site stores, and the shortest true description is
+ * "none".
  */
-export function returnUrlForCurrentPage(): string {
-  const url = new URL(window.location.href);
-  url.searchParams.set(RETURNED_PARAM, RETURNED_VALUE);
-  return url.toString();
-}
 
-/* ── the "you have been here before" hint ─────────────────────────────────── */
-
-/**
- * Local storage key. Named and documented because the privacy policy lists
- * every key this site writes, and an undocumented one makes that list a lie.
- */
-const ACCOUNT_HINT_KEY = "gm-portal-account";
-
-/**
- * Has this browser completed the portal round trip?
- *
- * A hint, and only a hint. It is a boolean this origin wrote to its own local
- * storage; anyone can set it from the console in four seconds. That is fine,
- * and it is worth being clear about why: the thing it gates is a form that
- * composes an email in your own mail client. There is nothing behind it to
- * steal. Someone who forges this flag has won the right to send us an email,
- * which they could also do by typing our address.
- *
- * Never gate anything of value on this. If something of value ever appears on
- * this site, it belongs on the portal instead.
- */
-export function hasPortalAccount(): boolean {
-  try {
-    return window.localStorage.getItem(ACCOUNT_HINT_KEY) === "1";
-  } catch {
-    // Private browsing, or storage disabled. Treated as "no account", which
-    // costs a returning visitor one extra trip through a sign-in they are
-    // already signed in for — the portal will pass them straight through.
-    return false;
-  }
-}
-
-export function rememberPortalAccount(): void {
-  try {
-    window.localStorage.setItem(ACCOUNT_HINT_KEY, "1");
-  } catch {
-    // Nothing to do. The gate simply asks again next time.
-  }
-}
-
-export function forgetPortalAccount(): void {
-  try {
-    window.localStorage.removeItem(ACCOUNT_HINT_KEY);
-  } catch {
-    /* as above */
-  }
+export function orderUrl(serviceSlug?: string, tierName?: string): string {
+  const params = new URLSearchParams();
+  if (serviceSlug) params.set("service", serviceSlug);
+  if (tierName) params.set("tier", tierName);
+  // Called with nothing for the open "describe your problem" route. An empty
+  // `?service=` would be a claim that a service was chosen and then lost,
+  // which is worse than the honest absence of one.
+  const query = params.toString();
+  return query ? `${PORTAL_ORIGIN}/sign-up?${query}` : `${PORTAL_ORIGIN}/sign-up`;
 }
