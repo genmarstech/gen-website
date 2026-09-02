@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Photo } from "@/components/Photo";
 import { offers, pricingNote } from "@/lib/company";
 import { orderUrl } from "@/lib/portal";
 import { Reveal } from "@/components/Reveal";
@@ -85,6 +86,19 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      {/*
+        Between what can be bought today and what is still being built. The
+        photograph illustrates the work; it is not our workroom, and the alt
+        text does not suggest it is.
+      */}
+      <div className={styles.bandFigure}>
+        <Photo
+          name="workroom"
+          alt="An empty workroom: desks, monitors and chairs under daylight."
+          sizes="100vw"
+        />
+      </div>
 
       <section className={`section ${styles.building}`}>
         <div className="wrap">

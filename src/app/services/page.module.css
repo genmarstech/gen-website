@@ -335,3 +335,21 @@
 .offerBody {
   max-width: var(--measure);
 }
+
+/* A pause between what can be bought today and what is still being built.
+   Same treatment as the home band: cropped to a strip rather than run to its
+   natural height, so it separates two sections instead of becoming one. */
+.bandFigure {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  height: clamp(160px, 28vw, 340px);
+  background: var(--bg-band);
+}
+
+.bandFigure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
+}

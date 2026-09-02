@@ -427,3 +427,28 @@
 .offerUnit {
   color: var(--ink-faint);
 }
+
+/*
+ * A full-bleed photographic band.
+ *
+ * Capped in height and cropped rather than shown whole: these are tall source
+ * photographs, and letting one run to its natural height would put a
+ * two-thousand-pixel image between two paragraphs and make the page feel like
+ * a slideshow. object-position favours the upper middle, which is where the
+ * subject sits in all of them.
+ */
+.bandFigure {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  /* Wide and short on a phone, a little taller with room to spare. */
+  height: clamp(180px, 34vw, 420px);
+  background: var(--bg-band);
+}
+
+.bandFigure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+}

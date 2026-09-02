@@ -269,3 +269,20 @@
     margin-bottom: var(--sp-16);
   }
 }
+
+/* The same band treatment as the home and services pages, so a reader moving
+   between them sees one device rather than three. */
+.bandFigure {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  height: clamp(160px, 26vw, 320px);
+  background: var(--bg-band);
+}
+
+.bandFigure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+}

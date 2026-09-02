@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Photo } from "@/components/Photo";
 import {
   definitionOfDone,
   incidentPractice,
@@ -139,6 +140,18 @@ export default function ApproachPage() {
           </div>
         </div>
       </section>
+
+      {/*
+        Before the incidents section. The subject — a code editor mid-work — is
+        the closest of the five to what this page is actually about.
+      */}
+      <div className={styles.bandFigure}>
+        <Photo
+          name="editor"
+          alt="A laptop showing an open code editor, beside a cup of coffee."
+          sizes="100vw"
+        />
+      </div>
 
       {/* ---------- incidents ---------- */}
       <section className="section">

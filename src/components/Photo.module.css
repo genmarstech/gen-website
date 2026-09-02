@@ -1,0 +1,13 @@
+/*
+ * The <img> fills whatever box the caller gives it.
+ *
+ * `height: auto` with the width and height attributes present is what lets the
+ * browser reserve the right space from the aspect ratio and then let the
+ * layout size it. Setting only one of the two is how an image ends up
+ * stretched.
+ */
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+}

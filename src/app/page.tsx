@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Photo } from "@/components/Photo";
 import {
   company,
   definitionOfDone,
@@ -187,6 +188,23 @@ export default function HomePage() {
           </Reveal>
         </div>
       </section>
+
+      {/*
+        ---------- a full-bleed band ----------
+        Between the proof section and how the company is built: a pause
+        between two dense blocks of text.
+
+        The photograph makes no claim. It is not our office and the alt text
+        does not say it is — Charter 04 §IV, and the reason none of the
+        photography on this site has a person in it.
+      */}
+      <div className={styles.bandFigure} aria-hidden="false">
+        <Photo
+          name="corridor"
+          alt="A glass-walled office corridor lit warm along a wooden floor."
+          sizes="100vw"
+        />
+      </div>
 
       {/* ---------- two engines ---------- */}
       <section className="section">

@@ -1,0 +1,307 @@
+{
+  "corridor": {
+    "alt": "A glass-walled office corridor lit warm along a wooden floor.",
+    "credit": "NRD on Unsplash",
+    "width": 3024,
+    "height": 4032,
+    "colour": "#47321e",
+    "avif": [
+      {
+        "width": 640,
+        "src": "/media/corridor-640.9920882e.avif"
+      },
+      {
+        "width": 1024,
+        "src": "/media/corridor-1024.54955537.avif"
+      },
+      {
+        "width": 1536,
+        "src": "/media/corridor-1536.107654af.avif"
+      },
+      {
+        "width": 2048,
+        "src": "/media/corridor-2048.1ddbb9be.avif"
+      }
+    ],
+    "webp": [
+      {
+        "width": 640,
+        "src": "/media/corridor-640.e32ecb7f.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/media/corridor-1024.622eecbc.webp"
+      },
+      {
+        "width": 1536,
+        "src": "/media/corridor-1536.d6051a57.webp"
+      },
+      {
+        "width": 2048,
+        "src": "/media/corridor-2048.5373c727.webp"
+      }
+    ],
+    "jpeg": [
+      {
+        "width": 640,
+        "src": "/media/corridor-640.3ac8ac6a.jpg"
+      },
+      {
+        "width": 1024,
+        "src": "/media/corridor-1024.8ffa7826.jpg"
+      },
+      {
+        "width": 1536,
+        "src": "/media/corridor-1536.357e0d91.jpg"
+      },
+      {
+        "width": 2048,
+        "src": "/media/corridor-2048.3ecf2f0e.jpg"
+      }
+    ]
+  },
+  "workroom": {
+    "alt": "An empty workroom: desks, monitors and chairs under daylight.",
+    "credit": "cottonbro studio on Pexels",
+    "width": 6514,
+    "height": 4343,
+    "colour": "#535b60",
+    "avif": [
+      {
+        "width": 640,
+        "src": "/media/workroom-640.9e4bb903.avif"
+      },
+      {
+        "width": 1024,
+        "src": "/media/workroom-1024.67aa5e36.avif"
+      },
+      {
+        "width": 1536,
+        "src": "/media/workroom-1536.b1a53a6b.avif"
+      },
+      {
+        "width": 2048,
+        "src": "/media/workroom-2048.741fd712.avif"
+      }
+    ],
+    "webp": [
+      {
+        "width": 640,
+        "src": "/media/workroom-640.a702d846.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/media/workroom-1024.f16728c6.webp"
+      },
+      {
+        "width": 1536,
+        "src": "/media/workroom-1536.febd9e25.webp"
+      },
+      {
+        "width": 2048,
+        "src": "/media/workroom-2048.59f93ff1.webp"
+      }
+    ],
+    "jpeg": [
+      {
+        "width": 640,
+        "src": "/media/workroom-640.fbee7e3a.jpg"
+      },
+      {
+        "width": 1024,
+        "src": "/media/workroom-1024.3dfc6b59.jpg"
+      },
+      {
+        "width": 1536,
+        "src": "/media/workroom-1536.73b95e25.jpg"
+      },
+      {
+        "width": 2048,
+        "src": "/media/workroom-2048.0e3f02ae.jpg"
+      }
+    ]
+  },
+  "workstation": {
+    "alt": "A workstation with code on screen, under two pendant lamps.",
+    "credit": "cottonbro studio on Pexels",
+    "width": 4189,
+    "height": 6283,
+    "colour": "#535a60",
+    "avif": [
+      {
+        "width": 640,
+        "src": "/media/workstation-640.02ac58ab.avif"
+      },
+      {
+        "width": 1024,
+        "src": "/media/workstation-1024.e472858d.avif"
+      },
+      {
+        "width": 1536,
+        "src": "/media/workstation-1536.6914995d.avif"
+      },
+      {
+        "width": 2048,
+        "src": "/media/workstation-2048.c2d410a9.avif"
+      }
+    ],
+    "webp": [
+      {
+        "width": 640,
+        "src": "/media/workstation-640.46a603e4.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/media/workstation-1024.f12714ae.webp"
+      },
+      {
+        "width": 1536,
+        "src": "/media/workstation-1536.c4feee9e.webp"
+      },
+      {
+        "width": 2048,
+        "src": "/media/workstation-2048.03bb542c.webp"
+      }
+    ],
+    "jpeg": [
+      {
+        "width": 640,
+        "src": "/media/workstation-640.516b4fe7.jpg"
+      },
+      {
+        "width": 1024,
+        "src": "/media/workstation-1024.3eeb9c5f.jpg"
+      },
+      {
+        "width": 1536,
+        "src": "/media/workstation-1536.9d1a05c3.jpg"
+      },
+      {
+        "width": 2048,
+        "src": "/media/workstation-2048.69a5925f.jpg"
+      }
+    ]
+  },
+  "editor": {
+    "alt": "A laptop showing an open code editor, beside a cup of coffee.",
+    "credit": "D. Komov on Pexels",
+    "width": 6048,
+    "height": 4032,
+    "colour": "#39372e",
+    "avif": [
+      {
+        "width": 640,
+        "src": "/media/editor-640.0bd8bf9b.avif"
+      },
+      {
+        "width": 1024,
+        "src": "/media/editor-1024.d94a9b87.avif"
+      },
+      {
+        "width": 1536,
+        "src": "/media/editor-1536.bc1e0b0a.avif"
+      },
+      {
+        "width": 2048,
+        "src": "/media/editor-2048.c8e83ebd.avif"
+      }
+    ],
+    "webp": [
+      {
+        "width": 640,
+        "src": "/media/editor-640.b5410178.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/media/editor-1024.becce5dd.webp"
+      },
+      {
+        "width": 1536,
+        "src": "/media/editor-1536.56b20db2.webp"
+      },
+      {
+        "width": 2048,
+        "src": "/media/editor-2048.cf13d8e6.webp"
+      }
+    ],
+    "jpeg": [
+      {
+        "width": 640,
+        "src": "/media/editor-640.645b5187.jpg"
+      },
+      {
+        "width": 1024,
+        "src": "/media/editor-1024.920d9322.jpg"
+      },
+      {
+        "width": 1536,
+        "src": "/media/editor-1536.eeb02ba6.jpg"
+      },
+      {
+        "width": 2048,
+        "src": "/media/editor-2048.2b57c916.jpg"
+      }
+    ]
+  },
+  "robotics": {
+    "alt": "A robotic hand raised open against a deep teal background.",
+    "credit": "ThisisEngineering on Unsplash",
+    "width": 2432,
+    "height": 3648,
+    "colour": "#0286a0",
+    "avif": [
+      {
+        "width": 640,
+        "src": "/media/robotics-640.e8b5333e.avif"
+      },
+      {
+        "width": 1024,
+        "src": "/media/robotics-1024.430d9dd0.avif"
+      },
+      {
+        "width": 1536,
+        "src": "/media/robotics-1536.b76a8ba9.avif"
+      },
+      {
+        "width": 2048,
+        "src": "/media/robotics-2048.66a901ed.avif"
+      }
+    ],
+    "webp": [
+      {
+        "width": 640,
+        "src": "/media/robotics-640.3e35ac47.webp"
+      },
+      {
+        "width": 1024,
+        "src": "/media/robotics-1024.a4946d89.webp"
+      },
+      {
+        "width": 1536,
+        "src": "/media/robotics-1536.64234359.webp"
+      },
+      {
+        "width": 2048,
+        "src": "/media/robotics-2048.9fbf79f6.webp"
+      }
+    ],
+    "jpeg": [
+      {
+        "width": 640,
+        "src": "/media/robotics-640.daab3d2e.jpg"
+      },
+      {
+        "width": 1024,
+        "src": "/media/robotics-1024.691700e0.jpg"
+      },
+      {
+        "width": 1536,
+        "src": "/media/robotics-1536.00504918.jpg"
+      },
+      {
+        "width": 2048,
+        "src": "/media/robotics-2048.19a5769c.jpg"
+      }
+    ]
+  }
+}
