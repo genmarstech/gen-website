@@ -147,7 +147,20 @@
 @media (min-width: 56rem) {
   .signIn {
     display: inline-flex;
+    /* The mark sits with the label rather than floating above its baseline. */
+    align-items: center;
+    gap: 0.4rem;
   }
+}
+
+/* The icon follows the label's colour on hover without a rule of its own,
+   because it is stroked with currentColor. */
+.signIn svg {
+  opacity: 0.75;
+}
+
+.signIn:hover svg {
+  opacity: 1;
 }
 
 .cta {

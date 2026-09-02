@@ -62,6 +62,7 @@ export const portal = {
   signIn: `${PORTAL_ORIGIN}/sign-in`,
   signUp: `${PORTAL_ORIGIN}/sign-up`,
   dashboard: `${PORTAL_ORIGIN}/dashboard`,
+  order: `${PORTAL_ORIGIN}/order`,
 } as const;
 
 /**
@@ -92,6 +93,13 @@ export function orderUrl(serviceSlug?: string, tierName?: string): string {
   // Called with nothing for the open "describe your problem" route. An empty
   // `?service=` would be a claim that a service was chosen and then lost,
   // which is worse than the honest absence of one.
+  // /order, NOT /sign-up. Sign-up works exactly once per person: onboarding
+  // creates the organisation and refuses a second time, and the API answers
+  // that by redirecting to the dashboard — so an existing client clicking
+  // "Order Business Setup" was dumped on their dashboard with the order
+  // silently discarded. /order routes on the account's actual state, and a
+  // valid session goes straight to the form without being asked to sign in
+  // again.
   const query = params.toString();
-  return query ? `${PORTAL_ORIGIN}/sign-up?${query}` : `${PORTAL_ORIGIN}/sign-up`;
+  return query ? `${PORTAL_ORIGIN}/order?${query}` : `${PORTAL_ORIGIN}/order`;
 }

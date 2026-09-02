@@ -96,8 +96,27 @@ export function SiteHeader() {
         <div className={styles.tools}>
           <CommandPalette />
           <ThemeToggle />
-          <a href={portal.signIn} className={styles.signIn}>
-            Sign in
+          {/*
+            Goes to the DASHBOARD, not the sign-in form, and is shown to
+            everyone.
+
+            This site cannot know whether you are signed in. The portal's
+            session cookie is host-only on app.genmars.co.ke with
+            SameSite=Lax, so a cross-site request from here would not carry
+            it — and that is deliberate, because it is the same property that
+            keeps the client portal and the operations app from sharing a
+            session.
+
+            A conditional button would therefore have to be a GUESS stored in
+            this browser, which is both wrong sometimes and something the
+            privacy policy would have to describe. One unconditional link is
+            always correct instead: the portal sends a signed-in client
+            straight to their orders and invoices, and bounces everyone else
+            to sign-in, which is where they were going anyway.
+          */}
+          <a href={portal.dashboard} className={styles.signIn}>
+            <DashboardMark />
+            Dashboard
           </a>
           <Link href="/services/" className={styles.cta}>
             Services
@@ -142,8 +161,8 @@ export function SiteHeader() {
               );
             })}
             <li style={{ ["--i" as string]: nav.length }}>
-              <a href={portal.signIn} className={styles.panelLink}>
-                Sign in
+              <a href={portal.dashboard} className={styles.panelLink}>
+                Dashboard
               </a>
             </li>
             <li style={{ ["--i" as string]: nav.length + 1 }}>
@@ -155,5 +174,35 @@ export function SiteHeader() {
         </nav>
       </div>
     </header>
+  );
+}
+
+/**
+ * A four-pane mark for the dashboard link.
+ *
+ * Inline SVG rather than an icon font or a file: it is nine elements, it
+ * inherits currentColor so it follows the theme without a second rule, and it
+ * costs no request on a site whose whole point is that it makes none.
+ *
+ * aria-hidden because the link already says "Dashboard" — a screen reader
+ * announcing "image, dashboard, link, Dashboard" is worse than silence.
+ */
+function DashboardMark() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect x="1" y="1" width="5" height="5" rx="1" />
+      <rect x="8" y="1" width="5" height="5" rx="1" />
+      <rect x="1" y="8" width="5" height="5" rx="1" />
+      <rect x="8" y="8" width="5" height="5" rx="1" />
+    </svg>
   );
 }
