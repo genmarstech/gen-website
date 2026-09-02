@@ -47,6 +47,28 @@ export const metadata: Metadata = {
  * pass before anything goes live. Charter 04 §III — admit limits early, it is
  * the cheapest credibility available.
  */
+/**
+ * The services that can actually be bought today.
+ *
+ * Computed once and used for both the count in the copy and the list below, so
+ * the sentence and the cards can never disagree about how many there are.
+ */
+const sellable = offers.filter((offer) => offer.available === "now");
+
+/**
+ * A small number as a word, because "Seven services" reads better than "7".
+ *
+ * Falls back to the digits past twelve rather than growing a dictionary — at
+ * that point a numeral is the clearer thing to print anyway.
+ */
+function spell(n: number): string {
+  const words = [
+    "No", "One", "Two", "Three", "Four", "Five", "Six",
+    "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
+  ];
+  return words[n] ?? String(n);
+}
+
 export default function HomePage() {
   return (
     <>
@@ -99,19 +121,28 @@ export default function HomePage() {
             <p className="eyebrow">What we do</p>
             <div className={styles.sectionHead}>
               <h2>What you can buy today.</h2>
+              {/*
+                The count is DERIVED, never typed. Written as "Seven" it would
+                have been wrong the first afternoon somebody added an eighth
+                service, and a number the site states about itself is exactly
+                the kind of small untruth Charter 04 §IV is about.
+
+                It also names the real heading on the services page — "In
+                development" — rather than saying "marked as such", so the
+                sentence can be checked by clicking rather than trusted.
+              */}
               <p className="lede measure">
-                Seven services, each with a starting price. There is a platform
-                underneath them that we are still building &mdash; it is on the
-                services page, marked as such, because we would rather show you
-                where this is going than pretend it has arrived.
+                {spell(sellable.length)} services, each with a starting price
+                you can read now instead of asking for. The platform they will
+                eventually run on is still being built: it sits on the services
+                page under <em>In development</em>, and it stays there until it
+                works.
               </p>
             </div>
           </Reveal>
 
           <ul className={styles.offerList}>
-            {offers
-              .filter((offer) => offer.available === "now")
-              .map((offer, i) => (
+            {sellable.map((offer, i) => (
                 <Reveal
                   as="li"
                   key={offer.slug}

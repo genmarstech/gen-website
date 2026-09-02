@@ -76,9 +76,13 @@ export function SiteFooter() {
         </div>
 
         <div className={styles.bottom}>
-          <p>
-            {company.legalName} &middot; {company.registrationNumber}
-          </p>
+          {/* The name, without the registration number. It appeared on every
+              page of the site and earned nothing there — a visitor deciding
+              whether to work with us is not checking a BN against a registry.
+              It stays where it is actually load-bearing: the privacy policy,
+              which has to identify the data controller, and every document
+              that goes out. */}
+          <p>{company.legalName}</p>
           <p>&copy; {year}</p>
         </div>
       </div>

@@ -17,7 +17,17 @@ export const company = {
   formalName: "Genmars Tech",
   shortName: "Genmars",
 
-  /** Registration on every document cover page. */
+  /**
+   * Registration number.
+   *
+   * NOT shown anywhere on the marketing site — it was in the footer of every
+   * page and on the contact page, and earned nothing there. A visitor deciding
+   * whether to work with us is not checking a BN against a registry.
+   *
+   * It is still used in two places where it does work: the privacy policy,
+   * which has to identify the data controller, and the cover page of every
+   * document we send. Do not put it back in the chrome.
+   */
   registrationNumber: "BN-93S95J2J",
 
   /** Charter 04 §I — primary domain. */

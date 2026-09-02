@@ -143,7 +143,9 @@ const organizationSchema = {
   alternateName: company.formalName,
   url: company.url,
   slogan: company.tagline,
-  identifier: company.registrationNumber,
+  // No `identifier`. The registration number is off the public site, and
+  // publishing it as machine-readable metadata would put it back — in the
+  // one form that gets scraped rather than read.
   description:
     "Custom software, mobile-money and payments integration, and infrastructure work for businesses in Kenya and East Africa.",
   address: {

@@ -93,12 +93,7 @@ export default function ContactPage() {
 
                 <div>
                   <dt>Registered as</dt>
-                  <dd>
-                    {company.legalName}
-                    <span className={styles.sub}>
-                      {company.registrationNumber}
-                    </span>
-                  </dd>
+                  <dd>{company.legalName}</dd>
                 </div>
               </dl>
 
