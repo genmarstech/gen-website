@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Jost } from "next/font/google";
-import { company, contact } from "@/lib/company";
+import { company, contact, liveSocials } from "@/lib/company";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { RouteProgress } from "@/components/RouteProgress";
@@ -160,6 +160,19 @@ const organizationSchema = {
     areaServed: "KE",
     availableLanguage: ["en", "sw"],
   },
+  /*
+   * ── WHY sameAs MATTERS MORE THAN THE FOOTER LINKS DO ──────────────────────
+   *
+   * This is how a search engine decides that the Instagram account calling
+   * itself Genmars and this domain are the same organisation. Without it they
+   * are two unrelated things that happen to share a name — which is exactly
+   * the gap somebody impersonating us would occupy.
+   *
+   * LIVE ACCOUNTS ONLY. An entry here asserting a profile that shows a login
+   * wall is a claim in machine-readable form — Charter 04 §IV, and the form
+   * that gets believed without being read.
+   */
+  sameAs: liveSocials.map((social) => social.url),
 };
 
 export default function RootLayout({

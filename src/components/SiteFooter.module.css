@@ -79,3 +79,19 @@
   font-size: 0.8125rem;
   color: var(--ink-faint);
 }
+
+/* Sits under the address, separated by a rule rather than a heading: another
+   "Follow us" heading in a four-column footer is a word earning no space. */
+.socials {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--rule);
+}
+
+/* The handle after the network name, quieter. It is what somebody types into
+   a search box when a link fails them, so it has to be readable — but the
+   network name is what they are scanning for. */
+.handle {
+  margin-left: 0.4rem;
+  color: var(--ink-faint);
+}

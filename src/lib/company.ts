@@ -62,13 +62,92 @@ export const contact = {
   privacyEmail: "privacy@genmars.co.ke",
 
   /**
-   * TODO(pre-launch): decide whether a phone number is published at all.
-   * Publishing one creates an expectation of answering it. Charter 03 §IV Tier 2
-   * requires a support channel with a *stated response time* — we do not have
-   * one yet, so no response time is claimed anywhere on this site.
+   * DECIDED 2026-09-04: no telephone number, and a WhatsApp Business channel
+   * instead. See `socials.whatsapp`.
+   *
+   * The reasoning that kept this null still holds — publishing a line creates
+   * an expectation of answering it, and Charter 03 §IV Tier 2 wants a support
+   * channel with a STATED RESPONSE TIME, which we do not have. What changed is
+   * that WhatsApp is asynchronous by nature: a message sits there, and nobody
+   * reads an unanswered one as a phone ringing out.
+   *
+   * NOTHING ON THIS SITE CLAIMS A RESPONSE TIME, and that must stay true —
+   * "we usually reply within a few hours" is a Tier 2 commitment typed by
+   * accident.
    */
   phone: null as string | null,
 } as const;
+
+/**
+ * Where Genmars is, off its own site.
+ *
+ * ── EVERY LINK HERE IS A CLAIM, AND CHARTER 04 §IV APPLIES TO IT ────────────
+ *
+ * A footer icon pointing at a dead profile, or at a login wall, is a small
+ * broken promise on the surface a stranger uses to decide whether we are real.
+ * So each entry carries `live` and only a live one is rendered: the flag is
+ * how an account that exists but is not ready yet stays out of the footer
+ * without the URL being lost.
+ *
+ * ── AND WHY THE HANDLE IS SEPARATE FROM THE URL ─────────────────────────────
+ *
+ * The handle is what a person reads and what they type into a search box when
+ * a link fails them. The URL is for the machine. On Facebook they are not even
+ * the same thing.
+ */
+export const socials = {
+  whatsapp: {
+    label: "WhatsApp",
+    /** WhatsApp Business. The number people actually message. */
+    handle: "+254 795 980484",
+    /**
+     * wa.me wants the number in full international form with NO plus, spaces
+     * or dashes. `+254 795 980484` in a wa.me path silently opens a chat with
+     * nobody, which is the failure mode you do not notice because the app
+     * still opens.
+     */
+    url: "https://wa.me/254795980484",
+    live: true,
+  },
+  instagram: {
+    label: "Instagram",
+    handle: "@genmarstech",
+    url: "https://www.instagram.com/genmarstech/",
+    live: true,
+  },
+  x: {
+    label: "X",
+    handle: "@genmarstech",
+    url: "https://x.com/genmarstech",
+    live: true,
+  },
+  facebook: {
+    label: "Facebook",
+    handle: "Genmars Tech",
+    /**
+     * ── THIS IS A SHARE LINK, NOT THE PAGE'S OWN ADDRESS ───────────────────
+     *
+     * Checked on 2026-09-04: it resolves, but its og:title is "Ingia au
+     * Jisajili ili Kutazama" — Facebook asking the visitor to log in or sign
+     * up before it will show anything. So a stranger who clicks this from our
+     * footer hits a login wall rather than the page.
+     *
+     * A /share/ path is also not stable the way facebook.com/<pagename> is; it
+     * is the thing the app generates for a person to paste into a chat.
+     *
+     * REPLACE IT with the page's own URL — open the page while signed in and
+     * take the address bar. It will look like facebook.com/GenmarsTech or
+     * facebook.com/profile.php?id=<digits>. Until then this stays `live:
+     * false`, because a link that demands an account before it shows anything
+     * is worse in a footer than no link at all.
+     */
+    url: "https://www.facebook.com/share/iAjQzgcCjD/",
+    live: false,
+  },
+} as const;
+
+/** Only what is ready to be clicked by a stranger. */
+export const liveSocials = Object.values(socials).filter((s) => s.live);
 
 /** Charter 01 §I — the two engines. */
 export const engines = [

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { company, contact } from "@/lib/company";
+import { company, contact, liveSocials } from "@/lib/company";
 import { portal } from "@/lib/portal";
 import { Mark } from "./Brand";
 import styles from "./SiteFooter.module.css";
@@ -71,6 +71,36 @@ export function SiteFooter() {
                   {company.city}, {company.country}
                 </li>
               </ul>
+
+              {/*
+                Only the accounts that are ready — see `socials` in company.ts.
+                A footer link to a login wall or a dead profile is a small
+                broken promise on the surface a stranger uses to decide whether
+                we are real, and Charter 04 §IV applies to it.
+
+                Text, not icons. A row of unlabelled glyphs makes a reader
+                guess which is which, and the handle is what somebody types
+                into a search box when a link fails them.
+              */}
+              {liveSocials.length > 0 ? (
+                <ul className={`${styles.list} ${styles.socials}`}>
+                  {liveSocials.map((social) => (
+                    <li key={social.label}>
+                      <a
+                        href={social.url}
+                        // noopener because these open in a new tab, and
+                        // noreferrer so a social network is not told which
+                        // page of ours somebody left from.
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {social.label}
+                        <span className={styles.handle}>{social.handle}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
           </div>
         </div>

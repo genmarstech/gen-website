@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { company, contact } from "@/lib/company";
+import { company, contact, liveSocials, socials } from "@/lib/company";
 import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
 
@@ -81,6 +81,32 @@ export default function ContactPage() {
                   </dd>
                 </div>
 
+                {socials.whatsapp.live ? (
+                  <div>
+                    <dt>WhatsApp</dt>
+                    <dd>
+                      <a
+                        href={socials.whatsapp.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {socials.whatsapp.handle}
+                      </a>
+                      {/*
+                        No response time, deliberately. Charter 03 §IV Tier 2
+                        wants a support channel with a STATED one, and we do
+                        not have it — "we usually reply within a few hours" is
+                        that commitment typed by accident. What is true is that
+                        a message waits, which is the reason WhatsApp is here
+                        and a phone number is not.
+                      */}
+                      <span className={styles.sub}>
+                        Messages, not calls. Useful if email is awkward.
+                      </span>
+                    </dd>
+                  </div>
+                ) : null}
+
                 <div>
                   <dt>Where we are</dt>
                   <dd>
@@ -96,6 +122,29 @@ export default function ContactPage() {
                   <dd>{company.legalName}</dd>
                 </div>
               </dl>
+
+              {/*
+                Under the details rather than beside them: somebody on this
+                page is deciding how to start a conversation, and a social
+                profile is where they go to check we exist first.
+              */}
+              {liveSocials.filter((s) => s.label !== "WhatsApp").length > 0 ? (
+                <p className={styles.socials}>
+                  Also on{" "}
+                  {liveSocials
+                    .filter((s) => s.label !== "WhatsApp")
+                    .map((social, index, list) => (
+                      <span key={social.label}>
+                        <a href={social.url} target="_blank" rel="noopener noreferrer">
+                          {social.label}
+                        </a>
+                        {index < list.length - 2 ? ", " : null}
+                        {index === list.length - 2 ? " and " : null}
+                      </span>
+                    ))}
+                  , as {socials.instagram.handle}.
+                </p>
+              ) : null}
 
               {/*
                 No response-time commitment. Charter 03 §IV Tier 2 — a support
