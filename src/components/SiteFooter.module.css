@@ -36,6 +36,13 @@
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
 }
 
+/* An address like privacy@genmars.co.ke has no break opportunity, and these
+   columns go down to 11rem. Better to break the address than to widen the
+   column past the screen. */
+.list a {
+  overflow-wrap: anywhere;
+}
+
 .colTitle {
   font-size: 0.6875rem;
   font-weight: 400;
@@ -94,4 +101,9 @@
 .handle {
   margin-left: 0.4rem;
   color: var(--ink-faint);
+  /* The phone number must not break across lines. "+254 795" on one line and
+     "980484" on the next is a number somebody miscopies, and the spaces in it
+     are exactly where a wrap would land. The label before it can wrap
+     instead. */
+  white-space: nowrap;
 }
