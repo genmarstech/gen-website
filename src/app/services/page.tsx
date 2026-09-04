@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Photo } from "@/components/Photo";
-import { offers, pricingNote } from "@/lib/company";
+import { anchors, offers, pricingNote, tierDimensions } from "@/lib/company";
 import { orderUrl } from "@/lib/portal";
 import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
@@ -115,6 +115,94 @@ export default function ServicesPage() {
           <div className={styles.offers}>
             {building.map((offer, i) => (
               <Offer key={offer.slug} offer={offer} index={now.length + i} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/*
+        WHAT SEPARATES THE TIERS, BEFORE THE SECTION ABOUT PRICE.
+
+        A reader who has just seen three prices per offer is holding one
+        question: what actually differs. Answering it after the pricing
+        section would be answering it after they had already decided the
+        difference was arbitrary.
+
+        The columns are deliberately Lower / Middle / Upper. Each offer names
+        its own tiers and those names are published with prices attached;
+        asserting one naming scheme across all nine would contradict the cards
+        immediately above.
+      */}
+      <section className="section">
+        <div className="wrap">
+          <Reveal className="measure">
+            <p className="eyebrow">What separates them</p>
+            <h2 className={styles.groupTitle}>Four things, and nothing else.</h2>
+            <p className={styles.groupNote}>
+              A tier ladder built on anything else &mdash; more revisions, more
+              pages, faster replies &mdash; is a price difference wearing a
+              feature list. These four change what has to be built and what has
+              to be staffed, which is why a higher tier costs more to deliver
+              and not only more to buy.
+            </p>
+          </Reveal>
+
+          <Reveal>
+            <div className={styles.dimensionScroll}>
+              <table className={styles.dimensions}>
+                <thead>
+                  <tr>
+                    <th scope="col">Dimension</th>
+                    <th scope="col">Lower</th>
+                    <th scope="col">Middle</th>
+                    <th scope="col">Upper</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tierDimensions.map((row) => (
+                    <tr key={row.dimension}>
+                      <th scope="row">{row.dimension}</th>
+                      <td>{row.lower}</td>
+                      <td>{row.middle}</td>
+                      <td>{row.upper}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/*
+        The shape of an engagement, named. The offer notes have been describing
+        it one at a time — this says it once.
+      */}
+      <section className={`section ${styles.anchorSection}`}>
+        <div className="wrap">
+          <Reveal className="measure">
+            <p className="eyebrow">How it is put together</p>
+            <h2 className={styles.groupTitle}>
+              One anchor, with what it needs attached.
+            </h2>
+            <p className={styles.groupNote}>
+              Not a menu to assemble. A build bought without the integration
+              work it needs, or without a support plan, is not a cheaper version
+              of the engagement &mdash; it is a different one, and it fails in
+              ways you would reasonably read as us having failed.
+            </p>
+          </Reveal>
+
+          <div className={styles.anchors}>
+            {anchors.map((entry) => (
+              <Reveal key={entry.anchor} className={styles.anchor}>
+                <h3 className={styles.anchorTitle}>{entry.anchor}</h3>
+                <ul className={styles.anchorList}>
+                  {entry.attachments.map((a) => (
+                    <li key={a}>{a}</li>
+                  ))}
+                </ul>
+              </Reveal>
             ))}
           </div>
         </div>

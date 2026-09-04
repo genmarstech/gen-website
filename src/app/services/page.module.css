@@ -353,3 +353,106 @@
   object-fit: cover;
   object-position: center 45%;
 }
+
+/* ---------- what separates the tiers ---------- */
+
+/*
+  The table scrolls inside its own container rather than widening the page.
+  Four columns of prose do not fit a phone, and the alternative — letting the
+  body scroll sideways — breaks every other section on the page too.
+*/
+.dimensionScroll {
+  overflow-x: auto;
+  margin-top: var(--sp-6);
+  -webkit-overflow-scrolling: touch;
+}
+
+.dimensions {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.dimensions th,
+.dimensions td {
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) 0;
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule);
+}
+
+.dimensions thead th {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-bottom-color: var(--rule-strong);
+}
+
+.dimensions tbody th {
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  padding-right: var(--sp-6);
+}
+
+.dimensions td {
+  color: var(--ink-muted);
+}
+
+/* ---------- anchors ---------- */
+
+.anchorSection {
+  background: var(--bg-sunken);
+}
+
+.anchors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--sp-4);
+  margin-top: var(--sp-6);
+}
+
+.anchor {
+  padding: var(--sp-5);
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.anchorTitle {
+  margin: 0 0 var(--sp-3);
+  font-size: 1rem;
+  line-height: 1.35;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.anchorList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+}
+
+.anchorList li {
+  padding-left: var(--sp-4);
+  position: relative;
+}
+
+.anchorList li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 0.375rem;
+  height: 1px;
+  background: var(--rule-strong);
+}

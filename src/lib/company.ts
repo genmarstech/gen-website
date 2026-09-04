@@ -553,6 +553,89 @@ export const offers = [
  * follows technical discovery. Charter 04 §IV means the caveat travels with
  * the number rather than living in a footer nobody reads.
  */
+/**
+ * What legitimately separates one tier from the next.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════
+ * FOUR DIMENSIONS. ANYTHING ELSE IS INFLATION.
+ *
+ * A tier ladder built on anything else — more revisions, more pages, priority
+ * email — is a price difference wearing a feature list. These four are the ones
+ * that genuinely change what has to be built and what has to be staffed, which
+ * is why a higher tier costs more to deliver and not merely more to buy.
+ *
+ * The columns are LOWER / MIDDLE / UPPER on purpose. Every offer names its own
+ * tiers (Essential Setup, Basic, Care …) and those names are already published
+ * with prices attached; abstract column headings describe the ladder without
+ * asserting a naming scheme none of them uses.
+ * ══════════════════════════════════════════════════════════════════════════════
+ */
+export const tierDimensions = [
+  {
+    dimension: "Problem scope",
+    lower: "One workflow",
+    middle: "A connected set of workflows",
+    upper: "A system other things depend on",
+  },
+  {
+    dimension: "Integrations",
+    lower: "Minimal or none",
+    middle: "A defined set",
+    upper: "Multiple, including external ones that fail",
+  },
+  {
+    dimension: "Environments",
+    lower: "Production",
+    middle: "Staging and production",
+    upper: "Full separation, with rehearsed rollback",
+  },
+  {
+    dimension: "Support",
+    lower: "A defined window",
+    middle: "Monitoring and priority handling",
+    upper: "Proactive monitoring and reserved capacity",
+  },
+] as const;
+
+/**
+ * How an engagement is actually shaped: ONE ANCHOR, WITH SCOPE ATTACHED.
+ *
+ * Never a menu the client assembles. A build bought without the integration
+ * work it needs, or without a support plan, is not a cheaper version of the
+ * engagement — it is a different one, and it fails in ways the client will
+ * reasonably read as us having failed.
+ *
+ * Every offer's `note` already says what falls outside its scope. This names
+ * the shape those notes have been describing one at a time.
+ */
+export const anchors = [
+  {
+    anchor: "A custom business system",
+    attachments: [
+      "Integration work",
+      "Infrastructure and deployment",
+      "A support plan",
+    ],
+  },
+  {
+    anchor: "A payment or M-Pesa integration",
+    attachments: ["Reconciliation", "Reporting", "Monitoring", "A support plan"],
+  },
+  {
+    anchor: "A SaaS platform",
+    attachments: [
+      "Multi-tenancy",
+      "Billing",
+      "Infrastructure",
+      "An ongoing retainer",
+    ],
+  },
+  {
+    anchor: "An automation project",
+    attachments: ["Integration work", "Dashboards", "A support plan"],
+  },
+] as const;
+
 export const pricingNote =
   "Starting prices, in Kenyan shillings. What you actually pay depends on scope, and we quote it after discovery rather than before — enterprise tiers deliberately have no published ceiling.";
 
@@ -634,6 +717,32 @@ export const incidentPractice = {
  * no "increased conversions by X%", no claims about the client's business
  * results that we cannot evidence. Charter 04 §III — specific over impressive.
  */
+/**
+ * What a published item actually IS.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════
+ * REQUIRED, WITH NO DEFAULT, AND THAT IS THE ENTIRE POINT.
+ *
+ * A default would be applied by whoever adds the next entry in a hurry, which
+ * is exactly the moment the label matters. The failure it prevents is the one
+ * Charter 04 §IV names directly: a concept described in language that implies
+ * it is in production. That does not happen because somebody decided to
+ * mislead — it happens because a design and a delivered system look identical
+ * in a write-up, and nothing forced anybody to say which this was.
+ * ══════════════════════════════════════════════════════════════════════════════
+ */
+export type WorkLabel =
+  /** Owned and operated by Genmars. */
+  | "Genmars product"
+  /** Built for our own use. */
+  | "Internal system"
+  /** Designed, not deployed. Architecture and design only. */
+  | "Concept"
+  /** A technical experiment. */
+  | "R&D project"
+  /** Delivered for a client, and they said yes in writing. */
+  | "Client system, published with consent";
+
 export type WorkItem = {
   slug: string;
   client: string;
@@ -641,9 +750,38 @@ export type WorkItem = {
   domain: string;
   sector: string;
   year: string;
+  /** Required. See WorkLabel — there is deliberately no default. */
+  label: WorkLabel;
   summary: string;
   detail: string;
   capabilities: readonly string[];
+  /**
+   * ── THE SIX-PART CASE STUDY, AND THE THREE PARTS THAT HAD NO HOME ─────────
+   *
+   * summary / detail / capabilities were roughly parts 1, 2 and 4. These are
+   * 3, 5 and 6. All optional: a write-up that has not been done is absent
+   * rather than empty, because a heading with nothing under it reads as an
+   * omission and invites somebody to fill it with adjectives.
+   */
+  architecture?: string;
+  /**
+   * Reliability, security, scalability, integration — usually the most
+   * persuasive part, and the part that survives the screenshots being removed.
+   */
+  engineering?: string;
+  /**
+   * ══════════════════════════════════════════════════════════════════════════
+   * ONLY WHERE REAL DATA EXISTS. OMITTED OTHERWISE.
+   *
+   * Not softened, not estimated, not replaced with "significantly improved".
+   * Charter 04 §IV forbids figures that were not measured, and this is the
+   * field that invites them. Where there is no number, the honest substitute
+   * is technical specificity in `architecture` and `engineering` — which
+   * convinces a reader who can evaluate it, unlike a number they cannot
+   * verify.
+   * ══════════════════════════════════════════════════════════════════════════
+   */
+  results?: string;
   permissionOnFile: boolean;
 };
 
@@ -655,6 +793,7 @@ export const work: readonly WorkItem[] = [
     domain: "avinterra.tours",
     sector: "Travel & tourism",
     year: "2026",
+    label: "Client system, published with consent",
     summary:
       "A booking and enquiry site for a Kenyan travel house running guided safaris, coastal trips and international departures.",
     detail:
@@ -674,6 +813,7 @@ export const work: readonly WorkItem[] = [
     domain: "clipsserenityspa.co.ke",
     sector: "Health & wellness",
     year: "2026",
+    label: "Client system, published with consent",
     summary:
       "An online booking system for a Nairobi hair, beauty and wellness spa open seven days a week.",
     detail:
