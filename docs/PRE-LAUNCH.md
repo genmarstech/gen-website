@@ -1,22 +1,31 @@
 # Pre-launch checklist
 
+**Reconciled against the running system on 2026-09-04.** Everything ticked below
+was checked, not remembered, and each tick says how. Read that as the standing
+rule for this file: a checklist that is wrong about what is finished cannot be
+trusted about what is not, and this one had drifted far enough that three
+completed gates still read as open.
+
 **This site is not cleared to publish.** It is built, it works, and it is
 deliberately held behind a gate.
 
-Three things currently prevent launch, and all are charter requirements rather
-than preferences:
+**Two things now prevent launch**, both charter requirements rather than
+preferences:
 
 1. **Charter 03 §IV Tier 1** — "Privacy policy and terms of service published."
-   Both are drafts in `05-policies/Genmars-Policy-Pack-v0.1.pdf`, carrying blanks
-   and awaiting advocate review.
-2. **`info@genmars.co.ke` does not yet demonstrably exist.** The site prints it.
-   A contact address that bounces is worse than no address.
-3. **No written permission to name clients.** Charter 04 §V — Genmars is
+   `/privacy/` is drafted and accurate but still carries its review notice;
+   `/terms/` is a placeholder. Both await advocate review
+   (`05-policies/Genmars-Policy-Pack-v0.1.pdf`).
+2. **No written permission to name clients.** Charter 04 §V — Genmars is
    credited only with written permission. `/work/` therefore shows a holding
    state instead of the projects.
 
-While those are open, the site ships with `robots.txt` disallowing everything and
-`robots: { index: false }` in the root metadata.
+The third blocker in the previous version of this file — that
+`info@genmars.co.ke` did not demonstrably exist — is **closed**. Zoho serves the
+domain's mail and the address receives; see Gate 2.
+
+While the two above are open, the site ships with `robots.txt` disallowing
+everything and `robots: { index: false }` in the root metadata.
 
 ---
 
@@ -47,8 +56,10 @@ To finish `/privacy/`:
 
 - [ ] Advocate review, alongside Terms, the Client Agreement Pack and the
       Ownership Term Sheet — one engagement
-- [ ] Remove `<ReviewNotice />` from `src/app/privacy/page.tsx`
-- [ ] `privacy@genmars.co.ke` live and monitored — the page names it
+- [ ] Remove `<ReviewNotice />` from `src/app/privacy/page.tsx` — still rendered,
+      confirmed 2026-09-04
+- [ ] `privacy@genmars.co.ke` live and monitored — the page names it. See the
+      delivery test in Gate 2
 - [ ] Settle the email retention period; the page currently says openly that we
       have not fixed one, which is true but should not stay true
 - [ ] Controller/processor position with the ODPC confirmed (Charter 03 §V)
@@ -86,17 +97,53 @@ The three must stay in agreement.
 
 ---
 
-## Gate 2 — Email
+## Gate 2 — Email (substantially done)
 
 See `09-communication/README.md` for the full scheme.
 
-- [ ] `info@genmars.co.ke` exists, is monitored, and has been sent a test from
-      outside the domain
-- [ ] `privacy@genmars.co.ke` exists — the privacy policy will name it
-- [ ] `security@genmars.co.ke` exists
-- [ ] SPF, DKIM and DMARC published for `genmars.co.ke`
-- [ ] MFA on every mailbox
+Two senders, deliberately: **Zoho** carries human mailboxes, **Resend** carries
+transactional mail from the portal. They authenticate separately, which is why
+there are two sets of records below.
+
+- [x] The domain receives mail at all. Zoho holds the MX (`mx.zoho.com`, `mx2`,
+      `mx3`) and `genmars-uptime.timer` has been mailing `info@` on failure
+      since 2026-08. DNS verified 2026-09-04; the mailboxes were created in
+      Zoho and recorded then
+- [ ] **Send a test to each of `info@`, `privacy@` and `security@` from an
+      address outside the domain, and confirm it arrives.** MX records prove
+      where mail is *routed*, not that a mailbox exists behind it — an alias
+      that was never created bounces exactly like a working one until somebody
+      tries. Five minutes, and it is the only thing that closes this item
+- [x] SPF, DKIM and DMARC published for `genmars.co.ke`. Verified over DoH on
+      2026-09-04:
+      - SPF `v=spf1 include:zohomail.com ~all`
+      - Resend DKIM at `resend._domainkey`, 1024-bit RSA
+      - Resend return-path `send.genmars.co.ke` — `include:amazonses.com` plus
+        an SES feedback MX, so bounces come back to Resend rather than to us
+      - DMARC `v=DMARC1; p=none; rua=mailto:info@genmars.co.ke; fo=1`
+- [ ] MFA on every mailbox — **yours to confirm in Zoho.** Not checkable from
+      here, and it is the control that matters most: the mailbox is the reset
+      path for everything else
 - [ ] Emergency mail access holder nominated (Charter 03 §VII)
+
+### Three gaps found on 2026-09-04, none of them breaking
+
+Mail is being delivered and authenticated today. These are the difference
+between working and being defensible.
+
+- [ ] **No `zoho._domainkey` published.** Zoho mail is therefore signed by
+      nothing of ours and passes DMARC on SPF alignment alone. One forwarding
+      hop breaks SPF, and with no DKIM to fall back on the message fails DMARC
+      outright. Publish Zoho's DKIM record
+- [ ] **The root SPF record does not include Resend.** Portal mail still passes
+      DMARC, because it aligns on the Resend DKIM signature and Resend uses its
+      own return-path domain for the SPF check — so this is correct as it
+      stands, not a bug. Recorded here so that nobody "fixes" it by adding an
+      include that is not needed, and so the reasoning survives
+- [ ] **DMARC is `p=none`** — monitoring only. Nothing is rejected or
+      quarantined, so a forged `@genmars.co.ke` message reaches the recipient
+      today. Move to `p=quarantine` once the `rua` reports have been read for
+      long enough to show every legitimate sender passing
 
 ---
 
@@ -165,14 +212,15 @@ decision.** Nothing below is for anyone else to sign off.
 - [ ] Add `/privacy/` and `/terms/` to `src/app/sitemap.ts` once they carry real
       text
 - [ ] Confirm the theme toggle persists across a reload in a private window
-      (storage can throw; the code falls back to "system")
+      (storage can throw; the code falls back to "system"). Needs a browser —
+      not verifiable from a build
 - [ ] Test **ordering** end-to-end on a phone: pick a tier on `/services/`,
       follow it to `app.genmars.co.ke/order`, sign in, submit. The request
       builder this line used to name no longer exists — `/request/` was removed
       and now 301s to `/services/`, and ordering is the only path in
-- [ ] Add an OG image — export from `06-brand/source/`, then set `openGraph.images`
-      in `src/app/layout.tsx`. `06-brand/logo/png/genmars-banner-gradient.png`
-      (2400×900) is the intended source
+- [x] OG image. `public/og.png` (1200×630, 393 KB) is in place and referenced
+      from both `openGraph.images` and `twitter.images` in
+      `src/app/layout.tsx`, cache-busted `?v=2026-09-01`. Verified 2026-09-04
 - [x] TLS in front of the site (Charter 03 §IV Tier 1 — TLS everywhere). Caddy
       issues and renews it. `gen-portal/scripts/uptime-check.sh` re-checks the
       certificate's expiry every 15 minutes, so this stays true rather than
@@ -185,13 +233,20 @@ decision.** Nothing below is for anyone else to sign off.
 - [ ] Automated backup of the repository, with a **tested restore** (Tier 1 — an
       untested backup is not a backup). GitHub is the off-box copy; the untested
       half is a clone-and-build from scratch, which is what actually gets used
-      after a laptop dies. The *database* half of this is done and tested — see
-      `gen-portal/docs/DEPLOYMENT.md`, restore-test log
+      after a laptop dies. The *database* half is done and tested — see
+      `gen-portal/docs/DEPLOYMENT.md`, restore-test log, and
+      `gen-portal/scripts/restore-test.sh`.
+      **The standing risk this item is really about:** the GPG private key
+      `413CB8DF5FECF5F4` exists only on one laptop. Every encrypted backup we
+      hold is unreadable without it. A clone-and-build drill that does not also
+      prove the key is recoverable is testing the easy half
 - [x] Deploy and rollback procedure written down (Charter 03 §II item 5) —
       `docs/DEPLOYMENT.md`, "Deploying a new version". Images are pinned by
       commit SHA, so a rollback always names a known artefact
-- [ ] Check the built output for anything that should not ship:
-      `grep -ri "TODO\|FIXME\|lorem" out/`
+- [x] Built output carries nothing that should not ship. `grep -ril
+      "TODO\|FIXME\|lorem ipsum" out/` returns nothing, 2026-09-04. **Re-run it
+      on the build you actually publish** — this passing today says nothing
+      about the next build
 
 ---
 
@@ -227,6 +282,31 @@ genmars.co.ke {
 
 `trailingSlash: true` in `next.config.ts` keeps the exported tree and the served
 URLs identical, so `try_files` resolves cleanly.
+
+---
+
+## Open calls that are not tasks
+
+These are decisions, not work items, and a checkbox is the wrong shape for
+them. Record each one in the decision register at
+`ops.genmars.co.ke/decisions` when it is made — with what was true at the time,
+which is the part that stops being obvious.
+
+- **Internal TLS between the API and Postgres.** Currently unencrypted on the
+  Docker network. Charter 03 §IV Tier 1 as published says "TLS everywhere", so
+  the position today is PARTIAL and there are exactly two honest ways out:
+  encrypt the link, or reword the published requirement to say what we actually
+  hold ourselves to. Marking it met is not one of them
+- **Email retention period.** The only unbounded personal data we hold. The
+  privacy page says openly that we have not fixed one, which is true and should
+  not stay true
+- **DMARC enforcement.** `p=none` today. Moving to `p=quarantine` is a decision
+  about who is allowed to send as us, and it should be made after reading the
+  reports rather than on a schedule
+- **Tier 1 assessment for `gen-website` and `internals-tm`.** Both are recorded
+  as systems and neither has been assessed — 0 of 6 checks each. An unassessed
+  system is not a passing one, and the security screen should not be read as
+  though it were
 
 ---
 
