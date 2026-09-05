@@ -113,6 +113,24 @@ jobs:
           # changing. Costs a manifest check; buys a base image that is actually
           # current on every run.
           pull: true
+          # And never cache the RUNTIME stage.
+          #
+          # `pull: true` above re-resolves caddy:2-alpine, but that is only half
+          # the problem. When the base image digest has NOT changed, the layer
+          # cache happily reuses the `apk upgrade --no-cache` layer from a
+          # previous run — so the image ships whatever package versions were
+          # current the day that layer was first built, no matter how many times
+          # it is rebuilt afterwards.
+          #
+          # That is exactly how this pipeline failed on 2026-09-05: Alpine
+          # published curl 8.22.0-r0 fixing CVE-2026-11352, the Dockerfile's
+          # `apk upgrade` would have picked it up, and the cache served the old
+          # layer with 8.20.0-r0 instead. The scan caught it, which is the system
+          # working — but the fix belongs here, not in a scan exception.
+          #
+          # Only the runtime stage is excluded. The `build` stage keeps its
+          # cache, which is where the expensive npm ci and next build live.
+          no-cache-filters: runtime
           tags: ${{ env.LOCAL_IMAGE }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
