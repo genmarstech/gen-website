@@ -8,26 +8,25 @@ the built output in `out/`, not from memory.
 
 ---
 
-## Read this first: the site is deliberately not indexable
+## Read this first: the site went indexable on 2026-09-05
 
-`robots.txt` says `Disallow: /` and every page carries `noindex, nofollow`.
-That is on purpose, and it is not a mistake to be tidied up:
+`robots.txt` says `Allow: /` and every page except the 404 carries
+`index, follow`. It was the opposite from the first deploy until that date,
+because Charter 03 §IV Tier 1 requires a published privacy policy and terms of
+service, and `/terms/` was a page reading "this document is not yet published".
 
-- `/privacy/` is a **draft** carrying a visible review notice, awaiting an
-  advocate.
-- `/terms/` is a **placeholder**. Liability, warranties and jurisdiction are
-  genuine legal drafting and are not written.
-- `/work/` names two clients whose **written permission has not been
-  requested**. Charter 04 §V forbids crediting client work without it.
+Both are now published at v1.0, written against the running system. That is
+what opened the gate.
 
-Charter 03 §IV Tier 1 requires a published privacy policy and terms of service
-before anything goes live. Until `docs/PRE-LAUNCH.md` Gate 1 and Gate 2b are
-met, indexing stays off.
+**One page is still deliberately held back by its own content, not by robots:**
+`/work/` names no client, because Charter 04 §V forbids crediting client work
+without written permission and none has been requested. The page shows a holding
+state. It is crawlable and correct; there is simply nothing on it to rank for
+yet, and that is Gate 2b, not an SEO problem.
 
-> **Verification does not require indexing.** You can verify the property,
-> submit the sitemap, and watch coverage today. Search Console will simply
-> report the pages as excluded by robots.txt — which is the correct and
-> expected state, not a fault to fix.
+> **Neither document has been reviewed by an advocate**, and both carry a
+> visible notice saying so. That notice is now the only thing carrying it —
+> before this change, nobody could reach the pages. Do not remove it as tidying.
 
 ---
 
@@ -123,18 +122,21 @@ Verified in `out/` on 2026-09-01:
 
 ## 4. Going live — the exact change
 
-Only when `docs/PRE-LAUNCH.md` Gate 1 and Gate 2b are actually met.
+**Done on 2026-09-05, in commit `d361d8c`.** Recorded here because the symptoms
+of getting it half right are identical to "Google has not got to us yet", and
+the next person to touch it needs to know both halves exist.
 
-**Two files, and both must change together.** One without the other is a
-half-launch that is hard to debug later, because the symptoms are identical to
-"Google has not got to us yet".
+1. `src/app/robots.ts` — `disallow: "/"` became `allow: "/"`.
+2. `src/app/layout.tsx` — `robots` became `index: true, follow: true` with
+   explicit `googleBot` snippet and preview limits.
+3. `src/app/privacy/page.tsx` and `src/app/terms/page.tsx` — the per-page
+   `robots: { index: false, follow: false }` came off. Easy to miss: a page-level
+   noindex silently overrides the root metadata, so the site would have been
+   crawlable with its two newest documents still invisible.
+4. `src/app/sitemap.ts` — `/privacy/` and `/terms/` added at priority 0.3, and
+   `CONTENT_REVIEWED` bumped to `2026-09-05`.
 
-1. `src/app/robots.ts` — swap `disallow: "/"` for the allow block below it.
-2. `src/app/layout.tsx` — delete the `robots: { index: false, follow: false }`
-   block.
-
-Then, if `/privacy/` and `/terms/` are genuinely published, add them to
-`src/app/sitemap.ts` and bump `CONTENT_REVIEWED`.
+`src/app/not-found.tsx` keeps its noindex, which is correct.
 
 Afterwards:
 

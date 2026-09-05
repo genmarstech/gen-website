@@ -6,26 +6,31 @@ rule for this file: a checklist that is wrong about what is finished cannot be
 trusted about what is not, and this one had drifted far enough that three
 completed gates still read as open.
 
-**This site is not cleared to publish.** It is built, it works, and it is
-deliberately held behind a gate.
+**LAUNCHED 2026-09-05.** `robots.txt` allows everything and every page except
+the 404 carries `index, follow`. The gate this file existed to hold is open.
 
-**Two things now prevent launch**, both charter requirements rather than
-preferences:
+**What opened it.** Charter 03 §IV Tier 1 — "Privacy policy and terms of service
+published" — is met. Privacy policy v1.0 and Terms of Service v1.0 were written
+on 2026-09-05 against the running system, not from a template, and both are
+live. `/terms/` is no longer a placeholder, which mattered more than it looked:
+the portal sign-up screen had been binding people to it since it shipped.
 
-1. **Charter 03 §IV Tier 1** — "Privacy policy and terms of service published."
-   `/privacy/` is drafted and accurate but still carries its review notice;
-   `/terms/` is a placeholder. Both await advocate review
-   (`05-policies/Genmars-Policy-Pack-v0.1.pdf`).
-2. **No written permission to name clients.** Charter 04 §V — Genmars is
-   credited only with written permission. `/work/` therefore shows a holding
-   state instead of the projects.
+**What did NOT open it, and is still open.**
 
-The third blocker in the previous version of this file — that
-`info@genmars.co.ke` did not demonstrably exist — is **closed**. Zoho serves the
-domain's mail and the address receives; see Gate 2.
-
-While the two above are open, the site ships with `robots.txt` disallowing
-everything and `robots: { index: false }` in the root metadata.
+1. **No advocate has reviewed either document.** The founder's call (Charter 02
+   §I). Both pages carry a visible draft notice saying so, and that notice is
+   now the only thing carrying it — it used to be backed by nobody being able to
+   reach the pages. Removing it is a lie until a review has happened.
+2. **`privacy@` and `security@` have never been tested from outside the
+   domain.** Both are named on a now-public page as the address for statutory
+   requests. MX and DKIM are verified; that a mailbox exists behind the alias is
+   not. Attempted 2026-09-05 by SMTP probe from the server and could not be
+   completed — Hetzner blocks outbound port 25. It needs a real send from an
+   outside account. Five minutes.
+3. **No written permission to name clients.** Charter 04 §V. `/work/` still
+   shows a holding state instead of the projects, and that is correct.
+4. **The ODPC controller/processor position** (Charter 03 §V). The published
+   documents deliberately make no claim in either direction.
 
 ---
 
@@ -49,8 +54,8 @@ From the Policy Pack's own publishing checklist:
 
 | Route | State |
 |---|---|
-| `/privacy/` | **Drafted** 2026-08-27 from `05-policies/data-processing-record.md`. Every claim verified against the running system. Carries a visible draft notice. Awaiting advocate review |
-| `/terms/` | **Placeholder.** Liability, warranties and jurisdiction are genuine legal drafting — not written. Source: Policy Pack Document B, `src/app/terms/page.tsx` |
+| `/privacy/` | **Published v1.0** 2026-09-05. Two parts — the website, and the portal. Every claim verified against the running system, and §11 lists what is deliberately NOT claimed. Carries a visible draft notice pending advocate review |
+| `/terms/` | **Published v1.0** 2026-09-05. Covers the website and portal accounts; the work itself stays with the Terms of Business in `05-policies/`. Carries the same notice |
 
 To finish `/privacy/`:
 

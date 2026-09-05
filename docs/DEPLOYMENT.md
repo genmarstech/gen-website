@@ -5,12 +5,14 @@
 Runtime per **Charter 03 §I**: Docker Compose, Caddy, Hetzner. CI and registry:
 GitHub Actions, GHCR.
 
-> ⚠ **The site is not cleared to publish.** It ships with `robots.txt`
-> disallowing everything and `noindex` on every page, because Charter 03 §IV
-> Tier 1 requires a live privacy policy and terms of service and both are still
-> drafts. Deploying now is fine — it puts a correctly-hidden site on the domain
-> and proves the pipeline. Work [`PRE-LAUNCH.md`](PRE-LAUNCH.md) before lifting
-> those flags.
+> **The site is public and indexable as of 2026-09-05.** `robots.txt` allows
+> everything and every page except the 404 carries `index, follow`. Charter 03
+> §IV Tier 1 is met: a privacy policy and terms of service are published, both
+> written against the running system.
+>
+> Both still carry a visible draft notice — no advocate has reviewed them, and
+> that notice is now the only thing saying so. Do not remove it as tidying. See
+> [`PRE-LAUNCH.md`](PRE-LAUNCH.md) for what remains open.
 
 ---
 

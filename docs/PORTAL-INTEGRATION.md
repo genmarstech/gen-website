@@ -332,7 +332,7 @@ coordination table rather than left to whoever is next in the DNS panel:
 |---|---|---|
 | `app` `api` `ops` | `NUM_PROXIES = 1` becomes wrong. DRF reads Cloudflare's edge as the client, so per-IP sign-in and code-request throttles collapse into one bucket shared by everyone behind that edge — one abusive client can lock out legitimate users. Proved in Redis: the same probe recorded `162.158.23.122` proxied and `102.211.145.29` direct. | `gen-portal/backend/config/settings.py` |
 | `genmars.co.ke` `www` | The **published privacy policy becomes false**. It tells visitors Cloudflare sees "which domain was looked up, not the pages you visit or anything you send", and that "your browser does not contact anyone else while loading this site". Proxied, Cloudflare terminates TLS and neither holds. | `gen-website/deploy/genmars.caddy`, `src/app/privacy/page.tsx` |
-| all | Cloudflare injects a managed `robots.txt` **above** ours, adding `User-agent: * / Allow: /` against our deliberate `Disallow: /`. Groups for one user-agent merge, and Google resolves an equal-length Allow over Disallow — so the pre-launch block may not hold. | `gen-website/docs/SEARCH-CONSOLE.md` |
+| all | Cloudflare injects a managed `robots.txt` **above** ours. This was a real risk until 2026-09-05, when it would have overridden our deliberate `Disallow: /` with an `Allow: /` and published the site early. The site now allows crawling anyway, so the two agree and nothing breaks — but the mechanism has not gone away. It bites again the moment there is a path we want kept out of the index. | `gen-website/docs/SEARCH-CONSOLE.md` |
 
 It also adds AAAA records, which broke reachability for an operator whose
 network has no working IPv6 path to Cloudflare.
