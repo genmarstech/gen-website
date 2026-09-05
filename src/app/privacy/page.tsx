@@ -12,7 +12,6 @@ export const metadata: Metadata = {
   title: "Privacy policy",
   description:
     "What Genmars collects on genmars.co.ke and in the client portal, why, where it is stored, how long it is kept, and your rights under the Kenyan Data Protection Act.",
-  robots: { index: false, follow: false },
 };
 
 /**
@@ -795,8 +794,16 @@ export default function PrivacyPage() {
 /**
  * Visible while this document is still a draft.
  *
- * The site carries noindex and a disallow-all robots.txt. This notice stays
- * until an advocate has read the document. Uncomfortable, and honest.
+ * ── THIS NOTICE NOW CARRIES THE WHOLE WEIGHT ────────────────────────────────
+ *
+ * It used to be a belt-and-braces measure: the site was noindex with a
+ * disallow-all robots.txt, so almost nobody could reach this page anyway. Both
+ * came off on 2026-09-05 and the page is public and indexable.
+ *
+ * So this paragraph is the only thing telling a reader that no advocate has
+ * checked the document. Do not remove it as tidying, and do not soften it —
+ * remove it when the review has actually happened, and on that day bump VERSION
+ * and UPDATED with it.
  */
 function ReviewNotice() {
   return (

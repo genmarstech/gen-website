@@ -4,15 +4,15 @@ import { company } from "@/lib/company";
 /**
  * sitemap.xml
  *
- * Generated now so it is correct on launch day. It has no effect while
- * robots.ts disallows crawling — see the note there.
+ * LIVE as of 2026-09-05, when robots.ts stopped disallowing everything.
  *
  * ── WHAT IS OMITTED, AND WHY ────────────────────────────────────────────────
  *
- * `/privacy/` and `/terms/` — placeholder and draft routes. Listing them would
- * invite indexing of pages that currently say "not yet published", and a
- * policy page in Google's index saying that is worse than no policy page in it.
- * Add them when real text is in place (docs/PRE-LAUNCH.md, Gate 1).
+ * `/privacy/` and `/terms/` were omitted while they were placeholders, because
+ * a policy page in Google's index saying "not yet published" is worse than no
+ * policy page in it. Both now carry real, verified text, so both are listed —
+ * at low priority, because they are documents people look up rather than pages
+ * worth ranking for.
  *
  * `/request/` — REMOVED, not merely unlisted. Ordering now happens per tier on
  * `/services/`, which is listed and is the page worth ranking: it carries the
@@ -34,7 +34,7 @@ import { company } from "@/lib/company";
 export const dynamic = "force-static";
 
 /** Bump when page copy meaningfully changes. Not on every deploy. */
-const CONTENT_REVIEWED = "2026-09-02";
+const CONTENT_REVIEWED = "2026-09-05";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = CONTENT_REVIEWED;
@@ -45,5 +45,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${company.url}/work/`, lastModified, priority: 0.8, changeFrequency: "monthly" },
     { url: `${company.url}/approach/`, lastModified, priority: 0.8, changeFrequency: "yearly" },
     { url: `${company.url}/contact/`, lastModified, priority: 0.6, changeFrequency: "yearly" },
+    { url: `${company.url}/privacy/`, lastModified, priority: 0.3, changeFrequency: "yearly" },
+    { url: `${company.url}/terms/`, lastModified, priority: 0.3, changeFrequency: "yearly" },
   ];
 }

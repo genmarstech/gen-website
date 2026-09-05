@@ -12,7 +12,6 @@ export const metadata: Metadata = {
   title: "Terms of service",
   description:
     "The terms for using genmars.co.ke and for holding a Genmars client portal account. The work itself is governed by a separate signed agreement.",
-  robots: { index: false, follow: false },
 };
 
 /**
@@ -404,9 +403,11 @@ export default function TermsPage() {
 /**
  * Visible while this document is still a draft.
  *
- * Same component and same reasoning as the privacy page: the site carries
- * noindex and a disallow-all robots.txt, and this notice stays until an
- * advocate has read the document. Uncomfortable, and honest.
+ * Same component and same reasoning as the privacy page — including that the
+ * reasoning changed on 2026-09-05. The site is no longer noindex and no longer
+ * disallow-all, so this notice is the only thing telling a reader that no
+ * advocate has checked a document they may be relying on. It stays until one
+ * has.
  */
 function ReviewNotice() {
   return (

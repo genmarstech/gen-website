@@ -102,18 +102,32 @@ export const metadata: Metadata = {
 
   robots: {
     /**
-     * The site is NOT cleared to publish: Charter 03 §IV Tier 1 requires a
-     * privacy policy and terms of service, and both are still drafts awaiting
-     * advocate review. Indexing stays off until docs/PRE-LAUNCH.md is complete.
+     * OPEN TO INDEXING SINCE 2026-09-05.
      *
-     * ⚠ VERIFICATION DOES NOT NEED THIS OFF. A property can be verified, and a
-     * sitemap submitted, while the site is noindex — Search Console will simply
-     * report the pages as excluded. So this stays as it is until the gates in
-     * docs/PRE-LAUNCH.md are actually met; flipping it is a launch decision,
-     * not an SEO task. docs/SEARCH-CONSOLE.md has the exact two-line change.
+     * This was `false, false` from the first deploy: Charter 03 §IV Tier 1
+     * requires a published privacy policy and terms of service, and until that
+     * date /terms/ was a page saying "this document is not yet published".
+     * Both are now written, verified against the running system, and live.
+     *
+     * MUST STAY IN STEP WITH src/app/robots.ts. An allow in robots.txt with
+     * noindex here means Google crawls all nine pages and indexes none, and
+     * reports it as "Excluded by 'noindex' tag" — which reads like a bug and is
+     * not one. Change both or neither.
+     *
+     * `googleBot` is set explicitly rather than inherited so the snippet and
+     * preview limits are ours rather than a default that can move. -1 means "no
+     * limit we are imposing", which is what you want for a nine-page site whose
+     * whole job is to be read.
      */
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
   },
 };
 
