@@ -77,9 +77,18 @@ alongside `offers`, never as a replacement.
 
 ---
 
-## 3. Conflict — tier names
+## 3. Tier names — DECIDED 2026-09-05: keep the shipping names
 
-**This one needs a decision and cannot be resolved in code.**
+**Decision: option 1. The published per-offer names stand, and v2.0 §03 is
+amended to match rather than departed from silently — which is what the
+document itself asks for.**
+
+Nothing on the site, in the portal, or in any proposal already sent changes.
+`Foundation / Growth / Scale` does not appear in client-facing copy.
+
+The record of what was weighed is kept below, because a decision without its
+reasoning gets re-litigated by whoever reads the two documents next and notices
+they disagree.
 
 | | Names |
 |---|---|
@@ -91,9 +100,9 @@ The portal copies these tier prices (see the portal's `ServiceTier`), so a
 rename is not a one-file change — it touches published pricing, the portal's
 data, and any proposal already sent.
 
-Three options, in the order I would consider them:
+Three options, in the order they were considered:
 
-1. **Keep the shipping names.** They are live, priced, and per-offer names read
+1. **Keep the shipping names.** ← chosen They are live, priced, and per-offer names read
    better on a card than one abstract triple. Amend v2.0 to match — the document
    says explicitly that it should be amended in writing rather than departed
    from silently.
@@ -208,14 +217,16 @@ the best.
 
 | # | Action | Blocked on |
 |---|---|---|
-| 1 | Decide the tier-name question (§3) | A founder decision |
-| 2 | Add the four tier dimensions | Nothing |
-| 3 | Add anchor/attachment language to `/services/` | Nothing |
-| 4 | Add a required `label` to `WorkItem` | Nothing |
-| 5 | Extend `WorkItem` for architecture / engineering / results | §4 first |
-| 6 | Add divisions as a capability vocabulary, not navigation | §3 decision |
+| 1 | Decide the tier-name question (§3) | **Done** — 2026-09-05, keep shipping names |
+| 2 | Add the four tier dimensions | **Done** — `tierDimensions`, on `/services/` |
+| 3 | Add anchor/attachment language to `/services/` | **Done** — `anchors` |
+| 4 | Add a required `label` to `WorkItem` | **Done** — `WorkLabel`, no default |
+| 5 | Extend `WorkItem` for architecture / engineering / results | **Done** — all three optional |
+| 6 | Add divisions as a capability vocabulary, not navigation | **Done** — `divisions`, not rendered as nav |
 
-Nothing in this list is implemented. Keep `company.ts` the single source of
+All six are implemented. The dimensions table uses **Lower / Middle / Upper**
+rather than any tier names, so it describes the ladder without asserting a
+naming scheme the cards above it do not use. Keep `company.ts` the single source of
 truth with a citation on every value — that rule is what has kept invented
 claims off this site.
 

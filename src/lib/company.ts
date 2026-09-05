@@ -554,6 +554,38 @@ export const offers = [
  * the number rather than living in a footer nobody reads.
  */
 /**
+ * The nine divisions — a CAPABILITY VOCABULARY, not a navigation structure.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════
+ * THIS IS NOT AN ALTERNATIVE TO `offers`, AND MUST NEVER REPLACE IT.
+ *
+ * The two answer different questions. `offers` answers "what can I buy?" and is
+ * the purchasable surface. This answers "what can Genmars do?" — and the site
+ * is deliberately not restructured around it, because v2.0's own focus
+ * discipline says a nine-division menu reads as a company that specialises in
+ * nothing.
+ *
+ * The coincidence that there are nine of each is misleading. They are different
+ * axes: Support & Maintenance covers two offers, and Software Development
+ * covers two more.
+ *
+ * Where this is useful: proposals, deciding which work to take, and the "what
+ * this demonstrates" line on a case study. Not the header.
+ * ══════════════════════════════════════════════════════════════════════════════
+ */
+export const divisions = [
+  { name: "Software Development", outcome: "Production business software" },
+  { name: "SaaS Development", outcome: "Commercial software products" },
+  { name: "Mobile Development", outcome: "Customer or operational mobile apps" },
+  { name: "Business Automation", outcome: "Reduced manual operations" },
+  { name: "API & Integration", outcome: "Connected business systems" },
+  { name: "Cloud & Infrastructure", outcome: "Reliable production infrastructure" },
+  { name: "Data & Analytics", outcome: "Operational intelligence" },
+  { name: "AI Engineering", outcome: "Automated or intelligent workflows" },
+  { name: "Support & Maintenance", outcome: "Ongoing system reliability" },
+] as const;
+
+/**
  * What legitimately separates one tier from the next.
  *
  * ══════════════════════════════════════════════════════════════════════════════
