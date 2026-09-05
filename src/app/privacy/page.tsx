@@ -545,8 +545,8 @@ export default function PrivacyPage() {
                   append-only log that nothing in the software can edit or delete
                 </li>
                 <li>
-                  Backups are encrypted before they leave the server, with a key
-                  we hold and the hosting provider does not
+                  Backups are encrypted on the server, with a key we hold and
+                  the hosting provider does not
                 </li>
                 <li>
                   The application runs as an unprivileged user in isolated
