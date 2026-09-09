@@ -184,6 +184,30 @@ vulnerabilities:
   # This one is argued as code that cannot be invoked at all, and it is reviewed
   # four weeks earlier than the rest.
 
+  - id: CVE-2026-84445
+    paths: ["usr/bin/caddy"]
+    statement: >-
+      google.golang.org/grpc: an xDS SERVER crashes on a malformed message,
+      denial of service. This container runs no gRPC server of any kind and no
+      xDS control plane. Trivy flags it because grpc is linked into the Caddy
+      binary through its OpenTelemetry exporter; reaching the defect needs
+      something to stand up an xDS server and feed it a message, and nothing in
+      this image ever does. Verified against deploy/container.Caddyfile on
+      2026-09-09 - it is a file_server with encode, header, redir, handle and
+      handle_errors, listening on :3000 for plain HTTP and published to
+      127.0.0.1 only, with `admin off` and `auto_https off` in the global
+      block. There is no grpc, no otel and no metrics directive anywhere in it.
+      Not a mitigated risk: unreachable code.
+      No fix is available to take. caddy:2-alpine ships grpc v1.81.0 and the
+      fix is in 1.82.2; the Dockerfile already pulls the newest tag on every
+      build (`pull: true` in build.yml), so this needs an upstream rebuild.
+      Expiring on 2026-10-01 rather than 2026-10-29 DELIBERATELY, to come back
+      on the same day as the x/crypto entry below. This is the second finding
+      in five weeks that a Caddy rebuild would have cleared, and the two should
+      be reviewed as one question rather than accepted one at a time - which is
+      the drift that entry already warns about.
+    expired_at: 2026-10-01
+
   - id: CVE-2026-56854
     paths: ["usr/bin/caddy"]
     statement: >-
