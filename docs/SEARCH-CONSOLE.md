@@ -73,12 +73,14 @@ the `build` workflow's env. Prefer the DNS record.
 
 `https://genmars.co.ke/sitemap.xml` — Search Console → Sitemaps → add.
 
-It lists five routes. Three are deliberately absent:
+It lists **six** routes today. Two entries have moved since this was first
+written, and both moved for a reason worth keeping:
 
-| Route | Why it is not listed |
+| Route | State |
 |---|---|
-| `/privacy/` `/terms/` | Draft and placeholder. A policy page in the index that says "not yet published" is worse than none. |
-| `/request/` | It sends a first-time visitor to `app.genmars.co.ke` to set up an account. A crawler experiences that as a redirect off the site, so listing it asks Google to discover a page and then tells it the page is elsewhere. `/contact/` is the indexable route for getting in touch. |
+| `/privacy/` `/terms/` | **Now listed**, at priority 0.3. They were absent while they were placeholders — a policy page in the index saying "not yet published" is worse than none. Both are published at v1.0, so both are in. |
+| `/request/` | **Gone from the site**, not merely unlisted. Ordering happens per tier on `/services/`, and Caddy 301s the old path there. |
+| `/work/` | **Listed only while it names somebody.** The entry is derived from `workIsPublishable`, the same flag that decides what the page body shows. It is crawlable and still in the header nav — this is "not yet worth your crawl budget", not a noindex. It returns automatically when the last permission lands. |
 
 `lastmod` is a **constant**, `CONTENT_REVIEWED` in `src/app/sitemap.ts`, bumped
 by hand when copy actually changes. It used to be the build time, which told
@@ -151,6 +153,8 @@ Then in Search Console: **URL Inspection → genmars.co.ke → Request indexing*
 
 ## Related
 
+- `docs/SEO.md` — the standing search configuration: canonicals, structured
+  data, what is deliberately not marked up, and the recurring checks
 - `docs/PRE-LAUNCH.md` — the gates that block this
 - `docs/PORTAL-INTEGRATION.md` §4 — mail DNS, which shares the apex TXT records
 - `docs/DEPLOYMENT.md`

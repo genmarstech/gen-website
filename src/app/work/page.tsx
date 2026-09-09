@@ -4,14 +4,29 @@ import { work, workIsPublishable } from "@/lib/company";
 import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
 
+/**
+ * ── THE DESCRIPTION FOLLOWS THE PERMISSION GATE ─────────────────────────────
+ *
+ * A meta description is the snippet Google shows under the title, so it is a
+ * promise made to somebody who has not yet clicked. While `workIsPublishable`
+ * is false this page names no client, and the description that used to sit
+ * here — "Delivered client work ... booking systems, mobile-money payment
+ * paths" — described the page it will become rather than the page that is
+ * served. Somebody arriving on that promise found a holding notice.
+ *
+ * So it is derived from the same flag that decides the body. The day the last
+ * permission lands, the flag flips and the snippet becomes true in the same
+ * commit as the content, with nobody having to remember this file.
+ */
 export const metadata: Metadata = {
   /* Absolute canonical, resolved against metadataBase in layout.tsx.
      Without one, /work and /work/ and www. and non-www are four URLs
      for one page as far as a crawler is concerned. */
   alternates: { canonical: "/work/" },
   title: "Work",
-  description:
-    "Delivered client work from Genmars Tech — booking systems, mobile-money payment paths, and sites built for Kenyan market realities.",
+  description: workIsPublishable
+    ? "Delivered client work from Genmars Tech — booking systems, mobile-money payment paths, and sites built for Kenyan market realities."
+    : "Genmars Tech has delivered client systems, and does not name a client without their written permission. This page stays empty until that permission is on file.",
 };
 
 /**

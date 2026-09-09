@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { company } from "@/lib/company";
+import { company, workIsPublishable } from "@/lib/company";
 
 /**
  * sitemap.xml
@@ -42,7 +42,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: `${company.url}/`, lastModified, priority: 1, changeFrequency: "monthly" },
     { url: `${company.url}/services/`, lastModified, priority: 0.9, changeFrequency: "monthly" },
-    { url: `${company.url}/work/`, lastModified, priority: 0.8, changeFrequency: "monthly" },
+    /*
+     * ── /work/ IS LISTED ONLY WHILE IT NAMES SOMEBODY ───────────────────────
+     *
+     * A sitemap is the set of URLs we are asking Google to spend crawl budget
+     * on and to consider ranking. Until `workIsPublishable` turns true the page
+     * names no client (Charter 04 §V — written permission) and shows a holding
+     * notice instead, so there is nothing on it worth ranking for.
+     *
+     * NOT a noindex. The page stays crawlable and stays in the header nav: it
+     * is honest, it is linked, and a page-level noindex here would reintroduce
+     * exactly the trap layout.tsx warns about. Leaving it out of the sitemap
+     * says "not yet worth your time"; a noindex would say "never". Whether it
+     * should also be noindexed is a founder call, not an SEO one.
+     *
+     * It returns the moment the last permission lands, because this reads the
+     * same flag the page body does.
+     */
+    ...(workIsPublishable
+      ? [
+          {
+            url: `${company.url}/work/`,
+            lastModified,
+            priority: 0.8,
+            changeFrequency: "monthly" as const,
+          },
+        ]
+      : []),
     { url: `${company.url}/approach/`, lastModified, priority: 0.8, changeFrequency: "yearly" },
     { url: `${company.url}/contact/`, lastModified, priority: 0.6, changeFrequency: "yearly" },
     { url: `${company.url}/privacy/`, lastModified, priority: 0.3, changeFrequency: "yearly" },

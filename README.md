@@ -64,14 +64,15 @@ src/
 ├── app/
 │   ├── layout.tsx          Root layout, Jost via next/font, metadata
 │   ├── page.tsx            Home
-│   ├── services/           The four offers
+│   ├── services/           The catalogue, the tiers, the prices — and the only
+│   │                       way to order. It replaced /request/, which Caddy 301s here.
 │   ├── work/               Delivered client work — gated on written permission
-│   ├── request/            Service request builder
 │   ├── approach/           Stack, definition of done, security tiers, incidents
 │   ├── contact/            How to reach us
-│   ├── privacy/ terms/     Placeholders — see docs/PRE-LAUNCH.md
-│   ├── robots.ts           Currently disallows everything, on purpose
-│   └── sitemap.ts          Ready for launch day
+│   ├── privacy/ terms/     Published v1.0 — advocate review still outstanding
+│   ├── not-found.tsx       404, noindex, served with a real 404 status
+│   ├── robots.ts           Allow: / since 2026-09-05 — see docs/SEO.md
+│   └── sitemap.ts          Live. lastmod is a hand-set constant, not the build time.
 ├── components/
 │   ├── Brand.tsx           Orbit G mark + wordmark with the barless A
 │   ├── OrbitSystem.tsx     The 3D hero
@@ -80,7 +81,8 @@ src/
 │   ├── LoadingMark.tsx     The Orbit G in motion — the loading animation
 │   ├── RouteProgress.tsx   Navigation indicator (delayed, see below)
 │   ├── routeProgressBus.ts Lets router.push raise the indicator
-│   ├── RequestBuilder.tsx  Composes a mailto — nothing is submitted
+│   ├── Photo.tsx           Pre-built AVIF/WebP/JPEG srcsets — no runtime optimiser
+│   ├── Starfield.tsx       The hero's ambient field
 │   ├── ThemeToggle.tsx     Light / auto / dark
 │   ├── theme.ts            Theme helpers + the no-flash script
 │   ├── Reveal.tsx          Scroll reveal
@@ -291,6 +293,15 @@ the host:
 
 Full notes, host setup, TLS, the one-time secrets, rollback and the CSP
 compromise: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
+## Being found
+
+The site is open to crawlers as of 2026-09-05.
+[`docs/SEO.md`](docs/SEO.md) is the standing configuration — canonicals,
+structured data, what is deliberately not marked up, and the checks worth
+running after a change. [`docs/SEARCH-CONSOLE.md`](docs/SEARCH-CONSOLE.md)
+covers the property and the sitemap submission. Operations carries the same
+list at **Settings → Engineering → Search visibility**.
 
 ---
 

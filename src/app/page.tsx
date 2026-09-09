@@ -30,6 +30,37 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
+/**
+ * WebSite schema — HOME PAGE ONLY.
+ *
+ * ── WHAT IT IS FOR, AND WHY IT IS NOT IN layout.tsx ─────────────────────────
+ *
+ * This is the documented way to tell Google what to call the site in a result
+ * — the site name that appears above the title, where the domain would
+ * otherwise be. Google reads it from the home page of the domain and nowhere
+ * else, so putting it in the root layout would emit it on all seven routes to
+ * be ignored on six.
+ *
+ * `name` is the short form on purpose: it is what people say and search for.
+ * `alternateName` carries the full form, which is what a reader who only knows
+ * "Genmars Tech" will type. The legal name stays in the Organization block in
+ * layout.tsx — one company, described once, in the type meant for it.
+ *
+ * NO `potentialAction` / SearchAction. That declares a search URL a crawler
+ * may send a query to, and this is a static export with no search endpoint —
+ * the command palette resolves in the browser. Declaring one would be a claim
+ * about a thing that does not exist (Charter 04 §IV), in the form most likely
+ * to be believed without being checked.
+ */
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: company.formalName,
+  alternateName: company.legalName,
+  url: company.url,
+  inLanguage: "en-KE",
+};
+
 
 /**
  * Home.
@@ -72,6 +103,11 @@ function spell(n: number): string {
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+
       {/* ---------- hero ---------- */}
       <section className={`section section--flush ${styles.hero}`}>
         {/* Behind everything. The hero already clips, so nothing escapes it. */}

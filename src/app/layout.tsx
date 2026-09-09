@@ -65,8 +65,10 @@ export const metadata: Metadata = {
   /**
    * Twitter reads its own tags and falls back to Open Graph inconsistently.
    * `summary_large_image` is what turns a link into the 1200x630 card rather
-   * than a thumbnail beside two lines of text; the image itself comes from
-   * src/app/twitter-image.png via Next's file convention.
+   * than a thumbnail beside two lines of text. The image is the same
+   * public/og.png declared above, named again here rather than left to fall
+   * back to og:image — there is no src/app/twitter-image.png and no file
+   * convention in play, whatever an older version of this comment claimed.
    */
   twitter: {
     card: "summary_large_image",
@@ -110,13 +112,13 @@ export const metadata: Metadata = {
      * Both are now written, verified against the running system, and live.
      *
      * MUST STAY IN STEP WITH src/app/robots.ts. An allow in robots.txt with
-     * noindex here means Google crawls all nine pages and indexes none, and
+     * noindex here means Google crawls all seven pages and indexes none, and
      * reports it as "Excluded by 'noindex' tag" — which reads like a bug and is
      * not one. Change both or neither.
      *
      * `googleBot` is set explicitly rather than inherited so the snippet and
      * preview limits are ours rather than a default that can move. -1 means "no
-     * limit we are imposing", which is what you want for a nine-page site whose
+     * limit we are imposing", which is what you want for a seven-page site whose
      * whole job is to be read.
      */
     index: true,
