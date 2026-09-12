@@ -29,6 +29,9 @@ export function SiteFooter() {
                   <Link href="/services/">Services</Link>
                 </li>
                 <li>
+                  <Link href="/docs/">Documentation</Link>
+                </li>
+                <li>
                   <Link href="/approach/">Approach</Link>
                 </li>
                 <li>

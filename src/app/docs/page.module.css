@@ -1,0 +1,119 @@
+/*
+ * The documentation index.
+ *
+ * Semantic tokens only — --surface, --canvas and --deep-well are fixed brand
+ * colours and scripts/check-theme-tokens.mjs will refuse them as backgrounds
+ * under themed text.
+ */
+
+.head {
+  padding-block: clamp(3.5rem, 9vw, 7rem) clamp(2rem, 5vw, 3.5rem);
+}
+
+.title {
+  margin: var(--sp-3) 0 var(--sp-5);
+  text-wrap: balance;
+}
+
+.groupTitle {
+  margin: 0 0 var(--sp-6);
+  font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+  font-weight: 300;
+}
+
+.grid {
+  display: grid;
+  gap: var(--sp-5);
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+}
+
+.card {
+  display: grid;
+  gap: var(--sp-3);
+  height: 100%;
+  align-content: start;
+  padding: var(--sp-6);
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.card:hover {
+  border-color: var(--rule-strong);
+  transform: translateY(-2px);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  font-size: 1.0625rem;
+  color: var(--ink);
+}
+
+.cardSummary {
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* The team's note. Set apart from the summary because it is a different kind
+   of statement — one is what the thing is, the other is where it has got to. */
+.cardNote {
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--rule);
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.cardNoteDate {
+  color: var(--ink-faint);
+}
+
+/* ── status badges ──────────────────────────────────────────────────────────
+ *
+ * The word carries the meaning; colour only reinforces it. A reader who cannot
+ * distinguish the tints still reads "In development".
+ */
+
+.badge {
+  flex: none;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-muted);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+}
+
+.badge_live {
+  color: var(--ink);
+  border-color: var(--ink-muted);
+}
+
+.badge_beta,
+.badge_building {
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.badge_planned {
+  color: var(--ink-muted);
+}
+
+.source {
+  display: grid;
+  gap: var(--sp-5);
+  justify-items: start;
+}

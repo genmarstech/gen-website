@@ -109,6 +109,24 @@ export const socials = {
     url: "https://wa.me/254795980484",
     live: true,
   },
+  /**
+   * The GitHub organisation.
+   *
+   * Live because three of the four repositories are public and the org page
+   * opens for anyone — checked, not assumed. `internals-tm` is private and is
+   * simply not listed there for a signed-out visitor, which is the correct
+   * outcome and not a broken link.
+   *
+   * It carries more weight than the other entries: for a software company with
+   * no case studies, readable source IS the proof, and this is the entry that
+   * tells a search engine the org and this domain are the same people.
+   */
+  github: {
+    label: "GitHub",
+    handle: "genmarstech",
+    url: "https://github.com/genmarstech",
+    live: true,
+  },
   instagram: {
     label: "Instagram",
     handle: "@genmarstech",
@@ -871,6 +889,11 @@ export const workIsPublishable = work.every((w) => w.permissionOnFile);
 export const nav = [
   { href: "/services/", label: "Services" },
   { href: "/work/", label: "Work" },
+  // Between Work and Approach on purpose. /work/ is what we delivered for
+  // somebody else and is empty until a client gives written permission;
+  // /docs/ is what we built ourselves and can show today. For a company with
+  // no case studies it is currently the stronger of the two.
+  { href: "/docs/", label: "Docs" },
   { href: "/approach/", label: "Approach" },
   { href: "/contact/", label: "Contact" },
 ] as const;

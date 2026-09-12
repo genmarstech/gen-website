@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { company, workIsPublishable } from "@/lib/company";
+import { loadDocs } from "@/lib/docs";
 
 /**
  * sitemap.xml
@@ -36,8 +37,38 @@ export const dynamic = "force-static";
 /** Bump when page copy meaningfully changes. Not on every deploy. */
 const CONTENT_REVIEWED = "2026-09-05";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = CONTENT_REVIEWED;
+
+  /*
+   * ── DOCUMENTATION IS LISTED FROM THE SAME SOURCE THAT RENDERS IT ──────────
+   *
+   * Not a hand-kept list. A document withdrawn in operations disappears from
+   * generateStaticParams and from here in the same build, so the sitemap
+   * cannot end up advertising a page that 404s — which is the failure that
+   * makes Google distrust a sitemap generally, not just the dead entry.
+   *
+   * `updated_at` is the document's own, unlike the constant below: these
+   * change when somebody edits them rather than when the site is redeployed,
+   * so the date is real information here.
+   */
+  const { docs } = await loadDocs();
+  const documentation: MetadataRoute.Sitemap = docs.length
+    ? [
+        {
+          url: `${company.url}/docs/`,
+          lastModified,
+          priority: 0.7,
+          changeFrequency: "monthly" as const,
+        },
+        ...docs.map((doc) => ({
+          url: `${company.url}/docs/${doc.slug}/`,
+          lastModified: doc.updated_at.slice(0, 10),
+          priority: 0.6,
+          changeFrequency: "monthly" as const,
+        })),
+      ]
+    : [];
 
   return [
     { url: `${company.url}/`, lastModified, priority: 1, changeFrequency: "monthly" },
@@ -73,5 +104,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${company.url}/contact/`, lastModified, priority: 0.6, changeFrequency: "yearly" },
     { url: `${company.url}/privacy/`, lastModified, priority: 0.3, changeFrequency: "yearly" },
     { url: `${company.url}/terms/`, lastModified, priority: 0.3, changeFrequency: "yearly" },
+    ...documentation,
   ];
 }
