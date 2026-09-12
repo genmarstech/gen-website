@@ -62,13 +62,45 @@ export function loadDocs(): Promise<DocsPayload> {
   return inFlight;
 }
 
+/** Next signals "this cannot be static" by throwing; that is not an outage. */
+function isNextBailout(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  const name = (error as { name?: unknown } | null)?.name;
+  return (
+    code === "NEXT_STATIC_GEN_BAILOUT" ||
+    name === "DynamicServerError" ||
+    String(code ?? "").startsWith("NEXT_")
+  );
+}
+
 async function fetchDocs(): Promise<DocsPayload> {
   const url = `${ORIGIN}/api/public/docs`;
 
   let response: Response;
   try {
-    response = await fetch(url, { cache: "no-store" });
+    /*
+     * force-cache, NOT no-store.
+     *
+     * `no-store` marks the fetch dynamic, and every route reading it inherits
+     * that — which sitemap.ts, declared `force-static` because a static export
+     * has no server, refuses with NEXT_STATIC_GEN_BAILOUT. The build ran once
+     * with no-store and died on /sitemap.xml.
+     *
+     * Caching costs nothing here: the process is a build, it starts with an
+     * empty cache, and loadDocs() already collapses the whole build down to
+     * one request.
+     */
+    response = await fetch(url, { cache: "force-cache" });
   } catch (cause) {
+    /*
+     * Next's static-generation bailout arrives as a throw from fetch and has
+     * nothing to do with the API being down. Relabelling it "could not reach
+     * the API" sent the first debugging attempt at exactly the wrong thing —
+     * the API was up and answering the whole time. Anything that is not a
+     * network failure is re-thrown untouched.
+     */
+    if (isNextBailout(cause)) throw cause;
+
     throw new Error(
       `Could not reach ${url} to read the documentation.\n\n` +
         "The build reads /docs from the API, so this stops the build rather " +
@@ -127,14 +159,22 @@ async function assertRepoLinksOpen(docs: Doc[]): Promise<void> {
         const response = await fetch(doc.repo_url, {
           method: "HEAD",
           redirect: "follow",
-          cache: "no-store",
+          // force-cache for the same reason as the docs fetch above: an
+          // uncached fetch is a dynamic one, and sitemap.ts is force-static.
+          cache: "force-cache",
         });
         if (!response.ok) {
           broken.push(
             `  ${doc.slug}: ${doc.repo_url} answered ${response.status}`,
           );
         }
-      } catch {
+      } catch (error) {
+        // Twice now this catch has reported a healthy GitHub as unreachable,
+        // because Next's static-generation bailout also arrives as a throw
+        // from fetch. A check that cries wolf about the wrong thing is worse
+        // than no check: it sends somebody to verify a repository that was
+        // fine all along.
+        if (isNextBailout(error)) throw error;
         broken.push(`  ${doc.slug}: ${doc.repo_url} could not be reached`);
       }
     }),

@@ -16,6 +16,35 @@ import styles from "./page.module.css";
  */
 export async function generateStaticParams() {
   const { docs } = await loadDocs();
+
+  /*
+   * ── WHY THIS THROWS RATHER THAN RETURNING [] ────────────────────────────
+   *
+   * `output: "export"` cannot emit a dynamic route with no parameters, and
+   * what Next says when it happens is:
+   *
+   *     Page "/docs/[slug]" is missing "generateStaticParams()"
+   *
+   * which is untrue and sends the next person looking at this function, where
+   * the problem is not. The real cause is that nothing is published — a state
+   * somebody reaches by withdrawing the last document in operations, with no
+   * reason to connect that to a website build failing an hour later.
+   *
+   * So the misleading error is replaced with the actual one. The section
+   * needs at least one published document to exist at all; if the intention
+   * is to take /docs down, the route and the nav entry come out together.
+   */
+  if (docs.length === 0) {
+    throw new Error(
+      "No published documentation, so /docs/[slug] has no pages to build.\n\n" +
+        "Next reports this as a missing generateStaticParams(), which is not " +
+        "the problem — the function is right here. Nothing is published.\n\n" +
+        "Publish at least one document in operations (Settings → Engineering " +
+        "→ Documentation), or remove the /docs route and its nav entry if the " +
+        "section is being retired.",
+    );
+  }
+
   return docs.map((doc) => ({ slug: doc.slug }));
 }
 
