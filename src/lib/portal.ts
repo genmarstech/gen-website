@@ -1,12 +1,16 @@
 /**
  * The client portal, as seen from the marketing site.
  *
- * Genmars runs on three hostnames and each one has exactly one job:
+ * Genmars runs on four hostnames and each one has exactly one job:
  *
- *   genmars.co.ke       this site. Static files. No Node, no database, no
- *                       credential, no personal data at rest.
- *   app.genmars.co.ke   the portal. Accounts, dashboards, engagements.
- *   api.genmars.co.ke   the portal's Django API. Never called from here.
+ *   genmars.co.ke            this site. Static files. No Node, no database,
+ *                            no credential, no personal data at rest.
+ *   app.genmars.co.ke        the portal. Accounts, dashboards, engagements.
+ *   api.genmars.co.ke        the portal's Django API. Never called from here.
+ *   business.genmars.co.ke   the Business Platform. A separate application
+ *                            with its own database, which borrows a Genmars
+ *                            identity for a subscriber and holds none of its
+ *                            own — see `platform` in company.ts.
  *
  * That separation is the security boundary described in docs/PORTAL-INTEGRATION.md
  * §1, and it is why these are absolute URLs to another origin rather than routes.

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { company, workIsPublishable } from "@/lib/company";
+import { clientWorkIsPublishable, company, ownWork } from "@/lib/company";
 import { loadDocs } from "@/lib/docs";
 
 /**
@@ -74,23 +74,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${company.url}/`, lastModified, priority: 1, changeFrequency: "monthly" },
     { url: `${company.url}/services/`, lastModified, priority: 0.9, changeFrequency: "monthly" },
     /*
-     * ── /work/ IS LISTED ONLY WHILE IT NAMES SOMEBODY ───────────────────────
+     * ── /work/ IS LISTED ONLY WHILE IT NAMES SOMETHING ──────────────────────
      *
      * A sitemap is the set of URLs we are asking Google to spend crawl budget
-     * on and to consider ranking. Until `workIsPublishable` turns true the page
-     * names no client (Charter 04 §V — written permission) and shows a holding
-     * notice instead, so there is nothing on it worth ranking for.
+     * on and to consider ranking. While the page had nothing on it but a
+     * holding notice there was nothing worth ranking for, so it was left out.
+     *
+     * That condition used to be "has every client given written permission",
+     * which was the right question when client work was the only thing here.
+     * It is not any more: the Business Platform is ours, needs nobody's
+     * consent, and is a real page with real content. The question is now
+     * whether the page has anything on it at all.
      *
      * NOT a noindex. The page stays crawlable and stays in the header nav: it
      * is honest, it is linked, and a page-level noindex here would reintroduce
      * exactly the trap layout.tsx warns about. Leaving it out of the sitemap
      * says "not yet worth your time"; a noindex would say "never". Whether it
      * should also be noindexed is a founder call, not an SEO one.
-     *
-     * It returns the moment the last permission lands, because this reads the
-     * same flag the page body does.
      */
-    ...(workIsPublishable
+    ...(ownWork.length > 0 || clientWorkIsPublishable
       ? [
           {
             url: `${company.url}/work/`,

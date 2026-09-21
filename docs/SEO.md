@@ -83,11 +83,16 @@ each page supplies the short half (`Work` → `Work — Genmars Tech`). The home
 page deliberately has no override — the default is already right for it.
 
 **A description is a promise to somebody who has not clicked yet.** That is why
-`/work/`'s description is derived from `workIsPublishable` rather than written
-once: while no client permission is on file, the page names nobody, and the old
-description advertised booking systems and payment paths to somebody who would
-arrive at a holding notice. The snippet now says what is actually there, and
-becomes the other sentence in the same commit that flips the flag.
+`/work/`'s description is derived from `clientWorkIsPublishable` rather than
+written once: while no client permission is on file the page names no client,
+and the old description advertised booking systems and payment paths to somebody
+who would arrive at a holding notice. The snippet says what is actually there —
+today, the Business Platform — and becomes the other sentence in the same commit
+that flips the flag.
+
+The page is now in the sitemap, which it was not while it held only a notice. A
+sitemap is a request to spend crawl budget, and there was nothing to spend it
+on; there is now.
 
 ## 5. Structured data
 

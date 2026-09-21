@@ -20,9 +20,10 @@ npm run dev
 
 Then open <http://localhost:3000>.
 
-> The `/work/` page currently renders its holding state. Set `permissionOnFile`
-> to `true` for every entry in `src/lib/company.ts` — once permission genuinely
-> exists — to see the project list.
+> The `/work/` page shows what Genmars owns and runs, and a holding notice in
+> place of the client list. Set `permissionOnFile` to `true` for every client
+> entry in `src/lib/company.ts` — once permission genuinely exists — to see
+> that half too.
 
 | Command | Does |
 |---|---|
@@ -125,7 +126,7 @@ times, team size, client names. Read the comments before adding anything back.
 | Stock photography | Charter 04 §IV |
 | AuthGate or any product | Charter 04 §IV — never announce a product before it can be used |
 | A submitting contact form | Would route personal data through a third-party processor with no processing agreement (Charter 03 §V). `/request/` composes a `mailto:` client-side instead — nothing leaves the browser |
-| Client names on `/work/` | Charter 04 §V — credited only with **written permission**, not yet obtained. `workIsPublishable` gates the whole page |
+| Client names on `/work/` | Charter 04 §V — credited only with **written permission**, not yet obtained. `clientWorkIsPublishable` gates that half of the page; what Genmars owns and runs needs nobody's consent and shows |
 
 Adding any of these back is a charter decision, not a design decision.
 
