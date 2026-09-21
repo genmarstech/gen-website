@@ -146,9 +146,13 @@ scope — but never names the shape.
 
 ## 5. Genuinely new — the Work page is now governed
 
-`work` currently holds two items (Avinterra, Clips Serenity Spa), both with
-`permissionOnFile: false`, so `workIsPublishable` is `false` and the section is
-hidden. That remains correct and is now backed by a second document.
+`work` holds two client items (Avinterra, Clips Serenity Spa), both with
+`permissionOnFile: false`, so `clientWorkIsPublishable` is `false` and that
+section is hidden. That remains correct and is now backed by a second document.
+
+It also holds the Genmars Business Platform, labelled `Genmars product`. We own
+and run it, there is no client to ask, and it renders. The consent gate asks
+about a third party — see `CONSENT_REQUIRED` in `company.ts`.
 
 When permission does arrive, v2.0 §08/§10/§11 govern what goes up.
 

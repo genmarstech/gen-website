@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { work, workIsPublishable } from "@/lib/company";
+import {
+  clientWork,
+  clientWorkIsPublishable,
+  ownWork,
+  type WorkItem,
+} from "@/lib/company";
 import { Reveal } from "@/components/Reveal";
 import styles from "./page.module.css";
 
@@ -8,8 +13,8 @@ import styles from "./page.module.css";
  * ── THE DESCRIPTION FOLLOWS THE PERMISSION GATE ─────────────────────────────
  *
  * A meta description is the snippet Google shows under the title, so it is a
- * promise made to somebody who has not yet clicked. While `workIsPublishable`
- * is false this page names no client, and the description that used to sit
+ * promise made to somebody who has not yet clicked. While the client list
+ * is gated this page names no client, and the description that used to sit
  * here — "Delivered client work ... booking systems, mobile-money payment
  * paths" — described the page it will become rather than the page that is
  * served. Somebody arriving on that promise found a holding notice.
@@ -24,24 +29,28 @@ export const metadata: Metadata = {
      for one page as far as a crawler is concerned. */
   alternates: { canonical: "/work/" },
   title: "Work",
-  description: workIsPublishable
-    ? "Delivered client work from Genmars Tech — booking systems, mobile-money payment paths, and sites built for Kenyan market realities."
-    : "Genmars Tech has delivered client systems, and does not name a client without their written permission. This page stays empty until that permission is on file.",
+  description: clientWorkIsPublishable
+    ? "Work from Genmars Tech — a multi-tenant point of sale we own and run, booking systems, and mobile-money payment paths built for Kenyan market realities."
+    : "The Genmars Business Platform, a multi-tenant point of sale we own and run. Delivered client systems are not named here until written permission is on file.",
 };
 
 /**
  * Work.
  *
- * ⚠ GATED ON WRITTEN PERMISSION. Charter 04 §V: "Genmars is credited only with
- * written permission." Until every entry in `work` has `permissionOnFile: true`,
- * this page shows the honest holding state instead of the projects.
+ * ── TWO SECTIONS, BECAUSE THE PERMISSION BELONGS TO TWO DIFFERENT PEOPLE ───
  *
- * That is not excessive caution — naming a client publicly without their
- * agreement is the kind of thing that costs a relationship, and the charter
- * anticipated it. One missing permission hides the whole list rather than
- * publishing a partial one that implies the rest.
+ * What Genmars owns and runs needs nobody's consent; it is ours to show. What
+ * we built for a client needs theirs, in writing — Charter 04 §V, "Genmars is
+ * credited only with written permission" — and one missing permission still
+ * hides the whole client list rather than publishing a partial one that
+ * implies the rest.
  *
- * Descriptions state what each live site observably does. No invented metrics.
+ * Naming a client publicly without their agreement is the kind of thing that
+ * costs a relationship, and the charter anticipated it. Gating our own product
+ * on the same flag was never that caution; it was an accident of the flag
+ * being applied to every row.
+ *
+ * Descriptions state what each system observably does. No invented metrics.
  */
 export default function WorkPage() {
   return (
@@ -50,73 +59,61 @@ export default function WorkPage() {
         <div className="wrap">
           <Reveal>
             <p className="eyebrow">Work</p>
+            {/*
+              ── THE HEADLINE HAS TO BE TRUE OF EVERYTHING BELOW IT ─────────
+              It used to read "Systems that took money on the first day",
+              which was exact for two client sites that did. The Business
+              Platform is running software with no shops trading on it yet, so
+              the old line became a claim about takings it has not had. The
+              money sentence still belongs to the client work and now sits in
+              the band that is about it, where it is true. Charter 04 §IV
+              does not have an exception for a headline.
+            */}
             <h1 className={styles.title}>
-              Systems that took money on the first day.
+              Software that is running, not planned.
             </h1>
             <p className="lede measure">
-              Both of these ship the same unglamorous thing: a way for a Kenyan
-              business to be booked and paid without someone re-typing it into a
-              spreadsheet afterwards.
+              All of it ships the same unglamorous thing: a way for a Kenyan
+              business to be booked, sold to and paid without someone re-typing
+              it into a spreadsheet afterwards.
             </p>
           </Reveal>
         </div>
       </section>
 
-      {workIsPublishable ? (
+      {/*
+        Ours first. It is the only thing on this page we can show without
+        asking anybody, and a visitor who scrolls past a holding notice to
+        reach it would conclude there was nothing here.
+      */}
+      {ownWork.length > 0 ? (
         <section className="section">
           <div className="wrap">
+            <Reveal>
+              <p className="eyebrow">What we own and run</p>
+            </Reveal>
             <div className={styles.list}>
-              {work.map((item, i) => (
-                <Reveal
-                  as="article"
+              {ownWork.map((item, i) => (
+                <Entry key={item.slug} item={item} index={i} />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {clientWorkIsPublishable ? (
+        <section className="section">
+          <div className="wrap">
+            <Reveal>
+              <p className="eyebrow">Delivered for clients</p>
+            </Reveal>
+            <div className={styles.list}>
+              {clientWork.map((item, i) => (
+                <Entry
                   key={item.slug}
-                  delay={i * 90}
-                  className={styles.item}
-                >
-                  <div className={styles.itemMeta}>
-                    <span className={styles.itemNum}>
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className={styles.itemSector}>{item.sector}</span>
-                    <span className={styles.itemYear}>{item.year}</span>
-                  </div>
-
-                  <div className={styles.itemBody}>
-                    <h2 className={styles.itemClient}>{item.client}</h2>
-                    <hr className="rule--accent" />
-                    <p className={styles.itemSummary}>{item.summary}</p>
-                    <p className={styles.itemDetail}>{item.detail}</p>
-
-                    <ul className={styles.caps}>
-                      {item.capabilities.map((cap) => (
-                        <li key={cap}>{cap}</li>
-                      ))}
-                    </ul>
-
-                    <a
-                      href={item.url}
-                      className={styles.visit}
-                      rel="noreferrer noopener"
-                      target="_blank"
-                    >
-                      {item.domain}
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M7 17 17 7M8 7h9v9" />
-                      </svg>
-                      <span className="visually-hidden">(opens in a new tab)</span>
-                    </a>
-                  </div>
-                </Reveal>
+                  item={item}
+                  index={ownWork.length + i}
+                />
               ))}
             </div>
           </div>
@@ -126,12 +123,13 @@ export default function WorkPage() {
           <div className="wrap">
             <Reveal className={styles.holding}>
               <h2 className={styles.holdingTitle}>
-                This page is waiting on permission.
+                Our client work is waiting on permission.
               </h2>
               <p className={styles.holdingBody}>
-                We have delivered work we would like to show you. We have not yet
-                asked those clients, in writing, whether we may name them — and
-                until we have, their names stay off this page.
+                We have delivered systems for other people that we would like
+                to show you. We have not yet asked those clients, in writing,
+                whether we may name them — and until we have, their names stay
+                off this page.
               </p>
               <p className={styles.holdingBody}>
                 Our own charter is the reason: client-owned software carries the
@@ -163,9 +161,11 @@ export default function WorkPage() {
             <div className={styles.patternHead}>
               <h2>Built for how this market actually pays.</h2>
               <p className="lede measure">
-                Mobile money is not an integration you bolt on at the end here —
-                it is the payment rail. Neither of these would work as a
-                card-first checkout copied from somewhere else.
+                Mobile money is not an integration you bolt on at the end here
+                — it is the payment rail. None of this would work as a
+                card-first checkout copied from somewhere else. The till records
+                M-Pesa beside cash and card for the same reason — that is the
+                split real customers arrive with.
               </p>
             </div>
           </Reveal>
@@ -214,5 +214,71 @@ export default function WorkPage() {
         </div>
       </section>
     </>
+  );
+}
+
+/**
+ * One system.
+ *
+ * ── THE LABEL IS NOT RENDERED HERE, AND SHOULD BE ─────────────────────────
+ * `WorkLabel` exists so a concept cannot be written up in the language of a
+ * delivered system. Everything currently on this page is live software, so
+ * nothing is misread today — but the day a "Concept" is added, this is where
+ * it has to say so. Left as a note rather than a badge nobody needs yet.
+ */
+function Entry({ item, index }: { item: WorkItem; index: number }) {
+  return (
+    <Reveal as="article" delay={index * 90} className={styles.item}>
+      <div className={styles.itemMeta}>
+        <span className={styles.itemNum}>
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <span className={styles.itemSector}>{item.sector}</span>
+        <span className={styles.itemYear}>{item.year}</span>
+      </div>
+
+      <div className={styles.itemBody}>
+        <h2 className={styles.itemClient}>{item.client}</h2>
+        <hr className="rule--accent" />
+        <p className={styles.itemSummary}>{item.summary}</p>
+        <p className={styles.itemDetail}>{item.detail}</p>
+
+        {item.architecture ? (
+          <p className={styles.itemDetail}>{item.architecture}</p>
+        ) : null}
+        {item.engineering ? (
+          <p className={styles.itemDetail}>{item.engineering}</p>
+        ) : null}
+
+        <ul className={styles.caps}>
+          {item.capabilities.map((cap) => (
+            <li key={cap}>{cap}</li>
+          ))}
+        </ul>
+
+        <a
+          href={item.url}
+          className={styles.visit}
+          rel="noreferrer noopener"
+          target="_blank"
+        >
+          {item.domain}
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M7 17 17 7M8 7h9v9" />
+          </svg>
+          <span className="visually-hidden">(opens in a new tab)</span>
+        </a>
+      </div>
+    </Reveal>
   );
 }
