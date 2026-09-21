@@ -21,9 +21,21 @@ const nextConfig: NextConfig = {
   // next/image's optimiser needs a running server; a static export has none.
   images: { unoptimized: true },
 
-  // A red pipeline blocks deploy (Charter 03 §III). Never let a broken build
-  // through by ignoring its own errors.
-  eslint: { ignoreDuringBuilds: false },
+  /*
+   * A red pipeline blocks deploy (Charter 03 §III). Never let a broken build
+   * through by ignoring its own errors.
+   *
+   * ── `eslint` IS GONE FROM HERE BECAUSE NEXT 16 TOOK IT OUT ──────────────
+   *
+   * `next build` no longer runs ESLint at all, so `ignoreDuringBuilds: false`
+   * stopped being a setting and became a type error. Deleting the line is the
+   * whole of the required change — and deleting only the line would have
+   * quietly stopped linting this repository, because `verify` reached the
+   * linter through the build and nowhere else.
+   *
+   * So `npm run lint` is now its own step in `verify`. Same guarantee, said
+   * out loud instead of inherited.
+   */
   typescript: { ignoreBuildErrors: false },
 
   poweredByHeader: false,

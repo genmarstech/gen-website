@@ -1,5 +1,26 @@
 "use client";
 
+/* eslint-disable react-hooks/refs -- false positives; argued below. */
+
+/*
+ * ── THE THREE ERRORS THE DIRECTIVE ABOVE SILENCES ARE FALSE, AND CHECKED ───
+ *
+ * react-hooks/refs (new in eslint-config-next 16) flags `commands.filter`,
+ * `results.length` and `results.map` as "accessing a ref value during render".
+ * None of them touches a ref. The analysis taints `commands` — a useMemo whose
+ * callbacks close over `close` and `go`, which do use refs in their own
+ * handlers — and then propagates that taint through `results` to every
+ * expression derived from it.
+ *
+ * Verified by reading every `.current` in this file: those in `useEffect` and
+ * in event handlers only, plus one `event.currentTarget`, which is not a ref
+ * at all. There is no ref read during render to fix.
+ *
+ * Scoped to this file rather than switched off in the config, so the rule
+ * still guards every other component. Delete the directive and re-run
+ * `npm run lint` if a future release improves the analysis.
+ */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { contact, nav, offers } from "@/lib/company";
@@ -226,7 +247,13 @@ export function CommandPalette() {
     node?.scrollIntoView({ block: "nearest" });
   }, [active, open]);
 
+  /*
+   * Typing moves the highlight back to the first result. Without it the
+   * selection stays on row 4 of a list that now has two rows, and Enter opens
+   * something the person cannot see.
+   */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resets the highlight when the results change; see above.
     setActive(0);
   }, [query]);
 
@@ -362,7 +389,12 @@ export function CommandPalette() {
 function PaletteTrigger({ onOpen }: { onOpen: (el: HTMLElement) => void }) {
   const [mac, setMac] = useState(false);
 
+  /*
+   * Which modifier key to advertise, ⌘ or Ctrl. `navigator` does not exist on
+   * the server, and guessing would print the wrong key to half of everybody.
+   */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads navigator, which the server does not have; see above.
     setMac(/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent));
   }, []);
 

@@ -125,7 +125,19 @@ contains "X-Frame-Options: DENY"              "x-frame-options"         "$HEAD"
 contains "Referrer-Policy set"                "referrer-policy"         "$HEAD"
 contains "document revalidates"               "must-revalidate"         "$HEAD"
 
-ASSET="$(curl -fsS "$BASE/" | grep -o '/_next/static/css/[^"]*\.css' | head -1)"
+# ── THE PATTERN IS /_next/static/, NOT /_next/static/css/ ────────────────────
+#
+# Next 15 emitted stylesheets under /_next/static/css/. Next 16 emits them
+# under /_next/static/chunks/, so the old pattern matched nothing — and with
+# `set -o pipefail` a grep that finds nothing FAILS THE PIPELINE, aborting the
+# script before reaching the `else` written to handle exactly that case. The
+# SKIP branch below had been unreachable since the day it was written; the
+# framework upgrade is only what made it matter.
+#
+# `|| true` restores it. Caddy caches on /_next/static/* and is indifferent to
+# which subdirectory, so the served behaviour never changed — only this probe's
+# idea of where to look.
+ASSET="$(curl -fsS "$BASE/" | grep -o '/_next/static/[^"]*\.css' | head -1 || true)"
 if [[ -n "$ASSET" ]]; then
   AHEAD="$(curl -fsSI "$BASE$ASSET")"
   contains "hashed asset is immutable"        "immutable"               "$AHEAD"
