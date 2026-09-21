@@ -152,7 +152,7 @@ between working and being defensible.
 
 ---
 
-## Gate 2b — Client permission (blocks `/work/`)
+## Gate 2b — Client permission (blocks the client half of `/work/`)
 
 **Charter 04 §V:** "Client-owned software carries the client's brand; Genmars is
 credited only with **written permission**." §IV forbids listing "client logos we
@@ -174,10 +174,17 @@ For each one:
 - [ ] Store the reply in `07-executed/` alongside the other records
 - [ ] Set `permissionOnFile: true` for that entry, and only then
 
-**The page is all-or-nothing on purpose.** `workIsPublishable` requires every
-entry to have permission — a partial list implies the rest were less successful,
-which is both untrue and unfair to the client who did say yes. If one client
-declines, remove that entry rather than publishing a shortened list.
+**The client list is all-or-nothing on purpose.** `clientWorkIsPublishable`
+requires every client entry to have permission — a partial list implies the rest
+were less successful, which is both untrue and unfair to the client who did say
+yes. If one client declines, remove that entry rather than publishing a
+shortened list.
+
+**It gates client work and nothing else.** The page also carries what Genmars
+owns and runs — the Business Platform — and there is nobody to ask about that,
+so `ownWork` renders regardless. The flag used to be applied to every row, which
+left our own product invisible until two unrelated clients had signed something.
+That was not caution; it was the flag being asked the wrong question.
 
 Descriptions cover only what each live site observably does. Do not add metrics
 ("increased bookings by X%") unless the client provides them in writing and

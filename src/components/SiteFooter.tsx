@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { company, contact, liveSocials } from "@/lib/company";
+import { company, contact, liveSocials, platform } from "@/lib/company";
 import { portal } from "@/lib/portal";
 import { Mark } from "./Brand";
 import styles from "./SiteFooter.module.css";
@@ -48,6 +48,46 @@ export function SiteFooter() {
                 </li>
                 <li>
                   <Link href="/terms/">Terms of service</Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              {/*
+                ── OURS, AND SEPARATE. THE COLUMN HAS TO SAY BOTH ───────────
+                Genmars built and runs the Business Platform, so it belongs
+                here beside the portal rather than reading as a third party's
+                product. But it is a different application on a different host
+                with its own database: using it as a till does not make a shop
+                a consulting client, and nothing about that shop's staff or
+                takings reaches the rest of the company.
+
+                A column that only said "ours" would imply the portal account
+                and the till are one system. One that only said "separate"
+                would read as a link to somebody else. The line under the
+                heading is what carries the difference.
+
+                A plain anchor, not next/link — a different host, and this is
+                a static export that cannot route off its own origin.
+              */}
+              <h2 className={styles.colTitle}>Solutions</h2>
+              <ul className={styles.list}>
+                <li>
+                  <a href={platform.origin}>{platform.name}</a>
+                </li>
+                <li className={styles.plain}>{platform.host}</li>
+                <li className={styles.plain}>
+                  A point of sale that runs on its own. Built and run by
+                  Genmars; it needs no portal account, and a shop&rsquo;s own
+                  staff and takings stay inside it.
+                </li>
+                <li>
+                  <Link href="/services/#business-platform">
+                    What it costs
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/docs/business-platform/">How it works</Link>
                 </li>
               </ul>
             </div>

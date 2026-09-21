@@ -837,6 +837,31 @@ export type WorkItem = {
 
 export const work: readonly WorkItem[] = [
   {
+    slug: "business-platform",
+    client: "Genmars Business Platform",
+    url: "https://business.genmars.co.ke",
+    domain: "business.genmars.co.ke",
+    sector: "Retail & multi-branch operations",
+    year: "2026",
+    /* Ours. No client to ask, which is why `needsConsent` below exists. */
+    label: "Genmars product",
+    summary:
+      "A multi-tenant point of sale and back office: one deployment serving many independent businesses, each seeing only its own branches, stock and takings.",
+    detail:
+      "A till that scans, prices and takes payment; branches and registers with a shift and a drawer to reconcile; a catalogue where a shelf price carries its own VAT rule; stock that only moves with a reason attached; and sales, refunds and reports on the other side of the counter. Cashiers sign in at the register with credentials that belong to the business employing them and never reach Genmars.",
+    capabilities: [
+      "Multi-tenant isolation",
+      "Point of sale",
+      "VAT-inclusive pricing",
+      "Stock with an audit trail",
+    ],
+    architecture:
+      "Django and DRF behind one Caddy host that splits by path, with a Next.js application for the back office and a browser-held session for the till. Tenant isolation lives in a single module rather than in each view, and a read that falls outside a caller's scope answers 404 rather than 403 — a 403 confirms the row exists, which is an enumeration oracle in a different costume.",
+    engineering:
+      "Two tiers of identity that never cross: subscribers authenticate through a Genmars account, while a shop's own cashiers hold tenant-local credentials that cannot authenticate anywhere else. Checkout carries an idempotency key, so a retried sale returns the original rather than charging twice. Transaction history is immutable — a cancellation marks the sale cancelled and a refund is written beside it, so what was charged stays what was charged. 207 automated tests, and the source is public.",
+    permissionOnFile: true,
+  },
+  {
     slug: "avinterra",
     client: "Avinterra Expeditions",
     url: "https://avinterra.tours",
@@ -879,12 +904,84 @@ export const work: readonly WorkItem[] = [
 ] as const;
 
 /**
- * Is the work section safe to publish?
+ * Which labels name somebody who has to be asked first.
  *
- * Every item must have written permission. One missing permission hides the
- * whole section rather than publishing a partial list that implies the rest.
+ * ── CONSENT IS ABOUT A THIRD PARTY, NOT ABOUT EVERY ENTRY ──────────────────
+ *
+ * Charter 04 §V is "Genmars is credited only with written permission", and the
+ * permission belongs to whoever owns the system. For a client system that is
+ * the client. For something Genmars owns and runs there is nobody to ask, and
+ * requiring a flag anyway would leave our own product invisible until two
+ * unrelated clients had signed something — which is not caution, it is a bug
+ * wearing caution's clothes.
  */
-export const workIsPublishable = work.every((w) => w.permissionOnFile);
+const CONSENT_REQUIRED: readonly WorkLabel[] = [
+  "Client system, published with consent",
+];
+
+function needsConsent(item: WorkItem): boolean {
+  return CONSENT_REQUIRED.includes(item.label);
+}
+
+/** What Genmars owns and runs. Publishable on our own say-so. */
+export const ownWork = work.filter((w) => !needsConsent(w));
+
+/** Built for somebody else. Gated together — see below. */
+export const clientWork = work.filter(needsConsent);
+
+/**
+ * Is the CLIENT section safe to publish?
+ *
+ * Every client item must have written permission. One missing permission hides
+ * the whole client list rather than publishing a partial one that implies the
+ * rest — showing one of two clients reads as though the other does not exist.
+ *
+ * That reasoning is about client work and only about client work. It says
+ * nothing about our own product, which implies nothing about anybody else, so
+ * `ownWork` renders regardless.
+ */
+export const clientWorkIsPublishable = clientWork.every(
+  (w) => w.permissionOnFile,
+);
+
+/**
+ * Kept for anything still asking the old question. It now means "is the whole
+ * page unblocked", which is what it always meant.
+ */
+export const workIsPublishable = clientWorkIsPublishable;
+
+/**
+ * The Genmars Business Platform, as seen from the marketing site.
+ *
+ * ══════════════════════════════════════════════════════════════════════════
+ * IT IS OURS, AND IT STANDS ALONE. BOTH HALVES MATTER.
+ *
+ * Ours: Genmars built it, runs it and is accountable for it, so it belongs on
+ * /work/ with no client to ask and in the footer beside the portal.
+ *
+ * Alone: it is a separate application on its own host with its own database.
+ * A business using it as a till is not thereby a Genmars consulting client,
+ * does not need the portal to use it, and nothing about the shop's own staff
+ * or takings reaches the rest of the company. A subscriber signs in with a
+ * Genmars account; the cashiers they employ never get one.
+ *
+ * ⚠ `orderable` IS FALSE AND MUST STAY FALSE UNTIL IT IS TRUE.
+ *
+ * The software runs. There is no subscription billing, so nobody can sign up
+ * and pay — and the prices on /services/ are what we intend to charge rather
+ * than what anyone is paying. `offers` says `available: "building"` for the
+ * same reason. Charter 04 §IV: a "start free trial" button for something with
+ * no billing is an untrue statement in the shape of a control.
+ * ══════════════════════════════════════════════════════════════════════════
+ */
+export const platform = {
+  name: "Genmars Business Platform",
+  origin: "https://business.genmars.co.ke",
+  host: "business.genmars.co.ke",
+  /** What it is, in the words somebody running a shop would use. */
+  lead: "A point of sale and back office for businesses with more than one counter.",
+  orderable: false,
+} as const;
 
 export const nav = [
   { href: "/services/", label: "Services" },
