@@ -4,20 +4,21 @@
 // repo — dropped into an interactive "how would you like to configure ESLint?"
 // prompt. On a laptop that is a mild annoyance. In CI it is a lint step that
 // answers a question nobody is there to answer, and `next lint` is removed
-// entirely in Next.js 16, so the script now calls the ESLint CLI directly.
+// entirely in Next.js 16, so the script calls the ESLint CLI directly.
 //
-// eslint-config-next 15 still ships only eslintrc-style configs, and ESLint 9
-// defaults to flat config. FlatCompat is the bridge; it is what create-next-app
-// generates for this exact combination. It goes away when eslint-config-next
-// ships a native flat config.
+// ── THE FlatCompat BRIDGE IS GONE, AS THIS FILE SAID IT WOULD BE ────────────
+//
+// eslint-config-next 15 shipped only eslintrc-style configs while ESLint 9
+// defaults to flat, so FlatCompat translated between them. Version 16 ships
+// native flat configs, and running one back through the eslintrc bridge throws
+// "Converting circular structure to JSON" from the schema validator — the
+// plugin object now refers to itself, which eslintrc cannot serialise.
+//
+// So the configs are spread directly. Fewer moving parts and one fewer
+// dependency in the lint path.
 
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const compat = new FlatCompat({
-  baseDirectory: dirname(fileURLToPath(import.meta.url)),
-});
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
 // Named rather than exported anonymously — next/core-web-vitals turns on
 // import/no-anonymous-default-export, and a config file that warns about itself
@@ -26,15 +27,11 @@ const config = [
   {
     // Build output and generated files. Linting `out/` would mean linting the
     // minified bundle, which is slow and tells you nothing.
-    ignores: [
-      ".next/**",
-      "out/**",
-      "node_modules/**",
-      "next-env.d.ts",
-    ],
+    ignores: [".next/**", "out/**", "node_modules/**", "next-env.d.ts"],
   },
 
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextCoreWebVitals,
+  ...nextTypescript,
 ];
 
 export default config;

@@ -34,11 +34,18 @@ export function Reveal({
   const [armed, setArmed] = useState(false);
   const [shown, setShown] = useState(false);
 
+  /*
+   * Both branches need the browser: `matchMedia` to honour a reduced-motion
+   * preference, and `IntersectionObserver` before anything is hidden. Neither
+   * exists on the server, and arming before the observer is known to be
+   * available would hide content that nothing is going to reveal.
+   */
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- needs matchMedia; see above.
       setShown(true);
       return;
     }

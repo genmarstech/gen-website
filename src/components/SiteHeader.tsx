@@ -33,6 +33,12 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  /*
+   * `onScroll()` is called once to pick up the position the page ALREADY has —
+   * somebody landing on a deep link or reloading mid-page starts scrolled, and
+   * without this the header renders expanded until they move. window does not
+   * exist on the server, so it cannot be read any earlier.
+   */
   useEffect(() => {
     const onScroll = () => setCondensed(window.scrollY > 24);
     onScroll();
@@ -42,6 +48,7 @@ export function SiteHeader() {
 
   // Route change closes the menu — otherwise it hangs open over the new page.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- closing on navigation is the whole point; see above.
     setMenuOpen(false);
   }, [pathname]);
 

@@ -26,7 +26,14 @@ export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>("system");
   const [mounted, setMounted] = useState(false);
 
+  /*
+   * The stored choice lives in localStorage, which the server cannot read, so
+   * this has to happen after mount — the component's own note above says why:
+   * rendering the real state immediately would hydrate a control showing the
+   * wrong selection. `mounted` is what keeps the first paint honest.
+   */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- no server-side localStorage; see above.
     setTheme(readStoredTheme());
     setMounted(true);
   }, []);

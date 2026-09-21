@@ -2,7 +2,7 @@
   "name": "gen-website",
   "version": "0.1.0",
   "private": true,
-  "description": "Marketing website for Genmars Tech Limited — genmars.co.ke",
+  "description": "Marketing website for Genmars Tech Limited \u2014 genmars.co.ke",
   "license": "GPL-3.0-or-later",
   "engines": {
     "node": ">=20.9.0"
@@ -14,7 +14,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "check:theme": "node scripts/check-theme-tokens.mjs",
-    "verify": "npm run check:theme && npm run typecheck && npm run build",
+    "verify": "npm run check:theme && npm run lint && npm run typecheck && npm run build",
     "clean": "node -e \"const{rmSync}=require('fs');for(const d of['.next','out'])try{rmSync(d,{recursive:true,force:true,maxRetries:5,retryDelay:200})}catch(e){console.error(d,e.code)}\"",
     "docker:build": "docker compose build",
     "docker:up": "docker compose up -d --build",
