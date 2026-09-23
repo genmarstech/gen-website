@@ -1,0 +1,142 @@
+/* The WhatsApp launcher.
+   Semantic tokens only — see scripts/check-theme-tokens.mjs. */
+
+.wrap {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+/* ---------- the button ---------- */
+
+.button {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  /* ⚠ --mahogany AND --white, NOT --accent AND --accent-text.
+     In dark mode those two tokens resolve to the SAME hex (#db7b51), so the
+     glyph was drawn orange on orange and the button looked empty. Both of
+     these are fixed brand constants, which is what .btn in globals.css uses
+     and why it reads correctly in either theme — a fixed pair cannot drift
+     into itself the way a semantic pair just did. */
+  color: var(--white);
+  background: var(--mahogany);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 10px 26px -10px rgb(0 0 0 / 0.5);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -10px rgb(0 0 0 / 0.55);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- the panel ---------- */
+
+.panel {
+  width: min(20rem, calc(100vw - 40px));
+  padding: 18px;
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.5);
+  animation: rise 160ms ease-out;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* A panel that slides in is a nicety; a panel that appears is the same panel.
+   Anyone who has asked for less motion gets it without losing the control. */
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+
+  .button {
+    transition: none;
+  }
+
+  .button:hover {
+    transform: none;
+  }
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.body {
+  margin: 0 0 14px;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  font-size: 0.875rem;
+  /* Same fixed pair as the launcher above, for the same reason. */
+  color: var(--white);
+  background: var(--mahogany);
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.cta:hover {
+  filter: brightness(1.06);
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The number in full, because a link that fails leaves somebody with nothing
+   to type into their own phone otherwise. */
+.number {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* On a phone the launcher sits where a thumb rests, which is also where the
+   bottom of a page's last control tends to be. Slightly tighter in, and the
+   panel spans the screen rather than hanging off it. */
+@media (max-width: 30rem) {
+  .wrap {
+    right: 14px;
+    bottom: 14px;
+  }
+
+  .panel {
+    width: calc(100vw - 28px);
+  }
+}

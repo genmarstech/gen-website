@@ -3,6 +3,7 @@ import { Jost } from "next/font/google";
 import { company, contact, liveSocials } from "@/lib/company";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { WhatsAppChat } from "@/components/WhatsAppChat";
 import { RouteProgress } from "@/components/RouteProgress";
 import { NO_FLASH_SCRIPT } from "@/components/theme";
 import "./globals.css";
@@ -218,6 +219,13 @@ export default function RootLayout({
         </main>
 
         <SiteFooter />
+
+        {/*
+          After the footer in the DOM, fixed on the screen. A launcher placed
+          earlier is a thing a screen reader meets before the page it belongs
+          to, and a thing the keyboard reaches before the navigation.
+        */}
+        <WhatsAppChat />
 
         <script
           type="application/ld+json"
