@@ -179,8 +179,21 @@ jobs:
           # dates are the point: on expiry they re-surface and get re-judged.
           trivyignores: .trivyignore.yaml
 
+      # ── "NOT A PULL REQUEST", NOT "IS A PUSH". THE DIFFERENCE BIT ONCE. ──
+      #
+      # deploy.yml fires on this workflow COMPLETING, whatever triggered it,
+      # and then pulls the image by commit SHA. So any build that runs to
+      # success without publishing hands the deploy a tag that does not
+      # exist. Written as `== 'push'`, a workflow_dispatch rebuild did
+      # exactly that: it verified, smoke-tested, published nothing, and the
+      # deploy died on `failed to resolve reference ... not found` — after
+      # its concurrency group had already cancelled the push build that
+      # WOULD have published.
+      #
+      # A pull request is the only thing that must not publish. Say that,
+      # so the next trigger somebody adds is safe by default.
       - name: Log in to GHCR
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -193,7 +206,7 @@ jobs:
       # passed the smoke test is the artefact in the registry.
       - name: Push
         id: push
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
         run: |
@@ -213,7 +226,7 @@ jobs:
             echo "### image"
             echo
             echo "- commit: \`${GITHUB_SHA}\`"
-            if [ "${{ github.event_name }}" = "push" ]; then
+            if [ "${{ github.event_name }}" != "pull_request" ]; then
               echo "- pushed: \`${{ steps.push.outputs.image }}\`"
             else
               echo "- pushed: no (pull request — built and smoke-tested only)"
