@@ -128,9 +128,14 @@ jobs:
           # layer with 8.20.0-r0 instead. The scan caught it, which is the system
           # working — but the fix belongs here, not in a scan exception.
           #
-          # Only the runtime stage is excluded. The `build` stage keeps its
-          # cache, which is where the expensive npm ci and next build live.
+          # Only the runtime stage is excluded here. The `build` stage keeps
+          # its cache, which is where the expensive npm ci lives — but its
+          # `next build` layer is busted per run by CONTENT_REV below, because
+          # that step reads /docs and /work from the API and is therefore not a
+          # function of this source tree. See the banner in the Dockerfile.
           no-cache-filters: runtime
+          build-args: |
+            CONTENT_REV=${{ github.run_id }}-${{ github.run_attempt }}
           tags: ${{ env.LOCAL_IMAGE }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

@@ -2,14 +2,23 @@
  * The work this site builds from.
  *
  * ═══════════════════════════════════════════════════════════════════════════
- * BUILD TIME ONLY, EXACTLY LIKE lib/docs.ts, AND FOR THE SAME THREE REASONS.
+ * READ AT BUILD TIME, AND AGAIN IN THE BROWSER. BOTH HALVES MATTER.
  *
  * The site is `output: "export"`. `npm run build` calls this once and writes
- * real HTML; a visitor's browser never contacts the API. So /work cannot break
- * when the API is down, the public origin needs no `connect-src` opening, and
- * a crawler sees the words without executing anything.
+ * real HTML, so /work survives the API being down, renders with JavaScript
+ * off, and shows a crawler the words without executing anything. That baked
+ * copy is the floor and is never removed.
  *
- * The cost is that publishing takes a deploy, which the operations screen says.
+ * On top of it, app/work/LiveWork.tsx re-reads this endpoint in the browser
+ * and swaps in anything newer, so publishing in operations is visible on the
+ * next page load instead of at the next deploy. If that fetch fails for any
+ * reason the baked copy simply stays — the refresh can only ever add
+ * freshness, never take the page away.
+ *
+ * ⚠ THAT SECOND READ NEEDS `connect-src` TO NAME THIS ORIGIN. It is in
+ *   deploy/container.Caddyfile. Tightening the CSP back to 'self' does not
+ *   break the page — it silently freezes it at the last deploy, which is the
+ *   harder fault to notice.
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * ── THIS REPLACED A HAND-EDITED ARRAY, AND THAT IS THE POINT ───────────────
@@ -26,8 +35,16 @@
  *   matters is the one nearest the data.
  */
 
-/** Where to read from. Overridable so a staging API can be built against. */
-const ORIGIN = process.env.DOCS_API_ORIGIN ?? "https://api.genmars.co.ke";
+/**
+ * Where to read from. Overridable so a staging API can be built against.
+ *
+ * Exported because the browser-side refresh needs the same value, and
+ * `process.env` is not readable from a client bundle unless the name is
+ * NEXT_PUBLIC_-prefixed — reading it there would quietly resolve to the
+ * default and build against staging while serving production.
+ */
+export const API_ORIGIN =
+  process.env.DOCS_API_ORIGIN ?? "https://api.genmars.co.ke";
 
 export type WorkCategory =
   | "sites"
@@ -88,7 +105,7 @@ function isNextBailout(error: unknown): boolean {
 }
 
 async function fetchWork(): Promise<WorkPayload> {
-  const url = `${ORIGIN}/api/public/work`;
+  const url = `${API_ORIGIN}/api/public/work`;
 
   let response: Response;
   try {

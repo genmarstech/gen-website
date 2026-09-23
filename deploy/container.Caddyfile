@@ -59,11 +59,31 @@
 		# here needs widening for that: `form-action 'self'` governs form
 		# submissions, and these are ordinary top-level navigations — a link, or
 		# location.assign(). CSP has no shipped directive that restricts those.
-		# If a future change makes the site POST to the portal, or fetch from
-		# api.genmars.co.ke, THAT needs form-action or connect-src opened — and
-		# it should be questioned first, because it would put client data on the
-		# public origin (docs/PORTAL-INTEGRATION.md §1).
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		# If a future change makes the site POST to the portal, THAT needs
+		# form-action opened — and it should be questioned first, because it
+		# would put client data on the public origin
+		# (docs/PORTAL-INTEGRATION.md §1).
+		#
+		# ── connect-src NAMES api.genmars.co.ke. HERE IS THE QUESTIONING. ────
+		#
+		# /work re-reads the API in the visitor's browser so publishing in
+		# operations shows up without a deploy (app/work/LiveWork.tsx).
+		#
+		# The warning above is about putting CLIENT data on the public origin.
+		# This is not that. The only thing reachable is /api/public/, whose
+		# views read no credential at all — no session, no token, no key — and
+		# which answers the same bytes to anyone on the internet already. The
+		# fetch sends no credentials, Django never returns
+		# Access-Control-Allow-Credentials, and the portal's session cookie is
+		# host-only on app.genmars.co.ke and is not sent here regardless.
+		#
+		# ⚠ ONE ORIGIN, NOT A WILDCARD, AND NOT app.genmars.co.ke. The portal
+		#   IS client data behind a session. It has no business being reachable
+		#   from a page anybody can load.
+		#
+		# Putting this back to 'self' does not break /work — it silently
+		# freezes it at the last deploy, which is the harder fault to spot.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.genmars.co.ke; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 	}
 
 	# Fingerprinted assets: safe to cache forever.
