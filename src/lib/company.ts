@@ -781,174 +781,27 @@ export const incidentPractice = {
  * in a write-up, and nothing forced anybody to say which this was.
  * ══════════════════════════════════════════════════════════════════════════════
  */
-export type WorkLabel =
-  /** Owned and operated by Genmars. */
-  | "Genmars product"
-  /** Built for our own use. */
-  | "Internal system"
-  /** Designed, not deployed. Architecture and design only. */
-  | "Concept"
-  /** A technical experiment. */
-  | "R&D project"
-  /** Delivered for a client, and they said yes in writing. */
-  | "Client system, published with consent";
-
-export type WorkItem = {
-  slug: string;
-  client: string;
-  url: string;
-  domain: string;
-  sector: string;
-  year: string;
-  /** Required. See WorkLabel — there is deliberately no default. */
-  label: WorkLabel;
-  summary: string;
-  detail: string;
-  capabilities: readonly string[];
-  /**
-   * ── THE SIX-PART CASE STUDY, AND THE THREE PARTS THAT HAD NO HOME ─────────
-   *
-   * summary / detail / capabilities were roughly parts 1, 2 and 4. These are
-   * 3, 5 and 6. All optional: a write-up that has not been done is absent
-   * rather than empty, because a heading with nothing under it reads as an
-   * omission and invites somebody to fill it with adjectives.
-   */
-  architecture?: string;
-  /**
-   * Reliability, security, scalability, integration — usually the most
-   * persuasive part, and the part that survives the screenshots being removed.
-   */
-  engineering?: string;
-  /**
-   * ══════════════════════════════════════════════════════════════════════════
-   * ONLY WHERE REAL DATA EXISTS. OMITTED OTHERWISE.
-   *
-   * Not softened, not estimated, not replaced with "significantly improved".
-   * Charter 04 §IV forbids figures that were not measured, and this is the
-   * field that invites them. Where there is no number, the honest substitute
-   * is technical specificity in `architecture` and `engineering` — which
-   * convinces a reader who can evaluate it, unlike a number they cannot
-   * verify.
-   * ══════════════════════════════════════════════════════════════════════════
-   */
-  results?: string;
-  permissionOnFile: boolean;
-};
-
-export const work: readonly WorkItem[] = [
-  {
-    slug: "business-platform",
-    client: "Genmars Business Platform",
-    url: "https://business.genmars.co.ke",
-    domain: "business.genmars.co.ke",
-    sector: "Retail & multi-branch operations",
-    year: "2026",
-    /* Ours. No client to ask, which is why `needsConsent` below exists. */
-    label: "Genmars product",
-    summary:
-      "A multi-tenant point of sale and back office: one deployment serving many independent businesses, each seeing only its own branches, stock and takings.",
-    detail:
-      "A till that scans, prices and takes payment; branches and registers with a shift and a drawer to reconcile; a catalogue where a shelf price carries its own VAT rule; stock that only moves with a reason attached; and sales, refunds and reports on the other side of the counter. Cashiers sign in at the register with credentials that belong to the business employing them and never reach Genmars.",
-    capabilities: [
-      "Multi-tenant isolation",
-      "Point of sale",
-      "VAT-inclusive pricing",
-      "Stock with an audit trail",
-    ],
-    architecture:
-      "Django and DRF behind one Caddy host that splits by path, with a Next.js application for the back office and a browser-held session for the till. Tenant isolation lives in a single module rather than in each view, and a read that falls outside a caller's scope answers 404 rather than 403 — a 403 confirms the row exists, which is an enumeration oracle in a different costume.",
-    engineering:
-      "Two tiers of identity that never cross: subscribers authenticate through a Genmars account, while a shop's own cashiers hold tenant-local credentials that cannot authenticate anywhere else. Checkout carries an idempotency key, so a retried sale returns the original rather than charging twice. Transaction history is immutable — a cancellation marks the sale cancelled and a refund is written beside it, so what was charged stays what was charged. 207 automated tests, and the source is public.",
-    permissionOnFile: true,
-  },
-  {
-    slug: "avinterra",
-    client: "Avinterra Expeditions",
-    url: "https://avinterra.tours",
-    domain: "avinterra.tours",
-    sector: "Travel & tourism",
-    year: "2026",
-    label: "Client system, published with consent",
-    summary:
-      "A booking and enquiry site for a Kenyan travel house running guided safaris, coastal trips and international departures.",
-    detail:
-      "Trip packages with duration, location and dual-currency pricing; an interactive departure map across eight-plus regions; instalment payment options; and M-Pesa paybill details alongside WhatsApp enquiry routing, which is how this market actually books.",
-    capabilities: [
-      "Multi-currency pricing",
-      "Interactive map",
-      "M-Pesa paybill",
-      "WhatsApp enquiry routing",
-    ],
-    permissionOnFile: false,
-  },
-  {
-    slug: "clips-serenity-spa",
-    client: "Clips Serenity Spa",
-    url: "https://clipsserenityspa.co.ke",
-    domain: "clipsserenityspa.co.ke",
-    sector: "Health & wellness",
-    year: "2026",
-    label: "Client system, published with consent",
-    summary:
-      "An online booking system for a Nairobi hair, beauty and wellness spa open seven days a week.",
-    detail:
-      "Appointment reservation with therapist selection and confirmation, a published service menu with transparent pricing, staff profiles, embedded maps for a physical location, and M-Pesa, card and cash payment paths. Walk-ins still work; the booking flow exists to guarantee a slot.",
-    capabilities: [
-      "Appointment booking",
-      "Therapist selection",
-      "M-Pesa & card payments",
-      "Maps integration",
-    ],
-    permissionOnFile: false,
-  },
-] as const;
-
-/**
- * Which labels name somebody who has to be asked first.
+/*
+ * ══════════════════════════════════════════════════════════════════════════
+ * THE `work` ARRAY USED TO LIVE HERE. IT IS IN THE DATABASE NOW.
  *
- * ── CONSENT IS ABOUT A THIRD PARTY, NOT ABOUT EVERY ENTRY ──────────────────
+ * WorkLabel, WorkItem, `work`, `ownWork`, `clientWork` and the two
+ * publishability flags were all removed together. Adding a project meant
+ * editing this file and deploying the marketing site, by somebody who could
+ * write TypeScript — so the list went stale, which is the worst state for a
+ * page whose whole job is to prove the company does things.
  *
- * Charter 04 §V is "Genmars is credited only with written permission", and the
- * permission belongs to whoever owns the system. For a client system that is
- * the client. For something Genmars owns and runs there is nobody to ask, and
- * requiring a flag anyway would leave our own product invisible until two
- * unrelated clients had signed something — which is not caution, it is a bug
- * wearing caution's clothes.
+ * It is now portal.models.WorkItem, written in operations and fetched at
+ * build time by src/lib/work.ts, exactly as /docs already worked. Charter
+ * 04 §V survives the move and is stronger for it: consent is enforced by the
+ * queryset that answers the internet rather than by a flag in a source file
+ * nobody re-reads.
+ *
+ * This file keeps company FACTS — the things that must be true today and
+ * traceable to a company document. A portfolio is not a fact about the
+ * company; it is content, and content belongs where content is edited.
+ * ══════════════════════════════════════════════════════════════════════════
  */
-const CONSENT_REQUIRED: readonly WorkLabel[] = [
-  "Client system, published with consent",
-];
-
-function needsConsent(item: WorkItem): boolean {
-  return CONSENT_REQUIRED.includes(item.label);
-}
-
-/** What Genmars owns and runs. Publishable on our own say-so. */
-export const ownWork = work.filter((w) => !needsConsent(w));
-
-/** Built for somebody else. Gated together — see below. */
-export const clientWork = work.filter(needsConsent);
-
-/**
- * Is the CLIENT section safe to publish?
- *
- * Every client item must have written permission. One missing permission hides
- * the whole client list rather than publishing a partial one that implies the
- * rest — showing one of two clients reads as though the other does not exist.
- *
- * That reasoning is about client work and only about client work. It says
- * nothing about our own product, which implies nothing about anybody else, so
- * `ownWork` renders regardless.
- */
-export const clientWorkIsPublishable = clientWork.every(
-  (w) => w.permissionOnFile,
-);
-
-/**
- * Kept for anything still asking the old question. It now means "is the whole
- * page unblocked", which is what it always meant.
- */
-export const workIsPublishable = clientWorkIsPublishable;
 
 /**
  * The Genmars Business Platform, as seen from the marketing site.
@@ -956,8 +809,8 @@ export const workIsPublishable = clientWorkIsPublishable;
  * ══════════════════════════════════════════════════════════════════════════
  * IT IS OURS, AND IT STANDS ALONE. BOTH HALVES MATTER.
  *
- * Ours: Genmars built it, runs it and is accountable for it, so it belongs on
- * /work/ with no client to ask and in the footer beside the portal.
+ * Ours: Genmars built it, runs it and is accountable for it, so it belongs in
+ * the footer beside the portal and on /work with no client to ask.
  *
  * Alone: it is a separate application on its own host with its own database.
  * A business using it as a till is not thereby a Genmars consulting client,
@@ -972,6 +825,11 @@ export const workIsPublishable = clientWorkIsPublishable;
  * than what anyone is paying. `offers` says `available: "building"` for the
  * same reason. Charter 04 §IV: a "start free trial" button for something with
  * no billing is an untrue statement in the shape of a control.
+ *
+ * ── THIS IS A COMPANY FACT, WHICH IS WHY IT SURVIVED ──────────────────────
+ * The `work` array that used to sit above this was removed to the database.
+ * This stayed: it is a hostname and a commercial position, both of which must
+ * be true today and traceable — exactly what this file is for.
  * ══════════════════════════════════════════════════════════════════════════
  */
 export const platform = {
