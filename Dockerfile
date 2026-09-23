@@ -33,6 +33,27 @@ RUN --mount=type=cache,target=/root/.npm \
 
 COPY . .
 
+# ─────────────────────────────────────────────────────────────────────────────
+# CONTENT_REV EXISTS TO DEFEAT THE LAYER CACHE, AND IT IS NOT OPTIONAL.
+#
+# `next build` is not a pure function of this source tree. It FETCHES /docs and
+# /work from the API and bakes the result into the HTML. So two builds of the
+# same commit legitimately differ, and Docker — which keys a layer on the
+# instructions and files above it — cannot tell.
+#
+# Without this, publishing a document or a piece of work in operations and
+# redeploying ships the CACHED build: the pipeline reports success, the image
+# digest is new, and the site serves exactly what it served before. That
+# happened on 2026-09-23 with /work, and it had been latent for /docs the whole
+# time — the failure is silent in both directions, which is what makes it bad.
+#
+# Pass a value that changes per build (CI passes the run id). npm ci above stays
+# cached, which is the layer actually worth caching; this only re-runs the build
+# itself.
+# ─────────────────────────────────────────────────────────────────────────────
+ARG CONTENT_REV=local
+RUN echo "content revision: ${CONTENT_REV}" > /app/.content-rev
+
 # NOTE: this step needs network access. next/font downloads Jost from Google at
 # BUILD time so it can be self-hosted at RUNTIME — the built image makes no
 # outbound requests, but the builder must be able to reach fonts.googleapis.com.
