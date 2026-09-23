@@ -18,16 +18,30 @@ import styles from "./page.module.css";
  * and never replaces it with less.
  *
  * Every failure path therefore ends in "keep what we have": a network error,
- * a 500, a timeout, HTML where JSON was expected, an empty array where there
- * were items. None of them blank the page, and none of them show the visitor
- * an error, because the page is not broken — it is merely not newer.
+ * a 500, a timeout, HTML where JSON was expected. None of them blank the
+ * page, and none of them show the visitor an error, because the page is not
+ * broken — it is merely not newer.
  *
- * ⚠ THE ONE FAILURE THAT WOULD BLANK IT is replacing a good `initial` with an
- *   empty response. `work.length === 0` is rejected for that reason: an API
- *   that has genuinely published nothing looks identical to one answering
- *   from a half-migrated database, and only one of those should reach a
- *   visitor. An empty build plus an empty response still renders the holding
- *   line, which is correct.
+ * ⚠ AN EMPTY ANSWER IS NOT A FAILURE, AND MUST BE APPLIED.
+ *
+ *   This used to bail on `work.length === 0`, to stop a sick API blanking a
+ *   good page. That was the wrong trade, and it broke the direction that
+ *   actually matters. Publishing is never urgent; WITHDRAWING is. When a
+ *   client takes back permission, permission_on_file goes false, the item
+ *   leaves the payload — and under the old guard the site went on printing
+ *   their name until somebody happened to deploy. Charter 04 §V is not a
+ *   thing to be eventually consistent about.
+ *
+ *   So the asymmetry is gone: a well-formed 200 saying nothing is published
+ *   is the API answering, not the API failing, and the page follows it down
+ *   to the holding line. What still protects the page is SHAPE, checked
+ *   below — a proxy error, a login redirect and a 500 do not arrive as two
+ *   valid arrays, and a 500 never reaches here at all.
+ *
+ *   The residual risk is real and accepted: a healthy-looking empty payload
+ *   served in error shows the holding line until the next fetch succeeds.
+ *   That is visible, self-correcting on the next page load, and recoverable.
+ *   A withdrawn client left on the internet is none of those three.
  * ══════════════════════════════════════════════════════════════════════════
  *
  * ── WHY THE FIRST RENDER MUST MATCH THE SERVER EXACTLY ────────────────────
@@ -86,7 +100,6 @@ export function LiveWork({
         if (!Array.isArray(fresh.work) || !Array.isArray(fresh.categories)) {
           return;
         }
-        if (fresh.work.length === 0) return; // see the banner above
 
         // Only re-render when something actually changed, so the common case
         // — nothing published since the last deploy — costs one comparison
