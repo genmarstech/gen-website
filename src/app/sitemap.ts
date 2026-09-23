@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { clientWorkIsPublishable, company, ownWork } from "@/lib/company";
+import { company } from "@/lib/company";
+import { loadWorkOrEmpty } from "@/lib/work";
 import { loadDocs } from "@/lib/docs";
 
 /**
@@ -38,6 +39,8 @@ export const dynamic = "force-static";
 const CONTENT_REVIEWED = "2026-09-05";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { work } = await loadWorkOrEmpty();
+
   const lastModified = CONTENT_REVIEWED;
 
   /*
@@ -92,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      * says "not yet worth your time"; a noindex would say "never". Whether it
      * should also be noindexed is a founder call, not an SEO one.
      */
-    ...(ownWork.length > 0 || clientWorkIsPublishable
+    ...(work.length > 0
       ? [
           {
             url: `${company.url}/work/`,

@@ -184,3 +184,17 @@
 .cta {
   background: var(--bg-band);
 }
+
+/*
+ * What the item IS — "Genmars product", "Client system, published with
+ * consent", "Concept". The type carrying this existed so a concept could not
+ * be written up in the language of a delivered system, and then nothing
+ * printed it: the safeguard lived in TypeScript where no reader could see it.
+ */
+.itemLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 var(--sp-3);
+}
