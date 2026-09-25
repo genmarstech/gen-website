@@ -1,0 +1,53 @@
+/* The mark's presentation. The GEOMETRY is in Brand.tsx and is transcribed
+   from 06-brand/logo/svg — nothing here moves a path. */
+
+.mark {
+  overflow: visible;
+}
+
+/*
+ * The orbit turns, slowly.
+ *
+ * Twenty-four seconds is deliberate: fast enough to be alive if you watch it,
+ * slow enough that nobody reading the page beside it is distracted. A logo
+ * that spins is a toy; one that drifts is a system running.
+ *
+ * transform-origin at the centre and transform-box on the fill box, because
+ * an SVG child rotates about the VIEWPORT origin otherwise and the ring
+ * swings off the canvas.
+ */
+.orbit,
+.trail {
+  transform-origin: 60px 60px;
+  transform-box: view-box;
+}
+
+.orbit {
+  animation: drift 24s linear infinite;
+}
+
+/* The trail runs the other way and slower. Two rings turning together read as
+   one rigid object; counter-rotating, they read as depth. */
+.trail {
+  animation: drift 38s linear infinite reverse;
+}
+
+@keyframes drift {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* A still mark, for a favicon or anything captured as an image, and for
+   anybody who asked for less motion. Both land in the same place. */
+.still .orbit,
+.still .trail {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit,
+  .trail {
+    animation: none;
+  }
+}
