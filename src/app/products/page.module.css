@@ -1,0 +1,163 @@
+/* Products. Semantic tokens only — see scripts/check-theme-tokens.mjs. */
+
+.head {
+  padding-top: clamp(var(--sp-12), 7vw, var(--sp-24));
+}
+
+.title {
+  margin-block: var(--sp-6) var(--sp-8);
+  font-size: clamp(1.9rem, 1.4rem + 2.4vw, 3.2rem);
+}
+
+/* ---------- panels ---------- */
+
+/*
+ * A panel per product, not a grid of cards.
+ *
+ * There is one product today and there will never be dozens. A grid of one
+ * reads as a page waiting for content; a panel reads as a thing being
+ * presented, and leaves room for the screenshot each will eventually carry.
+ * /work is the opposite case and is a grid for exactly that reason.
+ */
+.panels {
+  display: grid;
+  gap: clamp(var(--sp-8), 4vw, var(--sp-12));
+}
+
+.panel {
+  padding: clamp(var(--sp-6), 4vw, var(--sp-10));
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+}
+
+.panelHead {
+  margin-bottom: var(--sp-6);
+}
+
+.panelName {
+  margin: 0 0 var(--sp-2);
+  font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
+}
+
+.panelKind {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.panelSummary {
+  margin: 0 0 var(--sp-4);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--ink);
+  max-width: 44rem;
+}
+
+.panelDetail {
+  margin: 0 0 var(--sp-4);
+  color: var(--ink-muted);
+  line-height: 1.7;
+  max-width: 44rem;
+}
+
+/* ---------- capabilities ---------- */
+
+/*
+ * Chips rather than bullets. Somebody on a product page is answering "does it
+ * do the thing I need", which is a lookup — and a lookup is faster across a
+ * row of short labels than down a list of sentences.
+ */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-6);
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  background: var(--bg-band);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+}
+
+/* ---------- the detail somebody may not want ---------- */
+
+/*
+ * Collapsed by default. The architecture paragraph is genuinely useful to one
+ * reader in ten and is a wall to the other nine, and a product page that
+ * opens with implementation detail is answering a question nobody asked yet.
+ */
+.more {
+  margin-bottom: var(--sp-6);
+}
+
+.moreSummary {
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  padding: var(--sp-2) 0;
+}
+
+.moreSummary:hover {
+  color: var(--ink);
+}
+
+.more[open] .moreSummary {
+  margin-bottom: var(--sp-3);
+}
+
+/* ---------- the link out ---------- */
+
+.visit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9375rem;
+  color: var(--accent-text);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+}
+
+.visit:hover {
+  color: var(--link-hover);
+}
+
+/* ---------- holding state ---------- */
+
+.holding {
+  max-width: 42rem;
+  padding: clamp(var(--sp-6), 4vw, var(--sp-10));
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+}
+
+.holdingTitle {
+  font-size: clamp(1.35rem, 1.2rem + 0.8vw, 1.8rem);
+  margin-bottom: var(--sp-6);
+}
+
+.holdingBody {
+  color: var(--ink-muted);
+}
+
+.holdingActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-8);
+}
+
+.cta {
+  background: var(--bg-band);
+}

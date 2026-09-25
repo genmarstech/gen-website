@@ -70,8 +70,14 @@ export function SiteFooter() {
                 A plain anchor, not next/link — a different host, and this is
                 a static export that cannot route off its own origin.
               */}
-              <h2 className={styles.colTitle}>Solutions</h2>
+              {/* "Products", not "Solutions". The column always listed one
+                  thing Genmars sells; the heading was the vaguer word for it,
+                  and now that /products/ exists the two should agree. */}
+              <h2 className={styles.colTitle}>Products</h2>
               <ul className={styles.list}>
+                <li>
+                  <Link href="/products/">All products</Link>
+                </li>
                 <li>
                   <a href={platform.origin}>{platform.name}</a>
                 </li>

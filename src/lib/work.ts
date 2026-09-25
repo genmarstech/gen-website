@@ -86,11 +86,29 @@ export type WorkPayload = {
  * fetch again, which is two chances for one of them to fail differently from
  * the other. Same reasoning as loadDocs.
  */
-let inFlight: Promise<WorkPayload> | null = null;
+const inFlight = new Map<string, Promise<WorkPayload>>();
+
+function load(path: string): Promise<WorkPayload> {
+  const existing = inFlight.get(path);
+  if (existing) return existing;
+  const started = fetchList(path);
+  inFlight.set(path, started);
+  return started;
+}
 
 export function loadWork(): Promise<WorkPayload> {
-  inFlight ??= fetchWork();
-  return inFlight;
+  return load("work");
+}
+
+/**
+ * The products page reads the same shape from a different endpoint.
+ *
+ * Two routes, one payload type, one renderer — see ProductListView in
+ * gen-portal. Products and work are one table split by label, so a second
+ * TypeScript type here would be a second description of the same record.
+ */
+export function loadProducts(): Promise<WorkPayload> {
+  return load("products");
 }
 
 /** Next signals "this cannot be static" by throwing; that is not an outage. */
@@ -104,8 +122,8 @@ function isNextBailout(error: unknown): boolean {
   );
 }
 
-async function fetchWork(): Promise<WorkPayload> {
-  const url = `${API_ORIGIN}/api/public/work`;
+async function fetchList(path: string): Promise<WorkPayload> {
+  const url = `${API_ORIGIN}/api/public/${path}`;
 
   let response: Response;
   try {
@@ -156,8 +174,17 @@ async function fetchWork(): Promise<WorkPayload> {
  * could not be read would be the wrong trade.
  */
 export async function loadWorkOrEmpty(): Promise<WorkPayload> {
+  return orEmpty(loadWork());
+}
+
+/** Same bargain for products: a page that says nothing yet beats no site. */
+export async function loadProductsOrEmpty(): Promise<WorkPayload> {
+  return orEmpty(loadProducts());
+}
+
+async function orEmpty(pending: Promise<WorkPayload>): Promise<WorkPayload> {
   try {
-    return await loadWork();
+    return await pending;
   } catch (error) {
     if (isNextBailout(error)) throw error;
     return { work: [], categories: [] };

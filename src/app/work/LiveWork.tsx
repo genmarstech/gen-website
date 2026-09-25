@@ -1,56 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
+import { useLivePayload } from "@/lib/useLivePayload";
 import { byCategory, type WorkItem, type WorkPayload } from "@/lib/work";
 import styles from "./page.module.css";
 
 /**
  * The work, as built — then refreshed from the API in the browser.
  *
- * ══════════════════════════════════════════════════════════════════════════
- * THE BAKED COPY IS THE FLOOR. THIS CAN ONLY EVER ADD FRESHNESS.
+ * The build-then-refresh reasoning lives in lib/useLivePayload.ts, which both
+ * this and /products use. It is there rather than here because having it in
+ * two files is how one of them quietly stops being true.
  *
- * `initial` is what `npm run build` fetched and wrote into the HTML. It is
- * what a crawler reads, what renders with JavaScript off, and what a visitor
- * sees while the API is unreachable. This component starts from exactly that
- * and never replaces it with less.
+ * ── CARDS, NOT A LIST OF ESSAYS ───────────────────────────────────────────
  *
- * Every failure path therefore ends in "keep what we have": a network error,
- * a 500, a timeout, HTML where JSON was expected. None of them blank the
- * page, and none of them show the visitor an error, because the page is not
- * broken — it is merely not newer.
+ * This was full-width entries separated by rules, each carrying summary,
+ * detail, architecture, engineering and results. That reads as a case study
+ * per item, which was right when there were three of them and wrong now that
+ * this is where daily work gets posted — a reader scanning what we have been
+ * doing lately should not have to scroll past four paragraphs per entry.
  *
- * ⚠ AN EMPTY ANSWER IS NOT A FAILURE, AND MUST BE APPLIED.
- *
- *   This used to bail on `work.length === 0`, to stop a sick API blanking a
- *   good page. That was the wrong trade, and it broke the direction that
- *   actually matters. Publishing is never urgent; WITHDRAWING is. When a
- *   client takes back permission, permission_on_file goes false, the item
- *   leaves the payload — and under the old guard the site went on printing
- *   their name until somebody happened to deploy. Charter 04 §V is not a
- *   thing to be eventually consistent about.
- *
- *   So the asymmetry is gone: a well-formed 200 saying nothing is published
- *   is the API answering, not the API failing, and the page follows it down
- *   to the holding line. What still protects the page is SHAPE, checked
- *   below — a proxy error, a login redirect and a 500 do not arrive as two
- *   valid arrays, and a 500 never reaches here at all.
- *
- *   The residual risk is real and accepted: a healthy-looking empty payload
- *   served in error shows the holding line until the next fetch succeeds.
- *   That is visible, self-correcting on the next page load, and recoverable.
- *   A withdrawn client left on the internet is none of those three.
- * ══════════════════════════════════════════════════════════════════════════
- *
- * ── WHY THE FIRST RENDER MUST MATCH THE SERVER EXACTLY ────────────────────
- *
- * State initialises to `initial` and is only ever changed inside an effect,
- * which runs after hydration. Fetching during render, or seeding state from
- * anything the server did not also compute, produces a hydration mismatch —
- * React discards the server HTML and re-renders on the client, which is the
- * one outcome that would cost the properties this design exists to keep.
+ * So: a card each, with the one line that says what it is. The longer fields
+ * are still served by the API and still shown on the products page, where
+ * somebody IS asking for depth.
  */
 export function LiveWork({
   initial,
@@ -59,68 +32,7 @@ export function LiveWork({
   initial: WorkPayload;
   origin: string;
 }) {
-  const [payload, setPayload] = useState<WorkPayload>(initial);
-
-  useEffect(() => {
-    /*
-     * Abandoned if the visitor navigates away mid-flight — otherwise the
-     * response resolves into an unmounted component, and in development that
-     * is a warning rather than the silent no-op it looks like.
-     */
-    const abort = new AbortController();
-
-    /*
-     * A ceiling on how long a stale page can be waiting for a fresher one.
-     * Without it, an API that accepts connections and then hangs leaves the
-     * request open indefinitely; the visitor sees the built copy either way,
-     * so there is nothing to gain by waiting longer.
-     */
-    const timer = setTimeout(() => abort.abort(), 8000);
-
-    (async () => {
-      try {
-        const response = await fetch(`${origin}/api/public/work`, {
-          signal: abort.signal,
-          /*
-           * The browser must not serve this from its own HTTP cache — that
-           * would reintroduce exactly the staleness this component exists to
-           * remove, and it would be invisible, because a cached 200 and a
-           * fresh 200 are the same to the code below.
-           */
-          cache: "no-store",
-          headers: { accept: "application/json" },
-        });
-        if (!response.ok) return;
-
-        const fresh = (await response.json()) as WorkPayload;
-
-        // Shape first. A proxy error page, a login redirect and a JSON body
-        // from the wrong endpoint all parse or throw unhelpfully; none of
-        // them have this shape.
-        if (!Array.isArray(fresh.work) || !Array.isArray(fresh.categories)) {
-          return;
-        }
-
-        // Only re-render when something actually changed, so the common case
-        // — nothing published since the last deploy — costs one comparison
-        // and no DOM work, and nothing flickers.
-        setPayload((current) =>
-          JSON.stringify(current) === JSON.stringify(fresh) ? current : fresh,
-        );
-      } catch {
-        // Deliberately silent, including on abort. There is nothing to tell
-        // the visitor: they are looking at the page, and it is correct as of
-        // the last deploy.
-      } finally {
-        clearTimeout(timer);
-      }
-    })();
-
-    return () => {
-      clearTimeout(timer);
-      abort.abort();
-    };
-  }, [origin]);
+  const payload = useLivePayload(initial, origin, "work");
 
   const groups = byCategory(payload).filter((g) => g.items.length > 0);
 
@@ -161,11 +73,11 @@ export function LiveWork({
             <Reveal>
               <p className="eyebrow">{group.label}</p>
             </Reveal>
-            <div className={styles.list}>
+            <ul className={styles.grid}>
               {group.items.map((item, i) => (
                 <Entry key={item.slug} item={item} index={i} />
               ))}
-            </div>
+            </ul>
           </div>
         </section>
       ))}
@@ -174,75 +86,71 @@ export function LiveWork({
 }
 
 /**
- * One system.
+ * One piece of work, as a card.
  *
- * The label is rendered here, which it was not before. `WorkLabel` existed so
- * a concept could not be written up in the language of a delivered system,
- * and then nothing printed it — the safeguard was in the type and not on the
- * page.
+ * The label is rendered, which it was not before. `WorkLabel` existed so a
+ * concept could not be written up in the language of a delivered system, and
+ * then nothing printed it — the safeguard was in the type and not on the page.
+ * On a card it is the first thing read, which is where it belongs: "concept"
+ * and "in production" look identical in a summary sentence.
+ *
+ * Deliberately short. Summary only, no detail or architecture — those are for
+ * somebody who has asked, and on a page of daily output nobody has yet.
  */
 function Entry({ item, index }: { item: WorkItem; index: number }) {
   const domain = item.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const meta = [item.sector, item.year].filter(Boolean).join(" · ");
 
-  return (
-    <Reveal as="article" delay={index * 90} className={styles.item}>
-      <div className={styles.itemMeta}>
-        <span className={styles.itemNum}>
-          {String(index + 1).padStart(2, "0")}
-        </span>
-        {item.sector ? (
-          <span className={styles.itemSector}>{item.sector}</span>
-        ) : null}
-        {item.year ? <span className={styles.itemYear}>{item.year}</span> : null}
-      </div>
-
-      <div className={styles.itemBody}>
-        <h2 className={styles.itemClient}>{item.name}</h2>
-        <hr className="rule--accent" />
-        <p className={styles.itemLabel}>{item.label_display}</p>
-        <p className={styles.itemSummary}>{item.summary}</p>
-        {item.detail ? <p className={styles.itemDetail}>{item.detail}</p> : null}
-        {item.architecture ? (
-          <p className={styles.itemDetail}>{item.architecture}</p>
-        ) : null}
-        {item.engineering ? (
-          <p className={styles.itemDetail}>{item.engineering}</p>
-        ) : null}
-        {item.results ? <p className={styles.itemDetail}>{item.results}</p> : null}
-
-        {item.capabilities.length > 0 ? (
-          <ul className={styles.caps}>
-            {item.capabilities.map((cap) => (
-              <li key={cap}>{cap}</li>
-            ))}
-          </ul>
-        ) : null}
-
-        {domain ? (
-          <a
-            href={item.url}
-            className={styles.visit}
-            rel="noreferrer noopener"
-            target="_blank"
+  const inner = (
+    <>
+      <span className={styles.cardLabel}>{item.label_display}</span>
+      <h3 className={styles.cardName}>{item.name}</h3>
+      {meta ? <span className={styles.cardMeta}>{meta}</span> : null}
+      <p className={styles.cardSummary}>{item.summary}</p>
+      {domain ? (
+        <span className={styles.cardLink}>
+          {domain}
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
           >
-            {domain}
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M7 17 17 7M8 7h9v9" />
-            </svg>
-            <span className="visually-hidden">(opens in a new tab)</span>
-          </a>
-        ) : null}
-      </div>
+            <path d="M7 17 17 7M8 7h9v9" />
+          </svg>
+        </span>
+      ) : null}
+    </>
+  );
+
+  /*
+   * The whole card is the link when there is somewhere to go, and a plain
+   * article when there is not — a research note often has no public URL.
+   *
+   * One anchor wrapping everything rather than a link at the bottom: a card
+   * with a small link in the corner invites a click on the card that does
+   * nothing, which reads as broken rather than as "not clickable".
+   */
+  return (
+    <Reveal as="li" delay={index * 60} className={styles.cardWrap}>
+      {domain ? (
+        <a
+          className={styles.card}
+          href={item.url}
+          rel="noreferrer noopener"
+          target="_blank"
+        >
+          {inner}
+          <span className="visually-hidden">(opens in a new tab)</span>
+        </a>
+      ) : (
+        <article className={styles.card}>{inner}</article>
+      )}
     </Reveal>
   );
 }
