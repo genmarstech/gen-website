@@ -70,6 +70,18 @@ export type WorkItem = {
   architecture: string;
   engineering: string;
   results: string;
+  /**
+   * The picture, and the credit it obliges us to print.
+   *
+   * Sent together and always. The Unsplash licence requires attribution, so a
+   * type that let the URL exist without the photographer would make a licence
+   * breach representable — and it would look like a cosmetic gap rather than
+   * a breach. `image_url` empty is the ordinary state; most work has none.
+   */
+  image_url: string;
+  image_alt: string;
+  image_credit_name: string;
+  image_credit_url: string;
   order: number;
   updated_at: string;
 };

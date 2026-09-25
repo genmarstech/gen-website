@@ -1,0 +1,40 @@
+/* A picture and its credit. Semantic tokens only. */
+
+.figure {
+  margin: 0;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* A fixed ratio so a grid of cards does not go ragged while images of
+     different shapes load. Unsplash is asked for landscape, so 3:2 crops
+     almost nothing. */
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  background: var(--bg-band);
+  border-radius: var(--radius);
+}
+
+/*
+ * Small and quiet, but present. The licence asks for the credit to be
+ * visible — hiding it behind a hover or a title attribute would satisfy the
+ * letter and not the point, and somebody reading on a phone would never see
+ * it at all.
+ */
+.credit {
+  margin-top: 0.5rem;
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+}
+
+.credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.credit a:hover {
+  color: var(--ink-muted);
+}

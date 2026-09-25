@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
+import { WorkImage } from "@/components/WorkImage";
 import { useLivePayload } from "@/lib/useLivePayload";
 import { byCategory, type WorkItem, type WorkPayload } from "@/lib/work";
 import styles from "./page.module.css";
@@ -103,6 +104,13 @@ function Entry({ item, index }: { item: WorkItem; index: number }) {
 
   const inner = (
     <>
+      <WorkImage
+        url={item.image_url}
+        alt={item.image_alt}
+        creditName={item.image_credit_name}
+        creditUrl={item.image_credit_url}
+        className={styles.cardImage}
+      />
       <span className={styles.cardLabel}>{item.label_display}</span>
       <h3 className={styles.cardName}>{item.name}</h3>
       {meta ? <span className={styles.cardMeta}>{meta}</span> : null}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
+import { WorkImage } from "@/components/WorkImage";
 import { useLivePayload } from "@/lib/useLivePayload";
 import type { WorkItem, WorkPayload } from "@/lib/work";
 import styles from "./page.module.css";
@@ -68,6 +69,17 @@ function Panel({ item, index }: { item: WorkItem; index: number }) {
 
   return (
     <Reveal as="article" delay={index * 90} className={styles.panel}>
+      {/* Above the name, because on a product page the picture is doing the
+          work of a screenshot — it says what kind of thing this is before
+          anybody reads a word. Renders nothing without a credit. */}
+      <WorkImage
+        url={item.image_url}
+        alt={item.image_alt}
+        creditName={item.image_credit_name}
+        creditUrl={item.image_credit_url}
+        className={styles.panelImage}
+      />
+
       <div className={styles.panelHead}>
         <h2 className={styles.panelName}>{item.name}</h2>
         <p className={styles.panelKind}>

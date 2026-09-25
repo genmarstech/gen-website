@@ -200,3 +200,10 @@ a.card:focus-visible {
   color: var(--ink-faint);
   margin: 0 0 var(--sp-3);
 }
+
+/* On a card the picture is a glance, not a study. It sits above the label and
+   takes the card's full width; the 3:2 ratio comes from WorkImage so a row of
+   cards cannot go ragged while they load. */
+.cardImage {
+  margin-bottom: var(--sp-1);
+}

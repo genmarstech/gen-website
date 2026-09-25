@@ -161,3 +161,10 @@
 .cta {
   background: var(--bg-band);
 }
+
+/* The picture leads the panel. Wider than the text column on purpose: it is
+   doing the work of a screenshot, and a small one reads as a thumbnail. */
+.panelImage {
+  margin-bottom: var(--sp-6);
+  max-width: 44rem;
+}
