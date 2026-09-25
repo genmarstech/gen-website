@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Jost } from "next/font/google";
+import { Fraunces, IBM_Plex_Sans, Jost } from "next/font/google";
 import { company, contact, liveSocials } from "@/lib/company";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -21,6 +21,64 @@ const jost = Jost({
   weight: ["300", "400", "500"],
   display: "swap",
   variable: "--font-jost",
+});
+
+/**
+ * Three faces, and the split is a decision the company already made.
+ *
+ * ══════════════════════════════════════════════════════════════════════════
+ * JOST IS THE GENMARS VOICE. IT IS NOT THE PAGE'S VOICE.
+ *
+ * business-os reached this first and wrote down why: "Running the whole
+ * product in it made the company and the product indistinguishable, which
+ * served neither." This site had the same problem and had not had the same
+ * fix — every word on it, from the wordmark to a caption, was Jost.
+ *
+ * So Jost now appears where Genmars speaks: the wordmark, eyebrows, and the
+ * small uppercase labels. Everything else belongs to the two faces below.
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * ── FRAUNCES CARRIES THE HEADINGS, AND IT IS A CHOICE NOT A DEFAULT ───────
+ *
+ * A soft serif with real character — and variable, which is what earns it
+ * here rather than merely decorating: `SOFT` rounds the terminals and `WONK`
+ * swaps in the splayed, slightly odd letterforms at display sizes. Set at
+ * optical size 48 for headings, the shapes are warm rather than corporate,
+ * which is the same thing the mahogany-and-ignition palette is doing.
+ *
+ * It is also nothing like the faces an unconsidered site reaches for. That
+ * matters for a software company whose whole pitch is that it does not ship
+ * the generic thing.
+ *
+ * ── PLEX SANS TAKES EVERYTHING READ TO MAKE A DECISION ────────────────────
+ *
+ * Same reasoning business-os gives: its 1, l, I and 0, O are genuinely
+ * distinct and a serif's are not at 12px. Prices, scopes and exclusions are
+ * read to decide something, and this is the face that survives being read
+ * quickly on a phone.
+ *
+ * Choosing the same text face as the product is deliberate. Somebody moving
+ * from genmars.co.ke to the platform should feel one company, and the shared
+ * face is most of how that happens.
+ */
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  /*
+   * No `weight`, deliberately — next/font refuses `axes` alongside a fixed
+   * weight list, because asking for axes IS asking for the variable cut. So
+   * the whole weight range ships and the headings vary along it, which is
+   * also what makes 400 and 600 available without shipping two files.
+   */
+  axes: ["SOFT", "WONK", "opsz"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-plex-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -196,7 +254,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-KE" className={jost.variable} suppressHydrationWarning>
+    <html
+      lang="en-KE"
+      className={`${jost.variable} ${fraunces.variable} ${plexSans.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         {/*
           Runs before the first paint so a dark-theme visitor never sees a white

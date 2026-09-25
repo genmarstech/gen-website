@@ -1,3 +1,7 @@
+import { useId } from "react";
+
+import styles from "./Brand.module.css";
+
 /**
  * Brand marks — Orbit G and the wordmark.
  *
@@ -18,6 +22,14 @@ type MarkProps = {
   /** Rendered size in px. Minimum 24 — 06-brand/README.md. */
   size?: number;
   className?: string;
+  /**
+   * Hold the orbit still.
+   *
+   * For the places a moving logo is wrong rather than merely unnecessary: a
+   * favicon, an og image, anything captured as a still. Motion is also off
+   * for everybody under prefers-reduced-motion — see Brand.module.css.
+   */
+  still?: boolean;
 };
 
 /**
@@ -25,39 +37,108 @@ type MarkProps = {
  * Clear space equal to the ring height (x) is required on all four sides;
  * callers are responsible for that margin.
  */
-export function Mark({ size = 40, className }: MarkProps) {
+export function Mark({ size = 40, className, still }: MarkProps) {
+  /*
+   * ids must be unique per instance. Two marks on one page — header and
+   * footer — sharing a gradient id means the second silently takes the
+   * first's definition, and `url(#glow)` resolving to the wrong element is
+   * the kind of bug that only shows up on the page that has both.
+   */
+  const uid = useId().replace(/:/g, "");
+
   return (
     <svg
       viewBox="0 0 120 120"
       width={size}
       height={size}
-      className={className}
+      className={[styles.mark, still ? styles.still : "", className]
+        .filter(Boolean)
+        .join(" ")}
       role="img"
       aria-label="Genmars"
       focusable="false"
     >
-      <path
-        d="M90.8 45.6 A34 34 0 1 0 90.8 74.4"
-        fill="none"
-        stroke="var(--mark-g, #8B5A48)"
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
-      <path
-        d="M74 60 H92.5"
-        fill="none"
-        stroke="var(--mark-g, #8B5A48)"
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
+      <defs>
+        {/*
+          Light from the upper left, the same direction the elevation tokens
+          assume. A flat stroke reads as a drawing of a planet; a gradient
+          across it reads as a lit sphere, which is the whole difference
+          between the mark looking printed and looking made.
+        */}
+        <linearGradient id={`g-${uid}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="var(--mark-g-lit, #A8705C)" />
+          <stop offset="55%" stopColor="var(--mark-g, #8B5A48)" />
+          <stop offset="100%" stopColor="var(--mark-g-shade, #6B4438)" />
+        </linearGradient>
+
+        {/* The orbit is the lit element — it is Ignition, the one colour in
+            the palette allowed to look like it is emitting. */}
+        <linearGradient id={`o-${uid}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="var(--mark-orbit, #DB7B51)" stopOpacity="0.35" />
+          <stop offset="50%" stopColor="var(--mark-orbit, #DB7B51)" />
+          <stop offset="100%" stopColor="var(--mark-orbit, #DB7B51)" stopOpacity="0.35" />
+        </linearGradient>
+
+        <filter id={`f-${uid}`} x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2.4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/*
+        ⚠ THE GEOMETRY BELOW IS TRANSCRIBED FROM 06-brand/logo/svg AND IS NOT
+          EDITED HERE. Every number — the arc, the bar, rx/ry, the -30° — is
+          unchanged. What is new is how it is painted and lit: gradients, a
+          blur filter, a second trailing ring and rotation. The brand rule is
+          about the shapes, and the shapes still match the canvas.
+      */}
+
+      {/* The trailing ring. Not a second orbit in the mark's geometry — the
+          same ellipse, faint and slightly wider, which is what gives the
+          single ring somewhere to travel rather than a hoop to sit in. */}
       <ellipse
+        className={styles.trail}
         cx="60"
         cy="60"
         rx="55"
         ry="17"
         fill="none"
         stroke="var(--mark-orbit, #DB7B51)"
+        strokeOpacity="0.18"
+        strokeWidth="1.5"
+        transform="rotate(-30 60 60)"
+      />
+
+      <path
+        d="M90.8 45.6 A34 34 0 1 0 90.8 74.4"
+        fill="none"
+        stroke={`url(#g-${uid})`}
+        strokeWidth="9"
+        strokeLinecap="round"
+      />
+      <path
+        d="M74 60 H92.5"
+        fill="none"
+        stroke={`url(#g-${uid})`}
+        strokeWidth="9"
+        strokeLinecap="round"
+      />
+
+      {/* Drawn last so it passes in FRONT of the planet, which is what makes
+          it an orbit rather than a ring behind a disc. */}
+      <ellipse
+        className={styles.orbit}
+        cx="60"
+        cy="60"
+        rx="55"
+        ry="17"
+        fill="none"
+        stroke={`url(#o-${uid})`}
         strokeWidth="4"
+        filter={`url(#f-${uid})`}
         transform="rotate(-30 60 60)"
       />
     </svg>

@@ -70,18 +70,70 @@
   --rule-strong: rgba(46, 43, 52, 0.28);
   --shadow: rgba(46, 43, 52, 0.09);
 
+  /* ── ELEVATION ───────────────────────────────────────────────────────────
+     One shadow value made everything sit at the same height, which is most of
+     why the site read flat: a card, a panel and a floating button were all
+     lifted by the same amount, so none of them looked lifted at all.
+
+     Four steps, each a PAIR — a tight contact shadow under the element and a
+     wide ambient one further out. A single blur reads as fog; the pair is
+     what makes an edge look like it is off the surface rather than painted
+     on it.
+
+     The colour is the ink, not black. Black over a warm canvas goes grey and
+     dead; #2e2b34 at low alpha keeps the shade in the same family as
+     everything else. */
+  --lift-1:
+    0 1px 2px rgba(46, 43, 52, 0.06),
+    0 2px 8px -2px rgba(46, 43, 52, 0.08);
+  --lift-2:
+    0 2px 4px rgba(46, 43, 52, 0.05),
+    0 8px 24px -6px rgba(46, 43, 52, 0.12);
+  --lift-3:
+    0 4px 8px rgba(46, 43, 52, 0.06),
+    0 18px 40px -12px rgba(46, 43, 52, 0.16);
+  --lift-4:
+    0 8px 16px rgba(46, 43, 52, 0.07),
+    0 32px 64px -20px rgba(46, 43, 52, 0.22);
+
+  /* A coloured glow, for the accent surfaces only. Ignition at low alpha
+     reads as the object emitting rather than casting, which is the one place
+     a warm palette can afford to look lit. */
+  --glow: 0 0 0 1px rgba(219, 123, 81, 0.16), 0 8px 28px -8px rgba(219, 123, 81, 0.35);
+
+  /* The hairline that makes a raised surface legible against one just behind
+     it, where a shadow alone is too subtle. Light from above: bright on top. */
+  --edge-top: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
   /* Accent that is safe for SMALL text in this theme. */
   --accent-text: #834f49;
   /* Accent for large display / non-text marks. Always Ignition. */
   --accent: #db7b51;
 
   --mark-g: #8b5a48;
+  /* The lit and shaded ends of the planet. Derived from --mark-g by eye
+     against the light direction the elevation tokens assume — upper left —
+     and kept as tokens so the mark is lit consistently in both themes rather
+     than carrying hardcoded stops. */
+  --mark-g-lit: #a8705c;
+  --mark-g-shade: #6b4438;
   --mark-orbit: #db7b51;
   --wordmark-ink: #2e2b34;
   --tagline-ink: #7a7480;
 
   /* ---- type ---- */
-  --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+  /* ── THREE FACES, THREE JOBS ─────────────────────────────────────────────
+     --font-brand is Jost and belongs to Genmars: the wordmark, the eyebrows,
+     the small uppercase labels. It is NOT the page's voice, and setting body
+     text in it is what made the company and its pages indistinguishable.
+     See the long note in layout.tsx.
+
+     --font-sans is what a reader actually reads. --font-display carries the
+     headings. Each falls back to a real stack rather than to `sans-serif`,
+     because a face that fails to load should degrade to something chosen. */
+  --font-brand: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
 
   --track-wordmark: 0.3em;
@@ -123,6 +175,24 @@
   --sat-bright: #f4efec;
 
   --ink: #f4efec; /* 14.38:1 on base */
+
+  /* ── ELEVATION IN THE DARK ───────────────────────────────────────────────
+     Deeper and tighter. A shadow on a dark ground has almost nothing to
+     darken, so the same values as the light theme vanish — the lift has to
+     come from a brighter top edge instead, which is why --edge-top carries
+     more weight here and the ambient blurs are stronger rather than softer. */
+  --lift-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px -2px rgba(0, 0, 0, 0.45);
+  --lift-2: 0 2px 4px rgba(0, 0, 0, 0.4), 0 8px 24px -6px rgba(0, 0, 0, 0.55);
+  --lift-3: 0 4px 8px rgba(0, 0, 0, 0.45), 0 18px 40px -12px rgba(0, 0, 0, 0.6);
+  --lift-4: 0 8px 16px rgba(0, 0, 0, 0.5), 0 32px 64px -20px rgba(0, 0, 0, 0.7);
+
+  --glow:
+    0 0 0 1px rgba(219, 123, 81, 0.24),
+    0 8px 32px -8px rgba(219, 123, 81, 0.45);
+
+  /* Faint, and doing more work than its opacity suggests: on a dark ground a
+     1px highlight along the top is most of what says "this is raised". */
+  --edge-top: inset 0 1px 0 rgba(244, 239, 236, 0.08);
   --ink-muted: #bdb6c2; /* 8.31:1 */
   --ink-faint: #a69faD; /* 6.0:1 */
   --link: #db7b51; /* Ignition — 5.44:1, safe for text here */
@@ -135,6 +205,8 @@
   --accent: #db7b51;
 
   --mark-g: #c98f76;
+  --mark-g-lit: #e0ab93;
+  --mark-g-shade: #a06d57;
   --mark-orbit: #db7b51;
   --wordmark-ink: #f4efec;
   --tagline-ink: #a69fad;
@@ -156,12 +228,28 @@
     --link-hover: #e89a76;
     --rule: rgba(244, 239, 236, 0.14);
     --rule-strong: rgba(244, 239, 236, 0.3);
+
+    /* The same elevation as :root[data-theme="dark"]. Repeated rather than
+       shared because most visitors never touch the toggle — they arrive in
+       the un-stamped state, and a token defined only in the [data-theme]
+       block would leave them with light-theme shadows on a dark ground,
+       which is the exact bug the note at the top of this file warns about. */
+    --lift-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px -2px rgba(0, 0, 0, 0.45);
+    --lift-2: 0 2px 4px rgba(0, 0, 0, 0.4), 0 8px 24px -6px rgba(0, 0, 0, 0.55);
+    --lift-3: 0 4px 8px rgba(0, 0, 0, 0.45), 0 18px 40px -12px rgba(0, 0, 0, 0.6);
+    --lift-4: 0 8px 16px rgba(0, 0, 0, 0.5), 0 32px 64px -20px rgba(0, 0, 0, 0.7);
+    --glow:
+      0 0 0 1px rgba(219, 123, 81, 0.24),
+      0 8px 32px -8px rgba(219, 123, 81, 0.45);
+    --edge-top: inset 0 1px 0 rgba(244, 239, 236, 0.08);
     --shadow: rgba(0, 0, 0, 0.5);
 
     --accent-text: #db7b51;
     --accent: #db7b51;
 
     --mark-g: #c98f76;
+    --mark-g-lit: #e0ab93;
+    --mark-g-shade: #a06d57;
     --mark-orbit: #db7b51;
     --wordmark-ink: #f4efec;
     --tagline-ink: #a69fad;
@@ -279,11 +367,29 @@ h1,
 h2,
 h3,
 h4 {
+  font-family: var(--font-display);
   font-weight: 400;
   line-height: 1.12;
-  letter-spacing: -0.015em;
+  /* Fraunces is wider and softer than Jost, so the old -0.015em closed it up
+     too far. Barely negative: enough to hold a big line together, not enough
+     to undo the letterforms that are the reason for the face. */
+  letter-spacing: -0.005em;
   text-wrap: balance;
   color: var(--ink);
+
+  /* The axes, made to do something. opsz 48 is the display cut — higher
+     contrast and a narrower waist than the text cut would give. SOFT rounds
+     the terminals toward the warmth the palette already has, and WONK brings
+     in the splayed forms that stop this reading as a stock serif. */
+  font-variation-settings: "opsz" 48, "SOFT" 40, "WONK" 1;
+}
+
+/* Small headings are read, not admired. The display cut's contrast turns
+   spindly below about 1.3rem, so they take the text optical size and drop the
+   wonk — the same face, doing the other job it was drawn for. */
+h3,
+h4 {
+  font-variation-settings: "opsz" 14, "SOFT" 30, "WONK" 0;
 }
 
 h1 {
@@ -391,7 +497,11 @@ kbd {
 
 /* ---------- shared components ---------- */
 
+/* Jost, because an eyebrow is the company labelling a section rather than the
+   page speaking — the same reason the wordmark is Jost and the heading under
+   it is not. Wide tracking is what the face is for at this size. */
 .eyebrow {
+  font-family: var(--font-brand);
   font-size: 0.6875rem;
   font-weight: 400;
   letter-spacing: var(--track-eyebrow);
@@ -400,6 +510,10 @@ kbd {
   margin-bottom: var(--sp-6);
 }
 
+/* The lede is still the page speaking, so it stays in the reading face rather
+   than the display one — a serif paragraph under a serif heading is a wall,
+   and this is the sentence somebody decides on. Larger and lighter is enough
+   to separate it. */
 .lede {
   font-size: clamp(1.0625rem, 1rem + 0.45vw, 1.375rem);
   line-height: 1.5;
@@ -453,10 +567,15 @@ kbd {
   color: var(--bg);
   cursor: pointer;
   text-align: center;
+  /* Sits on the page rather than in it. The pair does the work: a tight
+     contact shadow is what reads as "resting on", and the ambient one is what
+     reads as "above". */
+  box-shadow: var(--lift-1), var(--edge-top);
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease,
+    box-shadow 0.2s ease,
     transform 0.2s var(--ease);
 }
 
@@ -465,6 +584,9 @@ kbd {
   border-color: var(--mahogany);
   color: var(--white);
   transform: translateY(-1px);
+  /* Rises AND casts further. Lifting without deepening the shadow is the
+     thing that looks like a sticker sliding rather than an object moving. */
+  box-shadow: var(--lift-2), var(--edge-top);
 }
 
 :root[data-theme="dark"] .btn:hover {
@@ -475,6 +597,8 @@ kbd {
 
 .btn:active {
   transform: translateY(0);
+  /* Back to the contact shadow only. Pressed means touching the surface. */
+  box-shadow: var(--lift-1);
 }
 
 .btn--ghost {
@@ -549,5 +673,18 @@ kbd {
     content: " (" attr(href) ")";
     font-size: 0.85em;
     color: #555;
+  }
+}
+
+
+/* ── DEPTH SURVIVES REDUCED MOTION, MOVEMENT DOES NOT ───────────────────────
+   Somebody who asked for less motion did not ask for a flatter page. The
+   shadows still deepen on hover, which is the part that says "this responds";
+   only the travel is removed. */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn:hover,
+  .btn:active {
+    transform: none;
   }
 }
