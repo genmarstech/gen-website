@@ -843,6 +843,11 @@ export const platform = {
 
 export const nav = [
   { href: "/services/", label: "Services" },
+  // Products before Work, and they are different questions. /products/ is
+  // what somebody can buy; /work/ is what we have been doing. A visitor who
+  // wants the first should not have to find it among research notes, which is
+  // what they had to do while both lived on one page.
+  { href: "/products/", label: "Products" },
   { href: "/work/", label: "Work" },
   // Between Work and Approach on purpose. /work/ is what we delivered for
   // somebody else and is empty until a client gives written permission;

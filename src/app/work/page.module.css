@@ -7,106 +7,108 @@
   font-size: clamp(1.9rem, 1.4rem + 2.4vw, 3.2rem);
 }
 
-/* ---------- list ---------- */
+/* ---------- cards ---------- */
 
-.list {
+/*
+ * A grid, replacing full-width entries separated by rules.
+ *
+ * The old layout gave every item a case study's worth of room, which was
+ * right for three flagship builds and wrong for a page that is now where
+ * daily work gets posted. `auto-fill` with a minimum rather than a fixed
+ * column count: three across on a desktop, two on a tablet, one on a phone,
+ * without a media query per breakpoint — and a single item does not stretch
+ * to fill the row, which is what `auto-fill` buys over `auto-fit`.
+ */
+.grid {
   display: grid;
-  gap: 0;
+  grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.item {
-  display: grid;
-  gap: var(--sp-6);
-  padding-block: clamp(var(--sp-12), 6vw, var(--sp-16));
-  border-top: 1px solid var(--rule);
-}
-
-.item:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-
-@media (min-width: 52rem) {
-  .item {
-    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
-    gap: var(--sp-12);
-  }
-}
-
-.itemMeta {
+.cardWrap {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--sp-3);
-  font-size: 0.75rem;
 }
 
-@media (min-width: 52rem) {
-  .itemMeta {
-    flex-direction: column;
-    gap: var(--sp-2);
-    position: sticky;
-    top: calc(var(--header-h) + var(--sp-6));
-    align-self: start;
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-6);
+  background: var(--bg-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 140ms ease, transform 140ms ease;
+}
+
+/* Only the clickable ones lift. A research note with no public URL is an
+   <article>, and a hover state on something that does nothing is a promise
+   the card cannot keep. */
+a.card:hover {
+  border-color: var(--rule-strong);
+  transform: translateY(-2px);
+}
+
+a.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  a.card:hover {
+    transform: none;
   }
 }
 
-.itemNum {
-  letter-spacing: var(--track-eyebrow);
+/*
+ * First, and in the accent. "Concept" and "in production" read identically
+ * in a summary sentence, and Charter 04 §IV is exactly about not letting the
+ * second be inferred from the first.
+ */
+.cardLabel {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--accent-text);
 }
 
-.itemSector {
-  color: var(--ink);
+.cardName {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.3;
 }
 
-.itemYear {
+.cardMeta {
+  font-size: 0.8125rem;
   color: var(--ink-faint);
 }
 
-.itemBody {
-  max-width: var(--measure);
-  min-width: 0;
-}
-
-.itemClient {
-  font-size: clamp(1.5rem, 1.25rem + 1.2vw, 2.1rem);
-  margin-bottom: var(--sp-6);
-}
-
-.itemSummary {
-  font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
-  line-height: 1.5;
-  margin-bottom: var(--sp-4);
-}
-
-.itemDetail {
+/* Grows, so every card in a row ends its link at the same height however
+   long the summary is. Ragged bottoms are what make a grid look broken. */
+.cardSummary {
+  flex: 1;
+  margin: var(--sp-2) 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
   color: var(--ink-muted);
 }
 
-.caps {
-  list-style: none;
-  padding: 0;
-  margin: var(--sp-6) 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-}
-
-.caps li {
-  padding: 0.35rem 0.7rem;
-  font-size: 0.75rem;
-  color: var(--ink-muted);
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-}
-
-.visit {
+.cardLink {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  margin-top: var(--sp-8);
-  font-size: 0.9375rem;
+  gap: 0.35rem;
+  margin-top: var(--sp-4);
+  font-size: 0.8125rem;
+  color: var(--accent-text);
+  overflow-wrap: anywhere;
 }
 
 /* ---------- holding state ---------- */
@@ -197,4 +199,11 @@
   text-transform: uppercase;
   color: var(--ink-faint);
   margin: 0 0 var(--sp-3);
+}
+
+/* On a card the picture is a glance, not a study. It sits above the label and
+   takes the card's full width; the 3:2 ratio comes from WorkImage so a row of
+   cards cannot go ragged while they load. */
+.cardImage {
+  margin-bottom: var(--sp-1);
 }

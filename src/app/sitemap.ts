@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { company } from "@/lib/company";
-import { loadWorkOrEmpty } from "@/lib/work";
+import { loadProductsOrEmpty, loadWorkOrEmpty } from "@/lib/work";
 import { loadDocs } from "@/lib/docs";
 
 /**
@@ -40,6 +40,7 @@ const CONTENT_REVIEWED = "2026-09-05";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { work } = await loadWorkOrEmpty();
+  const { work: products } = await loadProductsOrEmpty();
 
   const lastModified = CONTENT_REVIEWED;
 
@@ -101,6 +102,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             url: `${company.url}/work/`,
             lastModified,
             priority: 0.8,
+            // Weekly, not monthly. This is now where daily work gets posted,
+            // and telling a crawler to come back monthly for a page that
+            // changes most weeks is asking it to serve a stale copy.
+            changeFrequency: "weekly" as const,
+          },
+        ]
+      : []),
+    /*
+     * Products, on the same condition and for the same reason: listed only
+     * while the page names something. Ranked ABOVE /work/ because it is what
+     * somebody can buy — a page that converts is worth more crawl budget than
+     * a page that reassures.
+     */
+    ...(products.length > 0
+      ? [
+          {
+            url: `${company.url}/products/`,
+            lastModified,
+            priority: 0.9,
             changeFrequency: "monthly" as const,
           },
         ]

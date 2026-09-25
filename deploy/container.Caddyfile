@@ -64,6 +64,28 @@
 		# would put client data on the public origin
 		# (docs/PORTAL-INTEGRATION.md §1).
 		#
+		# ── img-src NAMES images.unsplash.com. THE SAME QUESTIONING. ─────────
+		#
+		# Pictures on /work and /products are hotlinked from Unsplash's CDN
+		# rather than copied onto this box. Their licence asks for it, and their
+		# CDN is better at serving images than this server is.
+		#
+		# What this widens is narrower than it looks. images.unsplash.com serves
+		# images and nothing else: it cannot execute, it is not in script-src, it
+		# is not in connect-src, and nothing on this site sends it anything. The
+		# risk an img-src entry carries is that a third party learns which pages
+		# a visitor loaded — true here, and the honest trade for pictures that
+		# are not ours.
+		#
+		# ⚠ THE CDN HOST, NOT THE API HOST. api.unsplash.com is where the access
+		#   key is spent and must never be reachable from a page: the key lives on
+		#   the server, operations asks Django, and Django asks Unsplash.
+		#   images.unsplash.com needs no credential and answers the same bytes to
+		#   anyone.
+		#
+		# Putting this back to 'self' does not break the pages — the images
+		# simply do not load, and every card still renders its words.
+		#
 		# ── connect-src NAMES api.genmars.co.ke. HERE IS THE QUESTIONING. ────
 		#
 		# /work re-reads the API in the visitor's browser so publishing in
@@ -83,7 +105,7 @@
 		#
 		# Putting this back to 'self' does not break /work — it silently
 		# freezes it at the last deploy, which is the harder fault to spot.
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.genmars.co.ke; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://images.unsplash.com; font-src 'self'; connect-src 'self' https://api.genmars.co.ke; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 	}
 
 	# Fingerprinted assets: safe to cache forever.
