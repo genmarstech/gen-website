@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <!--
+    The app icon. NOT the same artwork as public/genmars-mark.svg.
+
+    That file is the bare mark for light surfaces: a brown G on nothing. An
+    icon needs its own ground, and this one is the brand's plum with the G
+    in cream and the ring in rust — which is what makes it legible in a
+    browser tab, a home screen and a dark dock alike.
+
+    Regenerating this from genmars-mark.svg loses the ground, the padding
+    and the cream, and produces a transparent brown smudge. It has been
+    done once; don't.
+
+    The G's arc is the corrected ±42° path — see the banner in
+    src/components/Brand.tsx.
+  -->
+  <rect width="180" height="180" rx="40" fill="#2E2B34"/>
+  <g transform="translate(26 26) scale(1.066667)">
+    <path d="M85.27 37.25 A34 34 0 1 0 85.27 82.75" fill="none" stroke="#F4EFEC" stroke-width="9" stroke-linecap="round"/>
+    <path d="M74 60 H92.5" fill="none" stroke="#F4EFEC" stroke-width="9" stroke-linecap="round"/>
+    <ellipse cx="60" cy="60" rx="55" ry="17" fill="none" stroke="#DB7B51" stroke-width="4" transform="rotate(-30 60 60)"/>
+  </g>
+</svg>
