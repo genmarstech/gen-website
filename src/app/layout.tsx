@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, IBM_Plex_Sans, Jost } from "next/font/google";
+import localFont from "next/font/local";
 import { company, contact, liveSocials } from "@/lib/company";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -9,16 +9,43 @@ import { NO_FLASH_SCRIPT } from "@/components/theme";
 import "./globals.css";
 
 /**
- * Jost, self-hosted at build time by next/font.
+ * ══════════════════════════════════════════════════════════════════════════
+ * next/font/LOCAL, NOT next/font/google, AND THAT IS THE WHOLE POINT.
+ *
+ * `next/font/google` also self-hosts — but it DOWNLOADS the files during the
+ * build, which puts fonts.googleapis.com on the critical path of
+ * `docker build`. A transient failure there fails the image with "An error
+ * occurred in `next/font`" while nothing about this application is wrong.
+ *
+ * business-os hit exactly that on 2026-09-26: CI red on a commit that
+ * changed one SVG path, then the deploy red on the server minutes later,
+ * both green on a retry that changed nothing. A deploy somebody else's CDN
+ * can break is not a deploy we control.
+ *
+ * So the files live in src/app/fonts/ and a build needs no network beyond
+ * the npm registry. `npm run build` completes inside `unshare -rn`.
+ *
+ * To add a face, a weight or an axis: edit WANTED in
+ * scripts/vendor-fonts.mjs, run it, and add the declaration here. See
+ * src/app/fonts/README.md.
+ * ══════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Jost, served from this origin.
  *
  * Self-hosting matters beyond performance: no request leaves the visitor's
  * browser for a third-party font CDN, which keeps the privacy policy's claims
  * simple and true. Weights match the brand kit; 300 Light and 400 Regular carry
  * the wordmark and tagline.
+ *
+ * One file: Jost is variable on Google Fonts, so 300/400/500 are a range
+ * rather than three faces.
  */
-const jost = Jost({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
+const jost = localFont({
+  src: "./fonts/jost-variable.woff2",
+  weight: "300 500",
+  style: "normal",
   display: "swap",
   variable: "--font-jost",
 });
@@ -61,22 +88,32 @@ const jost = Jost({
  * from genmars.co.ke to the platform should feel one company, and the shared
  * face is most of how that happens.
  */
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  /*
-   * No `weight`, deliberately — next/font refuses `axes` alongside a fixed
-   * weight list, because asking for axes IS asking for the variable cut. So
-   * the whole weight range ships and the headings vary along it, which is
-   * also what makes 400 and 600 available without shipping two files.
-   */
-  axes: ["SOFT", "WONK", "opsz"],
+/*
+ * ⚠ THE VENDORED FILE MUST BE THE MULTI-AXIS ONE.
+ *
+ * globals.css drives `font-variation-settings: "opsz" 48, "SOFT" 40,
+ * "WONK" 1` on headings. Google serves a DIFFERENT file depending on what
+ * the css2 query asks for: `Fraunces:wght@100..900` returns 36 KB with no
+ * SOFT or WONK axis at all, while `Fraunces:opsz,wght,SOFT,WONK@...`
+ * returns 118 KB that carries the design space.
+ *
+ * Vendor the small one and every variation setting on the site silently
+ * does nothing — the headings still render, just flat, and nothing errors.
+ * scripts/vendor-fonts.mjs asks by axis for this reason; the weight range
+ * below is the one the served face actually declares.
+ */
+const fraunces = localFont({
+  src: "./fonts/fraunces-variable.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-fraunces",
   display: "swap",
 });
 
-const plexSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+const plexSans = localFont({
+  src: "./fonts/ibm-plex-sans-variable.woff2",
+  weight: "300 600",
+  style: "normal",
   variable: "--font-plex-sans",
   display: "swap",
 });
