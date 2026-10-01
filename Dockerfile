@@ -61,6 +61,79 @@ RUN echo "content revision: ${CONTENT_REV}" > /app/.content-rev
 RUN npm run build
 
 
+# ---- caddy ------------------------------------------------------------------
+#
+# WHY THIS STAGE EXISTS: THE PUBLISHED CADDY BINARY IS BUILT ONCE PER RELEASE.
+#
+# caddy:2-alpine ships the binary compiled at the v2.11.4 release in June 2026,
+# on Go 1.26.3, against the module versions in Caddy's go.mod at that moment.
+# Rebuilding the IMAGE does not rebuild the BINARY — the 2026-09-23 rebuild of
+# caddy:2-alpine still carried Go 1.26.3, x/crypto v0.52.0 and grpc v1.81.0.
+#
+# That is why `apk upgrade` below could never clear these findings: Caddy is
+# not an apk package. Sixteen CVEs accumulated in .trivyignore.yaml as a
+# result, every one of them argued as unreachable and none of them actionable
+# from this repository — the exact state that file warns turns a red pipeline
+# into one people click past.
+#
+# Nine of the sixteen are Go STANDARD LIBRARY findings (net/url, mime, os.Root,
+# crypto/x509, crypto/tls, net/http, html/template, encoding/asn1,
+# encoding/xml), fixed in Go 1.26.4+. The builder image carries Go 1.26.8, so
+# compiling here fixes all nine for free. The remaining four are module
+# versions, pinned below.
+#
+# The cost is that this stage compiles Caddy on every build — about a minute,
+# cached between builds that do not change this stage. That is the price of
+# not shipping a binary we cannot patch.
+
+FROM caddy:2-builder-alpine AS caddybuild
+
+# WHY NOT `xcaddy build --with`, WHICH IS WHAT THE BUILDER IMAGE IS FOR.
+#
+# `--with` adds a Caddy PLUGIN: xcaddy writes `import _ "<module>"` into a
+# generated main.go. That works for a plugin, whose module root is an
+# importable package, and fails for a dependency whose root is not:
+#
+#     go: caddy imports
+#         golang.org/x/crypto: cannot find module providing package
+#
+# Upgrading a transitive dependency is a go.mod edit, not an import. So this
+# builds Caddy's own cmd/caddy from source with the four modules raised first.
+# The image is still the Caddy builder rather than plain golang:alpine, for two
+# reasons: it carries Go 1.26.8, the toolchain the stdlib fixes need, and it
+# exports $CADDY_VERSION, so the source we compile cannot drift from the base
+# image the binary is dropped into.
+
+WORKDIR /src
+
+RUN git clone --depth 1 --branch "$CADDY_VERSION" \
+      https://github.com/caddyserver/caddy.git .
+
+# Each line raises a transitive dependency past a published fix. Checked
+# against proxy.golang.org on 2026-10-01; all four are above the version named
+# in the CVE.
+#
+#   x/crypto  CVE-2026-56854            fixed 0.55.0
+#   x/net     CVE-2026-46600, -39821
+#   x/text    CVE-2026-56852
+#   grpc      CVE-2026-84445            fixed 1.82.2
+#             CVE-2026-84304            fixed 1.83.1
+#             GHSA-hrxh-6v49-42gf
+#
+# `go mod tidy` after the upgrades, so an indirect requirement these pull in
+# is recorded rather than failing the build at link time.
+RUN go get \
+      golang.org/x/crypto@v0.57.0 \
+      golang.org/x/net@v0.59.0 \
+      golang.org/x/text@v0.42.0 \
+      google.golang.org/grpc@v1.84.0 \
+ && go mod tidy
+
+# CGO off so the binary is static and runs on the Alpine runtime image without
+# a libc dependency, which is how the published one is built too.
+RUN CGO_ENABLED=0 go build -trimpath -o /usr/bin/caddy ./cmd/caddy
+
+
 # ---- runtime ----------------------------------------------------------------
 
 FROM caddy:2-alpine AS runtime
@@ -89,6 +162,11 @@ LABEL org.opencontainers.image.title="gen-website" \
 # rebuilt from the same source on every deploy anyway, and the SHA-tagged
 # artefact in GHCR is what rollback pins to, not this layer.
 RUN apk upgrade --no-cache
+
+# The binary from the stage above replaces the released one. This sits BEFORE
+# the capability strip on purpose: that step verifies what it stripped, and
+# verifying the binary we are about to overwrite would prove nothing.
+COPY --from=caddybuild /usr/bin/caddy /usr/bin/caddy
 
 # Unprivileged runtime user. Caddy binds :3000 here, which is above 1024, so it
 # needs no capabilities at all — see cap_drop in compose.yaml.
