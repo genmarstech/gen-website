@@ -61,6 +61,58 @@ RUN echo "content revision: ${CONTENT_REV}" > /app/.content-rev
 RUN npm run build
 
 
+# ---- caddy ------------------------------------------------------------------
+#
+# WHY THIS STAGE EXISTS: THE PUBLISHED CADDY BINARY IS BUILT ONCE PER RELEASE.
+#
+# caddy:2-alpine ships the binary compiled at the v2.11.4 release in June 2026,
+# on Go 1.26.3, against the module versions in Caddy's go.mod at that moment.
+# Rebuilding the IMAGE does not rebuild the BINARY — the 2026-09-23 rebuild of
+# caddy:2-alpine still carried Go 1.26.3, x/crypto v0.52.0 and grpc v1.81.0.
+#
+# That is why `apk upgrade` below could never clear these findings: Caddy is
+# not an apk package. Sixteen CVEs accumulated in .trivyignore.yaml as a
+# result, every one of them argued as unreachable and none of them actionable
+# from this repository — the exact state that file warns turns a red pipeline
+# into one people click past.
+#
+# Nine of the sixteen are Go STANDARD LIBRARY findings (net/url, mime, os.Root,
+# crypto/x509, crypto/tls, net/http, html/template, encoding/asn1,
+# encoding/xml), fixed in Go 1.26.4+. The builder image carries Go 1.26.8, so
+# compiling here fixes all nine for free. The remaining four are module
+# versions, pinned below.
+#
+# The cost is that this stage compiles Caddy on every build — about a minute,
+# cached between builds that do not change this stage. That is the price of
+# not shipping a binary we cannot patch.
+
+FROM caddy:2-builder-alpine AS caddybuild
+
+# $CADDY_VERSION comes from the builder image, so the binary we compile always
+# matches the Caddy release the base image is for. Pinning a literal here would
+# drift the day the base tag moves.
+#
+# Each --with raises a transitive dependency past a published fix. Checked
+# against proxy.golang.org on 2026-10-01; all four are above the fixed version
+# named in the CVE, and none is a Caddy plugin — xcaddy writes them into the
+# generated go.mod, which is how a dependency gets upgraded rather than added.
+#
+#   x/crypto  CVE-2026-56854            fixed 0.55.0
+#   x/net     CVE-2026-46600, -39821
+#   x/text    CVE-2026-56852
+#   grpc      CVE-2026-84445            fixed 1.82.2
+#             CVE-2026-84304            fixed 1.83.1
+#             GHSA-hrxh-6v49-42gf
+#
+# If a build fails here on a version conflict, lower the offending pin to the
+# CVE's fixed version rather than removing it.
+RUN xcaddy build "$CADDY_VERSION" \
+      --with golang.org/x/crypto@v0.57.0 \
+      --with golang.org/x/net@v0.59.0 \
+      --with golang.org/x/text@v0.42.0 \
+      --with google.golang.org/grpc@v1.84.0
+
+
 # ---- runtime ----------------------------------------------------------------
 
 FROM caddy:2-alpine AS runtime
@@ -89,6 +141,11 @@ LABEL org.opencontainers.image.title="gen-website" \
 # rebuilt from the same source on every deploy anyway, and the SHA-tagged
 # artefact in GHCR is what rollback pins to, not this layer.
 RUN apk upgrade --no-cache
+
+# The binary from the stage above replaces the released one. This sits BEFORE
+# the capability strip on purpose: that step verifies what it stripped, and
+# verifying the binary we are about to overwrite would prove nothing.
+COPY --from=caddybuild /usr/bin/caddy /usr/bin/caddy
 
 # Unprivileged runtime user. Caddy binds :3000 here, which is above 1024, so it
 # needs no capabilities at all — see cap_drop in compose.yaml.
