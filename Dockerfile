@@ -88,14 +88,30 @@ RUN npm run build
 
 FROM caddy:2-builder-alpine AS caddybuild
 
-# $CADDY_VERSION comes from the builder image, so the binary we compile always
-# matches the Caddy release the base image is for. Pinning a literal here would
-# drift the day the base tag moves.
+# WHY NOT `xcaddy build --with`, WHICH IS WHAT THE BUILDER IMAGE IS FOR.
 #
-# Each --with raises a transitive dependency past a published fix. Checked
-# against proxy.golang.org on 2026-10-01; all four are above the fixed version
-# named in the CVE, and none is a Caddy plugin — xcaddy writes them into the
-# generated go.mod, which is how a dependency gets upgraded rather than added.
+# `--with` adds a Caddy PLUGIN: xcaddy writes `import _ "<module>"` into a
+# generated main.go. That works for a plugin, whose module root is an
+# importable package, and fails for a dependency whose root is not:
+#
+#     go: caddy imports
+#         golang.org/x/crypto: cannot find module providing package
+#
+# Upgrading a transitive dependency is a go.mod edit, not an import. So this
+# builds Caddy's own cmd/caddy from source with the four modules raised first.
+# The image is still the Caddy builder rather than plain golang:alpine, for two
+# reasons: it carries Go 1.26.8, the toolchain the stdlib fixes need, and it
+# exports $CADDY_VERSION, so the source we compile cannot drift from the base
+# image the binary is dropped into.
+
+WORKDIR /src
+
+RUN git clone --depth 1 --branch "$CADDY_VERSION" \
+      https://github.com/caddyserver/caddy.git .
+
+# Each line raises a transitive dependency past a published fix. Checked
+# against proxy.golang.org on 2026-10-01; all four are above the version named
+# in the CVE.
 #
 #   x/crypto  CVE-2026-56854            fixed 0.55.0
 #   x/net     CVE-2026-46600, -39821
@@ -104,13 +120,18 @@ FROM caddy:2-builder-alpine AS caddybuild
 #             CVE-2026-84304            fixed 1.83.1
 #             GHSA-hrxh-6v49-42gf
 #
-# If a build fails here on a version conflict, lower the offending pin to the
-# CVE's fixed version rather than removing it.
-RUN xcaddy build "$CADDY_VERSION" \
-      --with golang.org/x/crypto@v0.57.0 \
-      --with golang.org/x/net@v0.59.0 \
-      --with golang.org/x/text@v0.42.0 \
-      --with google.golang.org/grpc@v1.84.0
+# `go mod tidy` after the upgrades, so an indirect requirement these pull in
+# is recorded rather than failing the build at link time.
+RUN go get \
+      golang.org/x/crypto@v0.57.0 \
+      golang.org/x/net@v0.59.0 \
+      golang.org/x/text@v0.42.0 \
+      google.golang.org/grpc@v1.84.0 \
+ && go mod tidy
+
+# CGO off so the binary is static and runs on the Alpine runtime image without
+# a libc dependency, which is how the published one is built too.
+RUN CGO_ENABLED=0 go build -trimpath -o /usr/bin/caddy ./cmd/caddy
 
 
 # ---- runtime ----------------------------------------------------------------
