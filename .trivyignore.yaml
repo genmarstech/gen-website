@@ -201,12 +201,21 @@ vulnerabilities:
       No fix is available to take. caddy:2-alpine ships grpc v1.81.0 and the
       fix is in 1.82.2; the Dockerfile already pulls the newest tag on every
       build (`pull: true` in build.yml), so this needs an upstream rebuild.
-      Expiring on 2026-10-01 rather than 2026-10-29 DELIBERATELY, to come back
+      Expired on 2026-10-01 rather than 2026-10-29 DELIBERATELY, to come back
       on the same day as the x/crypto entry below. This is the second finding
       in five weeks that a Caddy rebuild would have cleared, and the two should
       be reviewed as one question rather than accepted one at a time - which is
       the drift that entry already warns about.
-    expired_at: 2026-10-01
+      REVIEWED 2026-10-01, EXTENDED, NOT RESOLVED. caddy:2-alpine HAS been
+      rebuilt since this was written - last pushed 2026-09-23, against the
+      2026-08-20 build cited above - but the rebuild moved neither library:
+      the scan of that image still reports grpc v1.81.0 and x/crypto v0.52.0,
+      and Caddy's newest release is still v2.11.4 from June. So the condition
+      the entry below names has been met, and the answer it gives was not
+      taken today; the date was moved instead, to unblock a website deploy.
+      The argument for accepting the finding is unchanged and still verified.
+      What is now overdue is the builder-alpine decision, not this CVE.
+    expired_at: 2026-10-29
 
   - id: CVE-2026-56854
     paths: ["usr/bin/caddy"]
@@ -229,4 +238,11 @@ vulnerabilities:
       accepting these one at a time and build Caddy from caddy:2-builder-alpine
       on a current toolchain instead. That clears every entry in this file at
       once, and it is the right answer if upstream stays behind.
-    expired_at: 2026-10-01
+      2026-10-01: that test was run and upstream IS still behind - the
+      2026-09-23 rebuild of caddy:2-alpine still links x/crypto v0.52.0. The
+      answer above was therefore the correct one and was not taken; the date
+      was extended to 2026-10-29 so a deploy could go out. Every entry in this
+      file now expires on the same day, which is the one improvement the
+      deferral buys: the builder-alpine question gets asked once, for all
+      thirteen findings, instead of twice more in isolation.
+    expired_at: 2026-10-29
