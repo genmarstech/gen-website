@@ -515,6 +515,43 @@ export const offers = [
     ],
   },
 
+  {
+    slug: "hosting",
+    name: "Managed hosting",
+    available: "now",
+    from: "KES 15,000",
+    /* ── PRICED PER YEAR, AND NOT TO BE "TIDIED" TO PER MONTH ──────────────
+       Every other recurring offer here is monthly. This one is annual because
+       the thing it bills for renews annually: a .co.ke, a TLS arrangement and
+       a hosting account all lapse on a date, and gen-portal already models
+       that in HostingArrangement.renews_on beside annual_cost_kes and
+       annual_charge_kes.
+       A monthly price here would have to be multiplied before it could be
+       written into the record that chases the renewal, and a conversion
+       between the price list and the ledger is the gap a client gets quoted
+       one number and billed another through. */
+    unit: "per year",
+    lead: "We run your site or application on our own infrastructure, and we are the ones who answer when it stops.",
+    body: "Site covers a brochure or marketing site: one domain, TLS, daily backups. Application adds a database, a staging environment and monitoring that pages a human. Dedicated puts you on a server of your own when you have outgrown sharing one, or when sharing one was never acceptable.",
+    forYouIf: "Your site is hosted somewhere you cannot name, by someone who has never replied.",
+    /* Four refusals, and each is a real constraint rather than small print.
+       The resource bound is the same promise the managed-services exclusion
+       already makes — stated here as a number, because a bound nobody wrote
+       down is the one that gets exceeded. */
+    note: "Resources are bounded and named on every tier; we do not sell unlimited anything, because unlimited is a promise that gets quietly broken. Domain registration renews separately on its own date and is billed separately. We publish no uptime percentage, because we do not yet measure one — Charter 04 §IV. And your data leaves with you: we hold nothing hostage, ever.",
+    tiers: [
+      { slug: "site", name: "Site", price: "KES 15,000",
+        lead: "A brochure or marketing site, looked after.",
+        includes: ["One site, one domain and www", "5 GB storage", "TLS certificate, renewed automatically", "Daily backups, 14-day retention", "Security and platform patching", "Business-hours support"] },
+      { slug: "application", name: "Application", price: "KES 48,000",
+        lead: "Something with a database behind it, and a staging copy to try things on.",
+        includes: ["One application and one database", "20 GB storage", "Staging environment", "TLS certificate, renewed automatically", "Daily backups, 30-day retention", "A tested restore every quarter", "Monitoring with alerting", "Security and platform patching", "Business-hours support"] },
+      { slug: "dedicated", name: "Dedicated", price: "KES 150,000", open: true,
+        lead: "A server of your own, sized to what you actually run.",
+        includes: ["A dedicated server, not a share of ours", "Resources agreed in writing", "Multiple applications and environments", "TLS certificates, renewed automatically", "Backup schedule and retention to suit", "A tested restore at an agreed interval", "Monitoring with alerting", "Security and platform patching", "Named contact and escalation path"] },
+    ],
+  },
+
   /* ── in development ─────────────────────────────────────────────────────────
      Shown because they are what the company is for, and priced because §14 says
      to. Marked `building` because nobody can buy one today, and a page that let
