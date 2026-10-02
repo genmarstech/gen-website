@@ -7,8 +7,20 @@
 # (docs/DEPLOYMENT.md, "Content Security Policy — a known compromise").
 #
 # Every PR runs the full `build` workflow — typecheck, lint, build, image,
-# smoke test, image scan — so a bad bump is caught before it can be merged, and
+# smoke test, image scan — so a bad bump is RED before it is merged, and
 # `deploy` never sees it: nothing from an unreviewed branch reaches the server.
+#
+# ── RED IS NOT THE SAME AS BLOCKED, AND THAT COST A BROKEN main ─────────────
+#
+# This note used to say a bad bump "is caught before it can be merged". On
+# 2026-10-02 #26 was red — its conflict had been resolved in the web editor,
+# leaving duplicate keys in package.json and package-lock.json so `npm ci`
+# could not parse either — and it was merged anyway, forty-six seconds later.
+# main would not build, and every deploy after it skipped.
+#
+# `main` has no branch protection requiring these checks, so the pipeline
+# reports and does not refuse. Until that setting exists, the sentence above
+# describes what CI TELLS you, not what it prevents.
 
 version: 2
 
@@ -40,6 +52,32 @@ updates:
         dependency-type: development
         exclude-patterns:
           - eslint-config-next
+    ignore:
+      # ── eslint AND typescript MAJORS ARE PINNED BY eslint-config-next ──────
+      #
+      # Both were offered in #26 and both genuinely break, which nobody found
+      # out at the time because that PR never got past `npm ci`:
+      #
+      #   typescript 7  — eslint-config-next@16 bundles typescript-eslint,
+      #                   which refuses to load: "typescript-eslint does not
+      #                   support TS 7.0".
+      #   eslint 10     — it also bundles eslint-plugin-react, which calls the
+      #                   eslint 9 rule-context API: "contextOrFilename
+      #                   .getFilename is not a function", thrown while linting
+      #                   eslint.config.mjs itself.
+      #
+      # So the ceiling on both is whatever eslint-config-next's own
+      # dependencies support, and taking either bump breaks `npm run lint`
+      # while typecheck and build stay green — a failure that reads as our
+      # code rather than as a toolchain pin.
+      #
+      # Same shape as the Node pin below: revisit when eslint-config-next
+      # ships support, not weekly. Minor and patch bumps still come through,
+      # and those are the ones carrying the fixes.
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   # ---- GitHub Actions -------------------------------------------------------
   # The workflows hold the credentials for the deploy path, which makes a stale
