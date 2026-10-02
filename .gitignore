@@ -44,3 +44,6 @@ yarn-error.log*
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# Scratch dir for the price-parity CI step (build.yml) — fetched, never committed.
+.parity/
