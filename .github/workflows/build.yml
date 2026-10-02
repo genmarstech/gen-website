@@ -60,6 +60,38 @@ jobs:
           test -f out/index.html || { echo "out/index.html missing"; exit 1; }
           echo "exported $(find out -type f | wc -l) files"
 
+      # ── THIS FILE IS THE PRICE LIST, AND THE PORTAL HOLDS A COPY ──────────
+      #
+      # src/lib/company.ts says, at the top of `offers`, that changing a price
+      # here is HALF THE JOB: gen-portal's seed_services.py carries the same
+      # tiers so a signed-in client can pick one without being sent back out
+      # here, and "nothing detects the drift automatically".
+      #
+      # Now something does. The check and the catalogue are both fetched from
+      # gen-portal's main — it is a public repository, and the two deploy
+      # separately, so a job that can see both has to reach across.
+      #
+      # It runs HERE as well as there because a price is almost always edited
+      # here, and a check that only runs in the other repository would not
+      # notice until that one next changed.
+      #
+      # ⚠ A FAILURE HERE IS USUALLY CORRECT AND USUALLY NOT A BUG IN THIS PR.
+      # The window where the two disagree is every deploy, because they ship
+      # separately. What it means is: land the matching seed_services.py
+      # change and re-run `seed_services --force` against production. It is
+      # red precisely as long as a client could be quoted one number here and
+      # another in the portal.
+      - name: The published prices and the portal's copy agree
+        run: |
+          base=https://raw.githubusercontent.com/genmarstech/gen-portal/main
+          mkdir -p .parity/scripts .parity/backend/operations/management/commands
+          curl -sSL --fail-with-body --retry 3 --retry-delay 2 \
+            "$base/scripts/check_price_parity.py" -o .parity/scripts/check_price_parity.py
+          curl -sSL --fail-with-body --retry 3 --retry-delay 2 \
+            "$base/backend/operations/management/commands/seed_services.py" \
+            -o .parity/backend/operations/management/commands/seed_services.py
+          python3 .parity/scripts/check_price_parity.py --company src/lib/company.ts
+
   # ---------------------------------------------------------------------------
   # Build the image, prove it works, then publish it.
   #
