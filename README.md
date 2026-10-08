@@ -295,6 +295,62 @@ the host:
 Full notes, host setup, TLS, the one-time secrets, rollback and the CSP
 compromise: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
+### Reporting which commit is live
+
+`scripts/heartbeat.sh`, every five minutes, through
+`deploy/genmars-web-heartbeat.timer`. It posts to
+`api.genmars.co.ke/api/systems/heartbeat`, and the row it updates is what
+`ops.genmars.co.ke/systems` renders.
+
+**There is no application here to put this in.** `output: "export"` means what
+is deployed is a directory of files and a Caddy serving them — no process of
+ours, no request handler, nowhere a scheduled job could live. A shell script on
+a timer is not the pragmatic choice; it is the only honest one.
+
+**And it is not another health check.** `check_systems` on the parent already
+GETs `https://genmars.co.ke/` from outside, and for a static site that answers
+most of the question: if the files are served, the site works. This reports the
+two things that GET cannot see —
+
+- **which commit is serving.** `deploy.sh` pins the image to the revision it
+  was built from, so this is the only place the registry can learn what is
+  actually live. That column has been blank for this system since it was
+  registered, and no amount of polling the homepage would have filled it.
+- **that the container is gone**, as distinct from DNS, a certificate or the
+  host — which is the case a timing-out probe is least able to explain.
+
+```bash
+./scripts/heartbeat.sh --dry-run   # needs no key, sends nothing
+```
+
+#### Setting it up — the key comes first
+
+> ⚠ **Installing the timer before the key exists is a mail flood.** No key →
+> the script exits non-zero → the unit's `OnFailure` mails through
+> `genmars-alert@` → every five minutes, 288 a day. GM-INC-2026-0001 is what
+> that costs: alerts bounced, the provider suppressed the address, and
+> thirty-one hours of real alerts were dropped in silence.
+
+1. `ops.genmars.co.ke/systems` → **Marketing site** → *Reporting keys* → issue
+   one. Founder only, **shown exactly once**, and not readable back.
+2. Put `GENMARS_SYSTEM_KEY=…` in `/opt/gen-website/.env`.
+3. **`chmod 600 /opt/gen-website/.env`.** It is currently `664`, which is fine
+   while it holds nothing but `IMAGE_TAG` — adding the key changes what that
+   file is, and a bearer credential for this system's row must not be readable
+   by every account on a host that also serves a live client site.
+4. `/opt/gen-website/scripts/heartbeat.sh` — must print `reported — up: …`.
+   **Only then:**
+
+```bash
+sudo cp deploy/genmars-web-heartbeat.* /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now genmars-web-heartbeat.timer
+```
+
+`systemctl list-timers` prints `NEXT` as `-` for this unit. That is **not** a
+fault: `OnBootSec`/`OnUnitActiveSec` are monotonic triggers and that column
+shows realtime ones. The honest check is that a *second* heartbeat lands.
+
 ## Being found
 
 The site is open to crawlers as of 2026-09-05.
