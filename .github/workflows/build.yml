@@ -183,6 +183,7 @@ jobs:
           # exports $CADDY_VERSION and the runtime base must match it.
           build-args: |
             REGISTRY=mirror.gcr.io/library
+            BUILDKIT_SYNTAX=mirror.gcr.io/docker/dockerfile:1.7
             CONTENT_REV=${{ github.run_id }}-${{ github.run_attempt }}
           tags: ${{ env.LOCAL_IMAGE }}
           labels: ${{ steps.meta.outputs.labels }}
