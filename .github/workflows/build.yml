@@ -166,7 +166,23 @@ jobs:
           # that step reads /docs and /work from the API and is therefore not a
           # function of this source tree. See the banner in the Dockerfile.
           no-cache-filters: runtime
+          # REGISTRY routes the three base images through a read-through cache
+          # of Docker Hub, which counts unauthenticated pulls per IP — and a
+          # hosted runner's IP is shared with everybody else building on it. A
+          # `429` here does not just redden a check: deploy.yml fires on this
+          # workflow and pulls what this job publishes, so a pull limit becomes
+          # a failed deploy.
+          #
+          # The Dockerfile's ARG explains what it means for the mirror to be in
+          # the supply chain of an image that actually ships, why staleness
+          # rather than substitution is the risk, and why `pull: true` plus the
+          # scan below is what keeps that risk loud. Read it before changing
+          # either line.
+          #
+          # It must stay ONE value for all three stages — the caddy builder
+          # exports $CADDY_VERSION and the runtime base must match it.
           build-args: |
+            REGISTRY=mirror.gcr.io/library
             CONTENT_REV=${{ github.run_id }}-${{ github.run_attempt }}
           tags: ${{ env.LOCAL_IMAGE }}
           labels: ${{ steps.meta.outputs.labels }}
