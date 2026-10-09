@@ -17,9 +17,78 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+# ── WHERE THE BASE IMAGES ARE PULLED FROM, AND WHY IT IS ONE ARGUMENT ───────
+#
+# The default is Docker Hub, spelled in full. `node:22-alpine` and
+# `docker.io/library/node:22-alpine` are the same image; writing it out is what
+# lets the registry be substituted without the tag moving. compose.yaml and
+# scripts/smoke.sh pass no build argument, so a local build is unchanged.
+#
+# ⚠ ONE ARGUMENT FOR ALL THREE STAGES, AND THAT IS LOAD-BEARING HERE.
+#
+#   caddy:2-builder-alpine exports $CADDY_VERSION, and the caddybuild stage
+#   below clones exactly that tag so the source it compiles cannot drift from
+#   the runtime base the binary is dropped into. Two registries resolving
+#   caddy:2-* a moment apart is a way for them to drift. One ARG for every
+#   FROM is what stops that being possible.
+#
+# ⚠ THE TAG IS NOT THE PART THAT MAY VARY. REGISTRY must never become a way to
+#   move a version.
+#
+# build.yml overrides it to mirror.gcr.io, a read-through cache of Docker Hub,
+# because Docker Hub counts unauthenticated pulls PER IP and GitHub's hosted
+# runners share an IP with everybody else building on them. business-os lost
+# two consecutive runs to `429 Too Many Requests` on a green branch; here the
+# same limit would stop a DEPLOY, because deploy.yml fires on this workflow
+# and pulls the image this job publishes.
+#
+# ── WHAT THAT MEANS HERE AND DOES NOT MEAN IN business-os ───────────────────
+#
+# business-os builds images in CI only to prove the Dockerfile still works,
+# and its host builds its own, so its mirror touches nothing that ships. This
+# repository is the one that deploys what CI built. So the mirror IS in the
+# production supply chain, and that is a decision rather than an oversight:
+#
+# - A registry is content-addressed, and all three tags were checked to
+#   resolve to the same manifest digest on both — node:22-alpine,
+#   caddy:2-alpine and caddy:2-builder-alpine.
+#
+# - The risk worth naming is therefore STALENESS, not substitution. `pull:
+#   true` and `no-cache-filters: runtime` in build.yml exist precisely so the
+#   base image is current on every run, and a cache that lagged would quietly
+#   undo them. It would not ship: the Trivy step blocks the push on any
+#   fixed-available CVE, which is how the 2026-09-05 stale-layer failure was
+#   caught. Staleness here is loud.
+#
+# - The stronger answer is a Docker Hub account and two repository secrets —
+#   a per-account limit instead of a per-IP one, which is what the Trivy step
+#   already does with ghcr.io and the job's own token. Reach for it the day
+#   this mirror lags rather than adding a scan exception.
+
+# ── LINE 1 IS A DOCKER HUB PULL TOO, AND REGISTRY CANNOT REACH IT ───────────
+#
+# `# syntax=docker/dockerfile:1.7` is a parser directive. BuildKit resolves
+# that frontend image before it reads a single ARG, so the argument below
+# cannot cover it — and a parser directive has to be the very first line, so
+# it cannot carry an explaining comment above it either. This is that comment.
+#
+# It stays pointed at Docker Hub, and CI overrides it with the BUILDKIT_SYNTAX
+# build argument: same mirror, digest checked the same way, and a host build
+# still takes the frontend from Docker Hub like everything else.
+#
+# Deleting the directive is not the shortcut it looks like: `RUN
+# --mount=type=cache` below is a frontend feature and needs it.
+#
+# Found the way these are always found: gen-website's image job died on `504
+# Gateway Timeout` from auth.docker.io at line 1, with every FROM below it
+# already mirrored and the whole point of the change defeated by the first
+# line of the file.
+
+ARG REGISTRY=docker.io/library
+
 # ---- build ------------------------------------------------------------------
 
-FROM node:22-alpine AS build
+FROM ${REGISTRY}/node:22-alpine AS build
 
 WORKDIR /app
 
@@ -86,7 +155,7 @@ RUN npm run build
 # cached between builds that do not change this stage. That is the price of
 # not shipping a binary we cannot patch.
 
-FROM caddy:2-builder-alpine AS caddybuild
+FROM ${REGISTRY}/caddy:2-builder-alpine AS caddybuild
 
 # WHY NOT `xcaddy build --with`, WHICH IS WHAT THE BUILDER IMAGE IS FOR.
 #
@@ -136,7 +205,7 @@ RUN CGO_ENABLED=0 go build -trimpath -o /usr/bin/caddy ./cmd/caddy
 
 # ---- runtime ----------------------------------------------------------------
 
-FROM caddy:2-alpine AS runtime
+FROM ${REGISTRY}/caddy:2-alpine AS runtime
 
 LABEL org.opencontainers.image.title="gen-website" \
       org.opencontainers.image.description="Marketing website for Genmars Tech Limited" \
