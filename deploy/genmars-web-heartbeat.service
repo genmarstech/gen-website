@@ -1,0 +1,56 @@
+# "The marketing site is alive, and here is the commit that is serving it."
+#
+#   sudo cp deploy/genmars-web-heartbeat.* /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now genmars-web-heartbeat.timer
+#
+# Verify it is actually firing — an enabled timer that never fires is the usual
+# way "we are monitoring it" turns out to be false. `systemctl list-timers`
+# prints NEXT as "-" for this unit, which is NOT a fault: OnBootSec and
+# OnUnitActiveSec are monotonic triggers and that column shows realtime ones.
+# The scheduled fire is in NextElapseUSecMonotonic, and the honest check is
+# whether a SECOND heartbeat lands:
+#
+#   systemctl show genmars-web-heartbeat.timer -p LastTriggerUSec
+#   journalctl -u genmars-web-heartbeat.service -n 20
+#
+# ── ISSUE THE KEY FIRST. INSTALLING THIS WITHOUT ONE IS A MAIL FLOOD ───────
+#
+# No key → scripts/heartbeat.sh exits non-zero → OnFailure below fires
+# genmars-alert@ → notify.sh sends mail. Every five minutes, 288 a day.
+#
+# The non-zero exit is right: a heartbeat that fails silently leaves the board
+# showing "last seen hours ago", which reads as an outage when only the
+# reporting is broken. It just means the key has to exist before the timer
+# does.
+#
+#   1. ops.genmars.co.ke/systems → Marketing site → "Reporting keys" → issue one.
+#      Founder only (CanManageAccess), shown exactly once, cannot be read back.
+#   2. put GENMARS_SYSTEM_KEY= into /opt/gen-website/.env
+#   3. chmod 600 /opt/gen-website/.env   ← it is a bearer credential
+#   4. /opt/gen-website/scripts/heartbeat.sh
+#      ↳ must print "reported — up: …". Only then enable the timer.
+
+[Unit]
+Description=Marketing site — heartbeat to the Genmars system registry
+Documentation=file:///opt/gen-website/README.md
+# Nothing to inspect if Docker is not up.
+Requires=docker.service
+After=docker.service network-online.target
+
+# The same handler the portal's backups use, installed system-wide. %N names
+# this unit so the mail says which job failed.
+OnFailure=genmars-alert@%N.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/gen-website
+ExecStart=/opt/gen-website/scripts/heartbeat.sh
+
+# ⚠ NOT an EnvironmentFile. The script sources /opt/gen-website/.env itself,
+#   because it also has to work when run by hand during setup — step 4 above —
+#   and a unit-level EnvironmentFile would leave that invocation keyless and
+#   failing for a reason the operator cannot see.
+
+[Install]
+WantedBy=multi-user.target

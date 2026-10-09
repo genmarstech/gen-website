@@ -1,0 +1,34 @@
+# ── EVERY FIVE MINUTES, AND THE INTERVAL IS THE WHOLE DESIGN ───────────────
+#
+# A heartbeat's only job is to make "last seen" mean something, so the interval
+# decides how long an outage can hide. Five minutes is short enough that a
+# dashboard is worth looking at and long enough that it is 288 rows a day
+# rather than 1,440. The same figure business-os uses, deliberately: two
+# systems reporting on different cadences make "which is staler" a question
+# about configuration rather than about the systems.
+#
+# It is NOT a replacement for the parent's health poll. check_systems proves
+# Genmars can REACH genmars.co.ke, which for a STATIC site answers most of the
+# question — if the files are served, the site works.
+#
+# What this adds is the half a GET cannot see: WHICH COMMIT is serving, since
+# the deploy pins the image to it, and whether the container is gone as opposed
+# to DNS, a certificate or the host. The `version` column for this system has
+# been blank since it was registered, and no amount of polling the homepage
+# would ever have filled it.
+
+[Unit]
+Description=Marketing site — heartbeat to Genmars
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+# Persistent=false on purpose, unlike a backup. A missed heartbeat is
+# information: catching up after a reboot would post a stale "I am well" for a
+# window during which this application was not running at all.
+Persistent=false
+# Spread, so every system on this host does not report in the same second.
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target
