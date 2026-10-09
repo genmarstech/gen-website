@@ -21,6 +21,16 @@ set -euo pipefail
 # one that gets pushed. A second `docker build` would test a different artefact.
 IMAGE="${IMAGE:-gen-website:smoke}"
 NAME="gen-website-smoke"
+
+# The Caddy image the two `caddy validate` calls below run in. Defaults to
+# Docker Hub — the same place the Dockerfile's runtime stage takes it from — so
+# a laptop needs no setup.
+#
+# CI overrides it to the mirror, and must: this script runs INSIDE the
+# pipeline, so leaving it on Docker Hub would reintroduce exactly the pull
+# limit the rest of that change removed, in a step whose failure reads like a
+# broken Caddyfile. See the banner above ARG REGISTRY in the Dockerfile.
+CADDY_IMAGE="${CADDY_IMAGE:-caddy:2-alpine}"
 BASE="http://127.0.0.1:3000"
 
 pass=0
@@ -56,14 +66,14 @@ contains() {
 status() { curl -s -o /dev/null -w '%{http_code}' "$1"; }
 
 echo "==> validating Caddyfiles"
-docker run --rm -v "$PWD/deploy:/deploy:ro" caddy:2-alpine \
+docker run --rm -v "$PWD/deploy:/deploy:ro" "$CADDY_IMAGE" \
   caddy validate --adapter caddyfile --config /deploy/container.Caddyfile
 echo "  container.Caddyfile OK"
 
 # genmars.caddy is a conf.d DROP-IN, imported by the host Caddyfile. Validating
 # it standalone works because it holds only site blocks; the authoritative check
 # is on the host: sudo caddy validate --config /etc/caddy/Caddyfile
-docker run --rm -v "$PWD/deploy:/deploy:ro" caddy:2-alpine \
+docker run --rm -v "$PWD/deploy:/deploy:ro" "$CADDY_IMAGE" \
   caddy validate --adapter caddyfile --config /deploy/genmars.caddy
 echo "  genmars.caddy OK"
 
