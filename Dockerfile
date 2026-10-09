@@ -179,21 +179,44 @@ RUN git clone --depth 1 --branch "$CADDY_VERSION" \
       https://github.com/caddyserver/caddy.git .
 
 # Each line raises a transitive dependency past a published fix. Checked
-# against proxy.golang.org on 2026-10-01; all four are above the version named
+# against proxy.golang.org on 2026-10-10; all four are above the version named
 # in the CVE.
 #
 #   x/crypto  CVE-2026-56854            fixed 0.55.0
 #   x/net     CVE-2026-46600, -39821
+#             CVE-2026-78669            fixed 0.60.0
 #   x/text    CVE-2026-56852
 #   grpc      CVE-2026-84445            fixed 1.82.2
 #             CVE-2026-84304            fixed 1.83.1
 #             GHSA-hrxh-6v49-42gf
 #
+# x/net moved 0.59.0 → 0.60.0 on 2026-10-10 because the scan refused the push.
+# CVE-2026-78669 is a denial of service via excessive HTTP/2 SETTINGS frames,
+# HIGH, and this binary serves HTTP/2 to the internet, so there was no honest
+# argument for accepting it. That is the loop .trivyignore.yaml describes
+# working as intended: a finding arrives, a pin moves, nothing is waved
+# through.
+#
+# ⚠ 0.60.0 RATHER THAN THE LATEST 0.61.0, AND NOT BY ACCIDENT.
+#
+#   x/net states its own requirements, and 0.61.0 raises two of the other
+#   three lines with it:
+#
+#       0.60.0  needs x/crypto 0.57.0, x/text 0.42.0   ← what is pinned here
+#       0.61.0  needs x/crypto 0.58.0, x/text 0.43.0
+#
+#   `go get` refuses the mismatch outright rather than resolving it —
+#   "requires golang.org/x/crypto@v0.58.0, not golang.org/x/crypto@v0.57.0" —
+#   so 0.61.0 is a three-line change, and neither of the other two has a
+#   finding against it. Moving a dependency with no CVE, to satisfy a
+#   dependency that has one, is churn this stage cannot justify: every one of
+#   these lines exists because a scan named it.
+#
 # `go mod tidy` after the upgrades, so an indirect requirement these pull in
 # is recorded rather than failing the build at link time.
 RUN go get \
       golang.org/x/crypto@v0.57.0 \
-      golang.org/x/net@v0.59.0 \
+      golang.org/x/net@v0.60.0 \
       golang.org/x/text@v0.42.0 \
       google.golang.org/grpc@v1.84.0 \
  && go mod tidy
