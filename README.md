@@ -2,12 +2,24 @@
 
 The marketing website for **Genmars Tech Limited** — [genmars.co.ke](https://genmars.co.ke).
 
-> **Not cleared to publish.** The site is built and working, but held behind
-> three gates: the privacy policy and terms are still drafts (Charter 03 §IV
-> Tier 1), `info@genmars.co.ke` is not yet confirmed live, and no client has
-> given written permission to be named (Charter 04 §V). `robots.txt` disallows
-> everything and the pages carry `noindex` until those close.
-> See [`docs/PRE-LAUNCH.md`](docs/PRE-LAUNCH.md).
+> **Live since 2026-09-05.** `robots.txt` allows everything and every page but
+> the 404 carries `index, follow`. What opened it was Charter 03 §IV Tier 1:
+> the privacy policy and terms of service are published at v1.0, written
+> against the running system.
+>
+> Three things it launched **without**, each still true and none of them a
+> reason to hold the site back: no advocate has reviewed either document, and
+> both pages carry a visible notice saying so — that notice is now the only
+> thing carrying it, so removing it is a lie until a review happens; `privacy@`
+> and `security@` have never been tested from outside the domain, though they
+> are named on a public page as the address for statutory requests; and no
+> client has given written permission to be named (Charter 04 §V), so `/work/`
+> shows a holding state instead of the two real projects.
+>
+> [`docs/PRE-LAUNCH.md`](docs/PRE-LAUNCH.md) is the source of truth for all of
+> this and carries the ODPC position too. This paragraph said the site was
+> "not cleared to publish" for five weeks after it was published; if the two
+> disagree again, believe that file and fix this one.
 
 ---
 

@@ -9,10 +9,35 @@ name: deploy
 # is no path from an unreviewed branch to the server.
 #
 # It then waits on the `production` environment for a human approval, so nothing
-# reaches genmars.co.ke unattended. That gate matters especially now: the site
-# is deliberately noindex/disallow-all until the Tier 1 documents are live
-# (docs/PRE-LAUNCH.md), and an unattended deploy is exactly how a half-finished
-# policy page goes public.
+# reaches genmars.co.ke unattended.
+#
+# The reason that gate exists CHANGED on 2026-09-05 and this comment said the
+# old one until 2026-10-10. It used to be that the site was noindex and
+# disallow-all pending the Tier 1 documents, so the thing to prevent was a
+# half-finished policy page going public. Both documents are published and the
+# site has been open to crawlers since that date (docs/PRE-LAUNCH.md, and the
+# banners in src/app/robots.ts and src/app/layout.tsx). The gate now guards the
+# opposite situation: every deploy publishes to an INDEXED site, and this
+# pipeline is also the publishing step for content written somewhere else —
+# `/docs` and `/work` are fetched from the Django at build time, so saving a
+# document in ops does nothing until a build runs and this job ships it.
+# Approving here is the moment that content becomes public, and Charter 04 §IV
+# applies to whatever it says.
+#
+# ⚠ THE GATE WAS CONFIGURED EMPTY FROM 2026-08-28 UNTIL 2026-10-10.
+#
+#   The environment existed and held the deploy secrets, so every deploy
+#   worked and nothing looked wrong — but `required reviewers` was never
+#   added, which is the only part that makes it wait. `b51dd8e` went out to
+#   genmars.co.ke unattended on 2026-10-10 before anybody noticed, and this
+#   file had asserted the approval for six weeks by then. A required reviewer
+#   is set now. Do not read the sentence above as evidence it is still there;
+#   it is a line in this repository describing a setting in GitHub, and the
+#   two can drift apart silently. What it says is checkable in one command,
+#   and `[]` means the gate is gone again:
+#
+#     gh api repos/:owner/:repo/environments/production \
+#       --jq '[.protection_rules[].type]'
 #
 # The deploy itself is thin on purpose. All the logic lives in deploy/deploy.sh,
 # on the host, so a rollback at 2am is one SSH session and one command — not a
@@ -22,6 +47,17 @@ name: deploy
 #
 # Environment `production` (Settings → Environments → New environment):
 #   required reviewers: at least one
+#
+#   Leave "prevent self-review" OFF while there is one person with push
+#   access. It stops the person who triggered the run from approving it, and
+#   with a single collaborator that is everybody — every deploy would be
+#   unapprovable rather than merely gated. Turn it on when there are two.
+#
+#   Leave "allow administrators to bypass" OFF. On by default, and on it
+#   makes the approval optional for exactly the account most likely to be
+#   deploying. A PUT to the environments API resets it to the default, so
+#   send `can_admins_bypass: false` explicitly if you ever configure this
+#   over the API rather than in the settings UI.
 #
 #   Secrets, on that environment:
 #     DEPLOY_HOST        the server's hostname or IP
