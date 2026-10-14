@@ -56,7 +56,7 @@ export default function ContactPage() {
         <div className="wrap">
           <Reveal>
           <p className="eyebrow">Contact</p>
-          <h1 className={styles.title}>Tell us what is going wrong.</h1>
+          <h1 className={styles.title}>Talk to us</h1>
           <p className="lede measure">
             The most useful first message is not a brief or a specification. It
             is the problem in plain words, what it costs you, and when it

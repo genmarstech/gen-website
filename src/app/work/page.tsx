@@ -58,7 +58,7 @@ export default async function WorkPage() {
           <Reveal>
             <p className="eyebrow">Work</p>
             <h1 className={styles.title}>
-              Software that is running, not planned.
+              What we have built
             </h1>
             <p className="lede measure">
               All of it ships the same unglamorous thing: a way for a Kenyan
