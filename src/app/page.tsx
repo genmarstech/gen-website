@@ -123,7 +123,7 @@ export default function HomePage() {
             </h1>
 
             <p className={`lede ${styles.heroLede}`}>
-              {company.formalName} builds custom systems, mobile-money and
+              {company.formalName} builds custom systems, e-commerce, mobile-money and
               payments integration, and the infrastructure that keeps them
               running — for businesses in {company.country} and across East
               Africa.
@@ -131,7 +131,7 @@ export default function HomePage() {
 
             <div className={styles.heroActions}>
               <Link href="/services/" className="btn">
-                Request work
+                Our services
               </Link>
               <Link href="/work/" className="btn btn--ghost">
                 See what we have built
@@ -156,23 +156,17 @@ export default function HomePage() {
           <Reveal>
             <p className="eyebrow">What we do</p>
             <div className={styles.sectionHead}>
-              <h2>What you can buy today.</h2>
+              <h2>Our service offerings</h2>
               {/*
                 The count is DERIVED, never typed. Written as "Seven" it would
                 have been wrong the first afternoon somebody added an eighth
                 service, and a number the site states about itself is exactly
                 the kind of small untruth Charter 04 §IV is about.
-
-                It also names the real heading on the services page — "In
-                development" — rather than saying "marked as such", so the
-                sentence can be checked by clicking rather than trusted.
               */}
               <p className="lede measure">
                 {spell(sellable.length)} services, each with a starting price
-                you can read now instead of asking for. The platform they will
-                eventually run on is still being built: it sits on the services
-                page under <em>In development</em>, and it stays there until it
-                works.
+                you can read now instead of asking for. But there is always room for negotiation.{" "}
+                <em>But delivering optimum results in all of your apps, scaling and maintaining them is what we do best.</em>
               </p>
             </div>
           </Reveal>
