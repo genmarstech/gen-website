@@ -123,10 +123,10 @@ export default function HomePage() {
             </h1>
 
             <p className={`lede ${styles.heroLede}`}>
-              {company.formalName} builds custom systems, e-commerce, mobile-money and
+              We build custom systems, e-commerce, mobile-money and
               payments integration, and the infrastructure that keeps them
-              running — for businesses in {company.country} and across East
-              Africa.
+              running for businesses in {company.country}, across
+              Africa, and the rest of the World
             </p>
 
             <div className={styles.heroActions}>
